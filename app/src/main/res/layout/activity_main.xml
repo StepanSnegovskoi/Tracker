@@ -7,13 +7,41 @@
     android:layout_height="match_parent"
     tools:context=".presentation.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <Button
+        android:id="@+id/buttonAddCardToDb"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="Добавить карту в базу данных \nКарта сгенерируется сама"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/editTextId"
+        android:layout_margin="16dp"
+        android:hint="Int"
+        android:text="0"
+        app:layout_constraintTop_toBottomOf="@id/buttonAddCardToDb"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/buttonDeleteCardFromDb"
+        app:layout_constraintTop_toBottomOf="@id/editTextId"
+        android:text="Удалить карту из базы данных по id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/buttonGetCard"
+        app:layout_constraintTop_toBottomOf="@id/buttonDeleteCardFromDb"
+        android:text="Получить карту из базы данных по id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/buttonGetAllCards"
+        app:layout_constraintTop_toBottomOf="@id/buttonGetCard"
+        android:text="Получить все карты"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
