@@ -1,26 +1,12 @@
-package com.example.tracker.presentation
+package com.example.tracker.presentation.activity
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import com.example.tracker.R
-import com.example.tracker.data.CardDatabase
-import com.example.tracker.data.CardDbModel
-import com.example.tracker.data.CardRepositoryImpl
 import com.example.tracker.databinding.ActivityMainBinding
-import com.example.tracker.domain.AddCard
-import com.example.tracker.domain.Card
-import com.example.tracker.domain.DeleteCard
-import com.example.tracker.domain.GetAllCards
-import com.example.tracker.domain.GetCard
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,9 +24,5 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-    }
-
-    companion object {
-        private const val TAG = "MainActivityTestBd"
     }
 }

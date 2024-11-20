@@ -1,4 +1,4 @@
-package com.example.tracker.data
+package com.example.tracker.data.dbEntity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,4 +11,5 @@ data class CardDbModel(
     val name: String,
     val description: String,
     val deadline: Int,
+    val groupName: String
 )
