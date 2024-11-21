@@ -1,4 +1,4 @@
-package com.example.tracker.domain.entity
+package com.example.tracker.domain.entities
 
 data class Card(
     val id: Int = 0,

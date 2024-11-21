@@ -1,7 +1,7 @@
 package com.example.tracker.domain.repository
 
-import com.example.tracker.domain.entity.Card
-import com.example.tracker.domain.entity.Group
+import com.example.tracker.domain.entities.Card
+import com.example.tracker.domain.entities.Group
 
 interface Repository {
 
