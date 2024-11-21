@@ -36,4 +36,13 @@ class RepositoryImpl(application: Application) : Repository {
     override suspend fun addGroup(group: Group) {
         groupDao.addGroup(GroupMapper.mapGroupToGroupDbModel(group))
     }
+
+    override suspend fun deleteGroup(groupName: String) {
+        groupDao.deleteGroup(groupName)
+        cardDao.deleteCardsByGroupName(groupName)
+    }
+
+    override suspend fun deleteCardsByGroupName(groupName: String) {
+        cardDao.deleteCardsByGroupName(groupName)
+    }
 }

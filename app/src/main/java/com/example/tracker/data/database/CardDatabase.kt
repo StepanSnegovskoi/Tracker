@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.tracker.data.dbEntity.CardDbModel
-import com.example.tracker.data.dbEntity.GroupDbModel
+import com.example.tracker.data.entity.CardDbModel
+import com.example.tracker.data.entity.GroupDbModel
 import com.example.tracker.data.dao.CardDao
 import com.example.tracker.data.dao.GroupDao
 

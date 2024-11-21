@@ -1,7 +1,6 @@
-package com.example.tracker.data.dbEntity
+package com.example.tracker.data.entity
 
 import androidx.room.Entity
-import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "cards")

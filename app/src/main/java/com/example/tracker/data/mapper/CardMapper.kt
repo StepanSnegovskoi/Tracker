@@ -1,6 +1,6 @@
 package com.example.tracker.data.mapper
 
-import com.example.tracker.data.dbEntity.CardDbModel
+import com.example.tracker.data.entity.CardDbModel
 import com.example.tracker.domain.entity.Card
 
 object CardMapper {

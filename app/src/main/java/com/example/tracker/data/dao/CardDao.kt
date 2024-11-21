@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.tracker.data.dbEntity.CardDbModel
+import com.example.tracker.data.entity.CardDbModel
 
 @Dao
 interface CardDao {
@@ -15,12 +15,15 @@ interface CardDao {
     @Query("DELETE FROM cards WHERE id = :id")
     suspend fun delete(id: Int)
 
+    @Query("DELETE FROM cards WHERE groupName = :groupName")
+    suspend fun deleteCardsByGroupName(groupName: String)
+
     @Query("SELECT * FROM cards WHERE id = :id")
     suspend fun getCard(id: Int): CardDbModel
 
-    @Query("SELECT * FROM cards WHERE cards.groupName = :groupName")
+    @Query("SELECT * FROM cards WHERE groupName = :groupName")
     suspend fun getCardsByGroupName(groupName: String): List<CardDbModel>
 
-    @Query("DELETE FROM cards WHERE id < 100")
+    @Query("DELETE FROM cards WHERE id < 1000")
     suspend fun clear()
 }

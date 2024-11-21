@@ -1,6 +1,6 @@
 package com.example.tracker.data.mapper
 
-import com.example.tracker.data.dbEntity.GroupDbModel
+import com.example.tracker.data.entity.GroupDbModel
 import com.example.tracker.domain.entity.Group
 
 object GroupMapper {

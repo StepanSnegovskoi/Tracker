@@ -13,7 +13,11 @@ interface Repository {
 
     suspend fun getAllCardsByGroupName(groupName: String): List<Card>
 
+    suspend fun deleteCardsByGroupName(groupName: String)
+
     suspend fun addGroup(group: Group)
 
     suspend fun getAllGroups(): List<Group>
+
+    suspend fun deleteGroup(groupName: String)
 }
