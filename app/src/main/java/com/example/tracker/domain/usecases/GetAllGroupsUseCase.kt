@@ -1,9 +1,10 @@
-package com.example.tracker.domain.logic
+package com.example.tracker.domain.usecases
 
 import com.example.tracker.domain.repository.Repository
-import com.example.tracker.domain.entity.Group
+import com.example.tracker.domain.entities.Group
+import javax.inject.Inject
 
-class GetAllGroups(
+class GetAllGroupsUseCase @Inject constructor(
     private val repository: Repository
 ) {
 

@@ -55,6 +55,9 @@ dependencies {
     implementation ("com.google.dagger:dagger:2.52")
     ksp ("com.google.dagger:dagger-compiler:2.52")
 
+    // ViewModelScope
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+
 
 
     implementation(libs.androidx.core.ktx)

@@ -1,9 +1,10 @@
-package com.example.tracker.data.mapper
+package com.example.tracker.data.mappers
 
-import com.example.tracker.data.entity.CardDbModel
-import com.example.tracker.domain.entity.Card
+import com.example.tracker.data.entities.CardDbModel
+import com.example.tracker.domain.entities.Card
+import javax.inject.Inject
 
-object CardMapper {
+class CardMapper @Inject constructor() {
     fun mapCardDbModelToCard(cardDbModel: CardDbModel): Card {
         return Card(
             id = cardDbModel.id,

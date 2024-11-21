@@ -4,13 +4,13 @@ import android.app.Application
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.tracker.data.entity.CardDbModel
-import com.example.tracker.data.entity.GroupDbModel
+import com.example.tracker.data.entities.CardDbModel
+import com.example.tracker.data.entities.GroupDbModel
 import com.example.tracker.data.dao.CardDao
 import com.example.tracker.data.dao.GroupDao
 
 @Database(entities = [CardDbModel::class, GroupDbModel::class], version = 3, exportSchema = false)
-abstract class CardDatabase : RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     abstract fun cardDao(): CardDao
     abstract fun groupDao(): GroupDao
@@ -18,10 +18,10 @@ abstract class CardDatabase : RoomDatabase() {
     companion object {
 
         private const val DB_NAME = "appDb.db"
-        private var instance: CardDatabase? = null
+        private var instance: AppDatabase? = null
         private val lock = Any()
 
-        fun getInstance(application: Application): CardDatabase {
+        fun getInstance(application: Application): AppDatabase {
             instance?.let {
                 return it
             }
@@ -33,7 +33,7 @@ abstract class CardDatabase : RoomDatabase() {
 
                 Room.databaseBuilder(
                     application,
-                    CardDatabase::class.java,
+                    AppDatabase::class.java,
                     DB_NAME
                 ).fallbackToDestructiveMigration()
                     .build()

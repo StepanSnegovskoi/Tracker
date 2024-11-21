@@ -1,4 +1,4 @@
-package com.example.tracker.data.entity
+package com.example.tracker.data.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

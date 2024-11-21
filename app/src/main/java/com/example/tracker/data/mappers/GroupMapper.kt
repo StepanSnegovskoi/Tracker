@@ -1,9 +1,10 @@
-package com.example.tracker.data.mapper
+package com.example.tracker.data.mappers
 
-import com.example.tracker.data.entity.GroupDbModel
-import com.example.tracker.domain.entity.Group
+import com.example.tracker.data.entities.GroupDbModel
+import com.example.tracker.domain.entities.Group
+import javax.inject.Inject
 
-object GroupMapper {
+class GroupMapper @Inject constructor() {
     fun mapGroupDbModelToGroup(cardDbModel: GroupDbModel): Group {
         return Group(
             name = cardDbModel.name

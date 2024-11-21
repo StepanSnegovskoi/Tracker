@@ -1,8 +1,9 @@
-package com.example.tracker.domain.logic
+package com.example.tracker.domain.usecases
 
 import com.example.tracker.domain.repository.Repository
+import javax.inject.Inject
 
-class DeleteGroup(
+class DeleteGroupUseCase @Inject constructor(
     private val repository: Repository
 ) {
 
