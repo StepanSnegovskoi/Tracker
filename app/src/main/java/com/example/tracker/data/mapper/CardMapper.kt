@@ -1,15 +1,16 @@
-package com.example.tracker.data
+package com.example.tracker.data.mapper
 
-import com.example.tracker.domain.Card
+import com.example.tracker.data.entity.CardDbModel
+import com.example.tracker.domain.entity.Card
 
 object CardMapper {
-
     fun mapCardDbModelToCard(cardDbModel: CardDbModel): Card {
         return Card(
             id = cardDbModel.id,
             name = cardDbModel.name,
             description = cardDbModel.description,
             deadline = cardDbModel.deadline,
+            groupName = cardDbModel.groupName,
         )
     }
 
@@ -19,6 +20,7 @@ object CardMapper {
             name = card.name,
             description = card.description,
             deadline = card.deadline,
+            groupName = card.groupName,
         )
     }
 

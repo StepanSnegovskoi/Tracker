@@ -1,18 +1,23 @@
-package com.example.tracker.data
+package com.example.tracker.data.database
 
 import android.app.Application
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.tracker.data.entity.CardDbModel
+import com.example.tracker.data.entity.GroupDbModel
+import com.example.tracker.data.dao.CardDao
+import com.example.tracker.data.dao.GroupDao
 
-@Database(entities = [CardDbModel::class], version = 1, exportSchema = false)
+@Database(entities = [CardDbModel::class, GroupDbModel::class], version = 3, exportSchema = false)
 abstract class CardDatabase : RoomDatabase() {
 
-    abstract fun dao(): CardDao
+    abstract fun cardDao(): CardDao
+    abstract fun groupDao(): GroupDao
 
     companion object {
 
-        private const val DB_NAME = "cards.db"
+        private const val DB_NAME = "appDb.db"
         private var instance: CardDatabase? = null
         private val lock = Any()
 
@@ -30,7 +35,8 @@ abstract class CardDatabase : RoomDatabase() {
                     application,
                     CardDatabase::class.java,
                     DB_NAME
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                     .apply {
                         instance = this
                         return this
