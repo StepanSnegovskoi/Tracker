@@ -9,7 +9,7 @@ import com.example.tracker.data.dbEntity.GroupDbModel
 import com.example.tracker.data.dao.CardDao
 import com.example.tracker.data.dao.GroupDao
 
-@Database(entities = [CardDbModel::class, GroupDbModel::class], version = 2, exportSchema = false)
+@Database(entities = [CardDbModel::class, GroupDbModel::class], version = 3, exportSchema = false)
 abstract class CardDatabase : RoomDatabase() {
 
     abstract fun cardDao(): CardDao
