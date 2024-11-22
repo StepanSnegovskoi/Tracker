@@ -10,6 +10,7 @@ import com.example.tracker.R
 import com.example.tracker.databinding.ActivityMainBinding
 import com.example.tracker.domain.repository.Repository
 import com.example.tracker.presentation.App
+import com.example.tracker.presentation.fragments.FragmentAddGroup
 import com.example.tracker.presentation.viewmodelfactory.ViewModelFactory
 import com.example.tracker.presentation.viewmodels.MainViewModel
 import kotlinx.coroutines.Dispatchers
@@ -50,5 +51,25 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FragmentAddGroup.newInstance("1", "2"), null).commit()
+
     }
 }
+
+/*
+        var flag = false
+        binding.linearLayoutCard.setOnClickListener {
+            when (flag) {
+
+                false -> {
+                    binding.textViewDescription.visibility = View.GONE
+                    flag = true
+                }
+
+                true -> {
+                    binding.textViewDescription.visibility = View.VISIBLE
+                    flag = false
+                }
+            }
+        }
+ */
