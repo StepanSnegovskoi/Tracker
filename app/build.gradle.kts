@@ -51,13 +51,12 @@ dependencies {
     // Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Dagger
-    implementation ("com.google.dagger:dagger:2.52")
-    ksp ("com.google.dagger:dagger-compiler:2.52")
-
     // ViewModelScope
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
+    // Dagger
+    implementation ("com.google.dagger:dagger:2.52")
+    ksp ("com.google.dagger:dagger-compiler:2.52")
 
 
     implementation(libs.androidx.core.ktx)
