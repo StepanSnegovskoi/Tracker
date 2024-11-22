@@ -6,13 +6,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import com.example.tracker.R
 import com.example.tracker.databinding.ActivityMainBinding
-import com.example.tracker.domain.repository.Repository
+import com.example.tracker.domain.entities.Card
+import com.example.tracker.domain.useCases.AddCardUseCase
 import com.example.tracker.presentation.App
-import com.example.tracker.presentation.fragments.FragmentAddGroup
-import com.example.tracker.presentation.viewmodelfactory.ViewModelFactory
-import com.example.tracker.presentation.viewmodels.MainViewModel
+import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
+import com.example.tracker.presentation.viewModels.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,12 +23,15 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelFactory
-
     private val component by lazy {
         (application as App).component
     }
+
+    @Inject
+    lateinit var addCardUseCase: AddCardUseCase
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
 
     @Inject
     lateinit var viewModel: MainViewModel
@@ -45,31 +51,47 @@ class MainActivity : AppCompatActivity() {
         }
 
         component.inject(this)
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                viewModel.log()
-            }
-        }
 
-        supportFragmentManager.beginTransaction().replace(R.id.fragmentContainer, FragmentAddGroup.newInstance("1", "2"), null).commit()
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+
+        val navController: NavController = navHostFragment.navController
+
+        NavigationUI.setupWithNavController(binding.bottomNavigationView, navController)
+
+
 
     }
 }
 
-/*
-        var flag = false
-        binding.linearLayoutCard.setOnClickListener {
-            when (flag) {
-
-                false -> {
-                    binding.textViewDescription.visibility = View.GONE
-                    flag = true
-                }
-
-                true -> {
-                    binding.textViewDescription.visibility = View.VISIBLE
-                    flag = false
-                }
+/* Добавить карты
+lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+                addCardUseCase(
+                    Card(
+                        name = "Card1",
+                        groupName = "gyy",
+                        description = "description1",
+                        deadline = 2
+                    )
+                )
+                addCardUseCase(
+                    Card(
+                        name = "Card2",
+                        groupName = "gyy",
+                        description = "description2",
+                        deadline = 1
+                    )
+                )
+                addCardUseCase(
+                    Card(
+                        name = "Card3",
+                        groupName = "gyy",
+                        description = "description3",
+                        deadline = 3
+                    )
+                )
             }
         }
  */
+

@@ -1,4 +1,4 @@
-package com.example.tracker.presentation.viewmodelfactory
+package com.example.tracker.presentation.viewModelFactories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

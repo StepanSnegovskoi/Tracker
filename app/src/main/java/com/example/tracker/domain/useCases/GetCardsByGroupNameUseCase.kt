@@ -1,4 +1,4 @@
-package com.example.tracker.domain.usecases
+package com.example.tracker.domain.useCases
 
 import com.example.tracker.domain.entities.Card
 import com.example.tracker.domain.repository.Repository

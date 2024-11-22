@@ -9,7 +9,7 @@ import com.example.tracker.data.entities.GroupDbModel
 @Dao
 interface GroupDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addGroup(group: GroupDbModel)
 
     @Query("SELECT * FROM groups")
