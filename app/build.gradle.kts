@@ -62,6 +62,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
     implementation ("androidx.navigation:navigation-ui:2.8.4")
 
+    // ?
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
