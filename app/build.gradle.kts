@@ -58,6 +58,10 @@ dependencies {
     implementation ("com.google.dagger:dagger:2.52")
     ksp ("com.google.dagger:dagger-compiler:2.52")
 
+    // Jetpack Navigation
+    implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
+    implementation ("androidx.navigation:navigation-ui:2.8.4")
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
