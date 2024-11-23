@@ -6,9 +6,5 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.tracker.R
 
 class GroupViewHolder(item: View) : RecyclerView.ViewHolder(item) {
-    private val first = item.findViewById<TextView>(R.id.textViewGroupName)
-
-    fun bind(name: String) {
-        first.text = name
-    }
+    val groupName = item.findViewById<TextView>(R.id.textViewGroupName)
 }

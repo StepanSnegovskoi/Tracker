@@ -1,11 +1,14 @@
 package com.example.tracker.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.tracker.R
 import com.example.tracker.databinding.FragmentGroupsBinding
 import com.example.tracker.presentation.App
 import com.example.tracker.presentation.recyclerView.adapters.GroupAdapter
@@ -58,6 +61,11 @@ class FragmentGroups : Fragment() {
             recyclerViewGroups.layoutManager = LinearLayoutManager(activity)
             recyclerViewGroups.adapter = adapter
         }
+
+        adapter.onGroupClick = {
+            findNavController().navigate(FragmentGroupsDirections.actionFragmentGroupsToFragmentHome(it))
+        }
+        
         super.onViewCreated(view, savedInstanceState)
     }
 }

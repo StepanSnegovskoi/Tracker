@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -10,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tracker"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -61,10 +62,6 @@ dependencies {
     // Jetpack Navigation
     implementation ("androidx.navigation:navigation-fragment-ktx:2.8.4")
     implementation ("androidx.navigation:navigation-ui:2.8.4")
-
-    // ?
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

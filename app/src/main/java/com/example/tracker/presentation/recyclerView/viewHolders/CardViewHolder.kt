@@ -11,5 +11,4 @@ class CardViewHolder(item: View) : RecyclerView.ViewHolder(item) {
     val name = item.findViewById<TextView>(R.id.textViewName)
     val description = item.findViewById<TextView>(R.id.textViewDescription)
     val deadline = item.findViewById<TextView>(R.id.textViewDeadline)
-
 }

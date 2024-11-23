@@ -9,7 +9,12 @@
         android:id="@+id/fragmentHome"
         android:name="com.example.tracker.presentation.fragments.FragmentHome"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <argument
+            android:name="groupName"
+            app:argType="string"
+            android:defaultValue="DefaultValue" />
+    </fragment>
     <fragment
         android:id="@+id/fragmentAddGroup"
         android:name="com.example.tracker.presentation.fragments.FragmentAddGroup"
@@ -18,5 +23,9 @@
         android:id="@+id/fragmentGroups"
         android:name="com.example.tracker.presentation.fragments.FragmentGroups"
         android:label="fragment_groups"
-        tools:layout="@layout/fragment_groups" />
+        tools:layout="@layout/fragment_groups" >
+        <action
+            android:id="@+id/action_fragmentGroups_to_fragmentHome"
+            app:destination="@id/fragmentHome" />
+    </fragment>
 </navigation>
