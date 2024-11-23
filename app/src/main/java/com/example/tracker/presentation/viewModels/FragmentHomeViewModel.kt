@@ -20,16 +20,13 @@ class FragmentHomeViewModel @Inject constructor(
     val listCards: LiveData<List<Card>>
         get() = _listCards
 
-    init {
-        viewModelScope.launch {
-            withContext(Dispatchers.Main) {
-                _listCards.value = firstLoadCards("gyy")
+    suspend fun getCardsByName(groupName: String) {
+        withContext(Dispatchers.IO) {
+            getCardsByGroupNameUseCase(groupName).let {
+                withContext(Dispatchers.Main) {
+                    _listCards.value = it
+                }
             }
         }
-
-    }
-
-    private suspend fun firstLoadCards(groupName: String): List<Card>{
-        return getCardsByGroupNameUseCase(groupName)
     }
 }

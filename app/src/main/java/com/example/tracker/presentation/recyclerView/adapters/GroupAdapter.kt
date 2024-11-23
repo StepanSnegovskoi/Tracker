@@ -11,6 +11,9 @@ import com.example.tracker.presentation.recyclerView.viewHolders.GroupViewHolder
 class GroupAdapter : ListAdapter<Group, GroupViewHolder>(
     GroupDiffCallback()
 ) {
+
+    var onGroupClick: ((String) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupViewHolder {
 
         LayoutInflater.from(parent.context).inflate(
@@ -23,6 +26,13 @@ class GroupAdapter : ListAdapter<Group, GroupViewHolder>(
     }
 
     override fun onBindViewHolder(viewHolder: GroupViewHolder, position: Int) {
-        viewHolder.bind(currentList[position].name)
+        val groupName = viewHolder.groupName
+        groupName.text = currentList[position].name
+
+        groupName.setOnClickListener {
+            onGroupClick?.invoke(currentList[position].name)
+        }
     }
+
+
 }
