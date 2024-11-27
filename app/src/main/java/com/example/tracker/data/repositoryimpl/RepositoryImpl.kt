@@ -20,8 +20,11 @@ class RepositoryImpl @Inject constructor(
         cardDao.add(cardMapper.mapCardToCardDbModel(card))
     }
 
-    override suspend fun deleteCard(id: Int) {
-        cardDao.delete(id)
+    override suspend fun deleteCardAndReturnIt(id: Int): Card {
+        getCard(id).let {
+            cardDao.delete(id)
+            return it
+        }
     }
 
     override suspend fun getCard(id: Int): Card {

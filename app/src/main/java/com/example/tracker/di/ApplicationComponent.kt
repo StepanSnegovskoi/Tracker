@@ -2,6 +2,7 @@ package com.example.tracker.di
 
 import android.app.Application
 import com.example.tracker.presentation.activities.MainActivity
+import com.example.tracker.presentation.fragments.FragmentAddCard
 import com.example.tracker.presentation.fragments.FragmentAddGroup
 import com.example.tracker.presentation.fragments.FragmentGroups
 import com.example.tracker.presentation.fragments.FragmentHome
@@ -18,7 +19,9 @@ interface ApplicationComponent {
 
     fun inject(fragment: FragmentGroups)
 
-    fun inject(fragment: FragmentHome)
+    fun inject(fragment: FragmentHome
+    )
+    fun inject(fragment: FragmentAddCard)
 
     @Component.Factory
     interface Factory {

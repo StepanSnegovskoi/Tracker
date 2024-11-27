@@ -1,6 +1,8 @@
 package com.example.tracker.di
 
 import androidx.lifecycle.ViewModel
+import com.example.tracker.presentation.fragments.FragmentAddCard
+import com.example.tracker.presentation.viewModels.FragmentAddCardViewModel
 import com.example.tracker.presentation.viewModels.FragmentAddGroupViewModel
 import com.example.tracker.presentation.viewModels.FragmentGroupsViewModel
 import com.example.tracker.presentation.viewModels.FragmentHomeViewModel
@@ -31,4 +33,9 @@ interface ViewModuleModule {
     @IntoMap
     @ViewModelKey(FragmentHomeViewModel::class)
     fun bindFragmentHomeViewModel(viewModel: FragmentHomeViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(FragmentAddCardViewModel::class)
+    fun bindFragmentAddCardViewModel(viewModel: FragmentAddCardViewModel): ViewModel
 }

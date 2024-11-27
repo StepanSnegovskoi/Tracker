@@ -27,16 +27,14 @@ class MainActivity : AppCompatActivity() {
         (application as App).component
     }
 
-    @Inject
-    lateinit var addCardUseCase: AddCardUseCase
-
+/*
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
     @Inject
     lateinit var viewModel: MainViewModel
-
-    private val binding by lazy {
+*/
+    val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 

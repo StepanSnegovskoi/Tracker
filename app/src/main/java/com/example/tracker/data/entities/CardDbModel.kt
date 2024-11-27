@@ -10,6 +10,6 @@ data class CardDbModel(
     val id: Int = 0,
     val name: String,
     val description: String,
-    val deadline: Int,
+    val deadline: String,
     val groupName: String
 )

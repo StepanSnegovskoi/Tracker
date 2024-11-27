@@ -6,14 +6,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.tracker.R
 import com.example.tracker.databinding.FragmentGroupsBinding
 import com.example.tracker.presentation.App
+import com.example.tracker.presentation.recyclerView.adapters.CardAdapter
 import com.example.tracker.presentation.recyclerView.adapters.GroupAdapter
 import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
 import com.example.tracker.presentation.viewModels.FragmentGroupsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class FragmentGroups : Fragment() {
@@ -65,7 +72,43 @@ class FragmentGroups : Fragment() {
         adapter.onGroupClick = {
             findNavController().navigate(FragmentGroupsDirections.actionFragmentGroupsToFragmentHome(it))
         }
+
+        adapter.onImageDeleteClick = {
+            Toast.makeText(
+                activity,
+                "За удалением группы последует удаление всех карточек с ней связанных, вы уверены?",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        setupItemTouchHelper(adapter)
         
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    private fun setupItemTouchHelper(adapter: GroupAdapter){
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val group = adapter.currentList[position]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    viewModel.deleteGroup(group.name)
+                    viewModel.loadGroups()
+                }
+            }
+        }).apply {
+            attachToRecyclerView(binding!!.recyclerViewGroups)
+        }
     }
 }
