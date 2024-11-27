@@ -13,7 +13,7 @@
         <argument
             android:name="groupName"
             app:argType="string"
-            android:defaultValue="DefaultValue" />
+            android:defaultValue=" " />
     </fragment>
     <fragment
         android:id="@+id/fragmentAddGroup"
@@ -27,5 +27,14 @@
         <action
             android:id="@+id/action_fragmentGroups_to_fragmentHome"
             app:destination="@id/fragmentHome" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentAddCard"
+        android:name="com.example.tracker.presentation.fragments.FragmentAddCard"
+        android:label="fragment_add_card"
+        tools:layout="@layout/fragment_add_card" >
+        <argument
+            android:name="groupName"
+            app:argType="string" />
     </fragment>
 </navigation>

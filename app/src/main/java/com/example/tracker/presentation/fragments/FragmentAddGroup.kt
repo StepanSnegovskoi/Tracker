@@ -9,8 +9,8 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.tracker.databinding.FragmentAddGroupBinding
 import com.example.tracker.presentation.App
-import com.example.tracker.presentation.sealed.Error
-import com.example.tracker.presentation.sealed.GroupName
+import com.example.tracker.presentation.sealed.framentAddGroup.Error
+import com.example.tracker.presentation.sealed.framentAddGroup.GroupName
 import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
 import com.example.tracker.presentation.viewModels.FragmentAddGroupViewModel
 import kotlinx.coroutines.launch
@@ -52,7 +52,6 @@ class FragmentAddGroup : Fragment() {
         }
     }
 
-    // OnCreateView -> binding = this
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding!!.buttonAddGroup.setOnClickListener {
             lifecycleScope.launch {
@@ -60,7 +59,7 @@ class FragmentAddGroup : Fragment() {
             }
         }
 
-        viewModel.stateFragmentAdd.observe(viewLifecycleOwner) {
+        viewModel.state.observe(viewLifecycleOwner) {
             when(it){
                 is Error -> showToast(it.text)
                 is GroupName -> showToast("Группа ${it.groupName} успешно добавлена")

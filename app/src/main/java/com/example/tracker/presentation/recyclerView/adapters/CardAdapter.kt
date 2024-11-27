@@ -1,6 +1,7 @@
 package com.example.tracker.presentation.recyclerView.adapters
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.example.tracker.R
@@ -24,9 +25,19 @@ class CardAdapter : ListAdapter<Card, CardViewHolder>(
 
     override fun onBindViewHolder(viewHolder: CardViewHolder, position: Int) {
         val card = currentList[position]
-        viewHolder.name.text = card.name
-        viewHolder.description.text = card.description
-        viewHolder.deadline.text = card.deadline.toString()
 
+        with(viewHolder) {
+            name.text = card.name
+            description.text = card.description
+            description.visibility = View.GONE
+            deadline.text = card.deadline
+
+            itemView.setOnClickListener {
+                when (description.visibility) {
+                    View.GONE -> description.visibility = View.VISIBLE
+                    else -> description.visibility = View.GONE
+                }
+            }
+        }
     }
 }
