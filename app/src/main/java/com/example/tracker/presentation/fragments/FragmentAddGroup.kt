@@ -20,20 +20,20 @@ import javax.inject.Inject
 class FragmentAddGroup : Fragment() {
 
     private val component by lazy {
-        (activity?.application as App).component
+        (requireActivity().application as App).component
     }
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private var binding: FragmentAddGroupBinding? = null
+    lateinit var binding: FragmentAddGroupBinding
 
     @Inject
     lateinit var viewModel: FragmentAddGroupViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
+        component.inject(this)
     }
 
     override fun onCreateView(
@@ -41,6 +41,7 @@ class FragmentAddGroup : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
 
         FragmentAddGroupBinding.inflate(
             inflater,
@@ -53,9 +54,10 @@ class FragmentAddGroup : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding!!.buttonAddGroup.setOnClickListener {
+        super.onViewCreated(view, savedInstanceState)
+        binding.buttonAddGroup.setOnClickListener {
             lifecycleScope.launch {
-                viewModel.addGroup(binding!!.tietHint.text.toString())
+                viewModel.addGroup(binding.tietHint.text.toString())
             }
         }
 
@@ -66,7 +68,6 @@ class FragmentAddGroup : Fragment() {
             }
         }
 
-        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun showToast(text: String) {

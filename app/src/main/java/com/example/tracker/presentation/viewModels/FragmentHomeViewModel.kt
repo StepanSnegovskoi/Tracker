@@ -29,10 +29,10 @@ class FragmentHomeViewModel @Inject constructor(
         get() = _listCards
 
     suspend fun getCardsByName(groupName: String) {
-        withContext(Dispatchers.IO) {
-            getCardsByGroupNameUseCase(groupName).let {
+        viewModelScope.launch {
+            getCardsByGroupNameUseCase(groupName).apply {
                 withContext(Dispatchers.Main) {
-                    _listCards.value = it
+                    _listCards.value = this@apply
                 }
             }
         }

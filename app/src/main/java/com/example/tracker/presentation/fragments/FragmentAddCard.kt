@@ -32,11 +32,11 @@ class FragmentAddCard : Fragment() {
     @Inject
     lateinit var viewModel: FragmentAddCardViewModel
 
-    private var binding: FragmentAddCardBinding? = null
+    lateinit var binding: FragmentAddCardBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
+        component.inject(this)
     }
 
     override fun onCreateView(
@@ -44,6 +44,7 @@ class FragmentAddCard : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
 
         FragmentAddCardBinding.inflate(
             inflater,
@@ -56,7 +57,8 @@ class FragmentAddCard : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        with(binding!!) {
+        super.onViewCreated(view, savedInstanceState)
+        with(binding) {
             buttonAddCard.setOnClickListener {
                 val name = textInputEditTextCardName.text.toString()
                 val description = textInputEditTextCardDescription.text.toString()
@@ -74,7 +76,7 @@ class FragmentAddCard : Fragment() {
 
             viewModel.state.observe(viewLifecycleOwner) {
                 when (it) {
-                    AddCard -> {
+                    is AddCard -> {
                         Toast.makeText(
                             activity,
                             "Карточка успешно добавлена",
@@ -91,8 +93,6 @@ class FragmentAddCard : Fragment() {
                     }
                 }
             }
-
-            super.onViewCreated(view, savedInstanceState)
         }
     }
 }

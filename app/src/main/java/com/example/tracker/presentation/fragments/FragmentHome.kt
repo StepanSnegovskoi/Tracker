@@ -32,7 +32,7 @@ class FragmentHome : Fragment() {
 
     private val deleted = mutableListOf<Card>()
 
-    private var binding: FragmentHomeBinding? = null
+    lateinit var binding: FragmentHomeBinding
 
     private val args by navArgs<FragmentHomeArgs>()
 
@@ -47,8 +47,8 @@ class FragmentHome : Fragment() {
     lateinit var viewModel: FragmentHomeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
+        component.inject(this)
     }
 
     override fun onCreateView(
@@ -56,6 +56,7 @@ class FragmentHome : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
 
         FragmentHomeBinding.inflate(
             inflater,
@@ -69,16 +70,18 @@ class FragmentHome : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val adapter = CardAdapter()
         viewModel.listCards.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
-        with(binding!!) {
+
+        with(binding) {
             recyclerViewCards.layoutManager = LinearLayoutManager(activity)
             recyclerViewCards.adapter = adapter
         }
 
-        binding!!.textViewGroupNameMain.text = args.groupName
+        binding.textViewGroupNameMain.text = args.groupName
 
         viewModel.listDeleted.observe(viewLifecycleOwner) {
             it.forEach {
@@ -90,7 +93,7 @@ TODO ПОСЛЕДНИЙ ЭЛЕМЕНТ ПОЧЕМУ ТО ПРИ УДАЛЕНИИ
  */
 
 
-        binding!!.textViewReturnDeletedCards.setOnClickListener {
+        binding.textViewReturnDeletedCards.setOnClickListener {
             val job = lifecycleScope.launch {
                 deleted.forEach {
                     viewModel.returnCard(it)
@@ -111,7 +114,6 @@ TODO ПОСЛЕДНИЙ ЭЛЕМЕНТ ПОЧЕМУ ТО ПРИ УДАЛЕНИИ
 
         setupItemTouchHelper(adapter)
 
-        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun setupItemTouchHelper(adapter: CardAdapter) {
@@ -136,7 +138,7 @@ TODO ПОСЛЕДНИЙ ЭЛЕМЕНТ ПОЧЕМУ ТО ПРИ УДАЛЕНИИ
                 }
             }
         }).apply {
-            attachToRecyclerView(binding!!.recyclerViewCards)
+            attachToRecyclerView(binding.recyclerViewCards)
         }
     }
 }

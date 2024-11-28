@@ -29,7 +29,7 @@ class FragmentGroups : Fragment() {
         (requireActivity().application as App).component
     }
 
-    private var binding: FragmentGroupsBinding? = null
+    lateinit var binding: FragmentGroupsBinding
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -38,8 +38,8 @@ class FragmentGroups : Fragment() {
     lateinit var viewModel: FragmentGroupsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
+        component.inject(this)
     }
 
     override fun onCreateView(
@@ -47,6 +47,7 @@ class FragmentGroups : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
 
         FragmentGroupsBinding.inflate(
             inflater,
@@ -60,11 +61,12 @@ class FragmentGroups : Fragment() {
 
     // OnCreateView -> binding = this
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val adapter = GroupAdapter()
         viewModel.listGroups.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
-        with(binding!!){
+        with(binding){
             recyclerViewGroups.layoutManager = LinearLayoutManager(activity)
             recyclerViewGroups.adapter = adapter
         }
@@ -82,8 +84,7 @@ class FragmentGroups : Fragment() {
         }
 
         setupItemTouchHelper(adapter)
-        
-        super.onViewCreated(view, savedInstanceState)
+
     }
 
     private fun setupItemTouchHelper(adapter: GroupAdapter){
@@ -108,7 +109,7 @@ class FragmentGroups : Fragment() {
                 }
             }
         }).apply {
-            attachToRecyclerView(binding!!.recyclerViewGroups)
+            attachToRecyclerView(binding.recyclerViewGroups)
         }
     }
 }
