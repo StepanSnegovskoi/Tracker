@@ -6,34 +6,32 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import com.example.tracker.databinding.FragmentAddGroupBinding
 import com.example.tracker.presentation.App
-import com.example.tracker.presentation.sealed.framentAddGroup.Error
-import com.example.tracker.presentation.sealed.framentAddGroup.GroupName
+import com.example.tracker.presentation.sealed.fragmentAddGroup.Error
+import com.example.tracker.presentation.sealed.fragmentAddGroup.GroupName
 import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
 import com.example.tracker.presentation.viewModels.FragmentAddGroupViewModel
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 class FragmentAddGroup : Fragment() {
 
     private val component by lazy {
-        (activity?.application as App).component
+        (requireActivity().application as App).component
     }
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private var binding: FragmentAddGroupBinding? = null
+    lateinit var binding: FragmentAddGroupBinding
 
     @Inject
     lateinit var viewModel: FragmentAddGroupViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        component.inject(this)
         super.onCreate(savedInstanceState)
+        component.inject(this)
     }
 
     override fun onCreateView(
@@ -41,6 +39,7 @@ class FragmentAddGroup : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        super.onCreateView(inflater, container, savedInstanceState)
 
         FragmentAddGroupBinding.inflate(
             inflater,
@@ -53,20 +52,17 @@ class FragmentAddGroup : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding!!.buttonAddGroup.setOnClickListener {
-            lifecycleScope.launch {
-                viewModel.addGroup(binding!!.tietHint.text.toString())
-            }
+        super.onViewCreated(view, savedInstanceState)
+        binding.buttonAddGroup.setOnClickListener {
+            viewModel.addGroup(binding.textInputLayoutHint.text.toString())
         }
 
         viewModel.state.observe(viewLifecycleOwner) {
             when(it){
-                is Error -> showToast(it.text)
+                is Error -> showToast(it.errorText)
                 is GroupName -> showToast("Группа ${it.groupName} успешно добавлена")
             }
         }
-
-        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun showToast(text: String) {

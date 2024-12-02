@@ -4,7 +4,7 @@ import com.example.tracker.domain.entities.Card
 import com.example.tracker.domain.repository.Repository
 import javax.inject.Inject
 
-class DeleteCardUseCase @Inject constructor(
+class DeleteCardAndReturnItUseCase @Inject constructor(
     private val repository: Repository
 ) {
 

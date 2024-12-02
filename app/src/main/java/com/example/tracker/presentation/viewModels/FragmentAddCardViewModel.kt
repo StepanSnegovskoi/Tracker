@@ -1,7 +1,6 @@
 package com.example.tracker.presentation.viewModels
 
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +13,6 @@ import com.example.tracker.presentation.sealed.fragmentAddCard.Error
 import com.example.tracker.presentation.sealed.fragmentAddCard.State
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -28,7 +26,7 @@ class FragmentAddCardViewModel @Inject constructor(
     val state: LiveData<State>
         get() = _state
 
-    suspend fun addCard(
+    fun addCard(
         name: String,
         description: String,
         deadline: String,
@@ -36,15 +34,14 @@ class FragmentAddCardViewModel @Inject constructor(
     ) {
         val result = viewModelScope.async {
             withContext(Dispatchers.IO) {
-                checkEnteredParams(name, description, deadline, groupName)
+                checkEnteredParams(name, groupName)
             }
-        }.await()
+        }
 
+        viewModelScope.launch(Dispatchers.IO) {
 
-        when (result) {
-
-            true -> {
-                viewModelScope.launch(Dispatchers.IO) {
+            when (result.await()) {
+                true -> {
                     addCardUseCase(
                         Card(
                             name = name,
@@ -57,18 +54,18 @@ class FragmentAddCardViewModel @Inject constructor(
                         _state.value = AddCard
                     }
                 }
-            }
 
-            false -> {
-                _state.value = Error("Название некорректно или группа не существует")
+                false -> {
+                    withContext(Dispatchers.Main) {
+                        _state.value = Error("Название некорректно или группа не существует")
+                    }
+                }
             }
         }
     }
 
     private suspend fun checkEnteredParams(
         name: String,
-        description: String,
-        deadline: String,
         groupName: String,
     ): Boolean {
         if (name.isBlank() or groupName.isBlank()) return false

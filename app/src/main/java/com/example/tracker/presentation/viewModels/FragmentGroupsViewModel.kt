@@ -4,11 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tracker.R
-import com.example.tracker.domain.entities.Group
 import com.example.tracker.domain.useCases.DeleteGroupUseCase
 import com.example.tracker.domain.useCases.GetAllGroupsUseCase
-import com.example.tracker.presentation.fragments.FragmentGroups
+import com.example.tracker.presentation.sealed.fragmentGroups.LoadGroups
+import com.example.tracker.presentation.sealed.fragmentGroups.State
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,9 +18,9 @@ class FragmentGroupsViewModel @Inject constructor(
     private val deleteGroupUseCase: DeleteGroupUseCase
 ) : ViewModel() {
 
-    private val _listGroups: MutableLiveData<List<Group>> = MutableLiveData()
-    val listGroups: LiveData<List<Group>>
-        get() = _listGroups
+    private val _state: MutableLiveData<State> = MutableLiveData()
+    val state: LiveData<State>
+        get() = _state
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -29,15 +28,18 @@ class FragmentGroupsViewModel @Inject constructor(
         }
     }
 
-    suspend fun deleteGroup(groupName: String){
-        deleteGroupUseCase(groupName)
+    fun deleteGroup(groupName: String){
+        viewModelScope.launch (Dispatchers.IO) {
+            deleteGroupUseCase(groupName)
+            loadGroups()
+        }
     }
 
-    suspend fun loadGroups() {
+    private fun loadGroups() {
         viewModelScope.launch {
             getAllGroupsUseCase().apply {
                 withContext(Dispatchers.Main){
-                    _listGroups.value = this@apply
+                    _state.value = LoadGroups(this@apply)
                 }
             }
         }

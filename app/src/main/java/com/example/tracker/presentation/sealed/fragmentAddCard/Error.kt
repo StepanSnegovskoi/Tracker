@@ -1,3 +1,3 @@
 package com.example.tracker.presentation.sealed.fragmentAddCard
 
-class Error(val text: String) : State()
+class Error(val errorText: String) : State()
