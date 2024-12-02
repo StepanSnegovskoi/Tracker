@@ -6,18 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.example.tracker.R
 import com.example.tracker.databinding.FragmentAddCardBinding
-import com.example.tracker.databinding.FragmentAddGroupBinding
 import com.example.tracker.presentation.App
 import com.example.tracker.presentation.sealed.fragmentAddCard.AddCard
 import com.example.tracker.presentation.sealed.fragmentAddCard.Error
 import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
 import com.example.tracker.presentation.viewModels.FragmentAddCardViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FragmentAddCard : Fragment() {
@@ -64,14 +58,12 @@ class FragmentAddCard : Fragment() {
                 val description = textInputEditTextCardDescription.text.toString()
                 val deadline = textInputEditTextCardDeadline.text.toString()
                 val groupName = textInputEditTextCardGroupName.text.toString()
-                lifecycleScope.launch {
-                    viewModel.addCard(
-                        name = name,
-                        description = description,
-                        deadline = deadline,
-                        groupName = groupName,
-                    )
-                }
+                viewModel.addCard(
+                    name = name,
+                    description = description,
+                    deadline = deadline,
+                    groupName = groupName,
+                )
             }
 
             viewModel.state.observe(viewLifecycleOwner) {
@@ -87,7 +79,7 @@ class FragmentAddCard : Fragment() {
                     is Error -> {
                         Toast.makeText(
                             activity,
-                            it.text,
+                            it.errorText,
                             Toast.LENGTH_SHORT
                         ).show()
                     }

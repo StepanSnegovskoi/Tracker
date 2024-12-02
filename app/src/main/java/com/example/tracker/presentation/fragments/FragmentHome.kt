@@ -1,36 +1,24 @@
 package com.example.tracker.presentation.fragments
 
-import android.content.ClipData.Item
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.tracker.R
 import com.example.tracker.databinding.FragmentHomeBinding
-import com.example.tracker.domain.entities.Card
 import com.example.tracker.presentation.App
-import com.example.tracker.presentation.activities.MainActivity
 import com.example.tracker.presentation.recyclerView.adapters.CardAdapter
-import com.example.tracker.presentation.recyclerView.adapters.GroupAdapter
+import com.example.tracker.presentation.sealed.fragmentHome.LoadCards
 import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
 import com.example.tracker.presentation.viewModels.FragmentHomeViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 class FragmentHome : Fragment() {
-
-    private val deleted = mutableListOf<Card>()
 
     lateinit var binding: FragmentHomeBinding
 
@@ -72,8 +60,12 @@ class FragmentHome : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = CardAdapter()
-        viewModel.listCards.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+        viewModel.state.observe(viewLifecycleOwner) {
+            when(it) {
+                is LoadCards -> {
+                    adapter.submitList(it.cards.toList())
+                }
+            }
         }
 
         with(binding) {
@@ -83,34 +75,11 @@ class FragmentHome : Fragment() {
 
         binding.textViewGroupNameMain.text = args.groupName
 
-        viewModel.listDeleted.observe(viewLifecycleOwner) {
-            it.forEach {
-                deleted.add(it)
-            }
-        }
-/*
-TODO ПОСЛЕДНИЙ ЭЛЕМЕНТ ПОЧЕМУ ТО ПРИ УДАЛЕНИИ СВАЙПОМ СТАНОВИТСЯ НЕВИДИМЫМ, ПОТОМ ВИДИМЫМ И ТОЛЬКО ПОТОМ СДВИИГАЕТСЯ, НУЖНО РЕШИТЬ ЭТУ ПРОБЛЕМУ
- */
-
-
         binding.textViewReturnDeletedCards.setOnClickListener {
-            val job = lifecycleScope.launch {
-                deleted.forEach {
-                    viewModel.returnCard(it)
-                }
-            }
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    job.join()
-                    viewModel.getCardsByName(args.groupName)
-                    deleted.clear()
-                }
-            }
+            viewModel.returnCards(args.groupName)
         }
 
-        lifecycleScope.launch {
-            viewModel.getCardsByName(args.groupName)
-        }
+        viewModel.loadGroups(args.groupName)
 
         setupItemTouchHelper(adapter)
 
@@ -132,10 +101,7 @@ TODO ПОСЛЕДНИЙ ЭЛЕМЕНТ ПОЧЕМУ ТО ПРИ УДАЛЕНИИ
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val card = adapter.currentList[position]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    viewModel.deleteCardById(card.id)
-                    viewModel.getCardsByName(args.groupName)
-                }
+                viewModel.deleteCardById(card.id)
             }
         }).apply {
             attachToRecyclerView(binding.recyclerViewCards)
