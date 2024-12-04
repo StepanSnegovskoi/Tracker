@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.tracker.presentation.fragments.FragmentAddCard
 import com.example.tracker.presentation.viewModels.FragmentAddCardViewModel
 import com.example.tracker.presentation.viewModels.FragmentAddGroupViewModel
+import com.example.tracker.presentation.viewModels.FragmentEditCardViewModel
 import com.example.tracker.presentation.viewModels.FragmentGroupsViewModel
 import com.example.tracker.presentation.viewModels.FragmentHomeViewModel
 import com.example.tracker.presentation.viewModels.MainViewModel
@@ -38,4 +39,9 @@ interface ViewModuleModule {
     @IntoMap
     @ViewModelKey(FragmentAddCardViewModel::class)
     fun bindFragmentAddCardViewModel(viewModel: FragmentAddCardViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(FragmentEditCardViewModel::class)
+    fun bindFragmentEditCardViewModel(viewModel: FragmentEditCardViewModel): ViewModel
 }

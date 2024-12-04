@@ -26,7 +26,7 @@ class FragmentAddCard : Fragment() {
     @Inject
     lateinit var viewModel: FragmentAddCardViewModel
 
-    lateinit var binding: FragmentAddCardBinding
+    private lateinit var binding: FragmentAddCardBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,14 +44,21 @@ class FragmentAddCard : Fragment() {
             inflater,
             container,
             false
-        ).apply {
-            binding = this
-            return this.root
+        ).let {
+            binding = it
+            return it.root
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupButtonClickListener()
+
+        observeViewModel()
+    }
+
+    private fun setupButtonClickListener() {
         with(binding) {
             buttonAddCard.setOnClickListener {
                 val name = textInputEditTextCardName.text.toString()
@@ -65,24 +72,26 @@ class FragmentAddCard : Fragment() {
                     groupName = groupName,
                 )
             }
+        }
+    }
 
-            viewModel.state.observe(viewLifecycleOwner) {
-                when (it) {
-                    is AddCard -> {
-                        Toast.makeText(
-                            activity,
-                            "Карточка успешно добавлена",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+    private fun observeViewModel(){
+        viewModel.state.observe(viewLifecycleOwner) {
+            when (it) {
+                is AddCard -> {
+                    Toast.makeText(
+                        activity,
+                        "Карточка успешно добавлена",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
 
-                    is Error -> {
-                        Toast.makeText(
-                            activity,
-                            it.errorText,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                is Error -> {
+                    Toast.makeText(
+                        activity,
+                        it.errorText,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

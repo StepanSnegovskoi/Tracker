@@ -23,4 +23,7 @@ interface CardDao {
 
     @Query("SELECT * FROM cards WHERE groupName = :groupName")
     suspend fun getCardsByGroupName(groupName: String): List<CardDbModel>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun edit(cardDbModel: CardDbModel)
 }

@@ -14,6 +14,9 @@
             android:name="groupName"
             app:argType="string"
             android:defaultValue=" " />
+        <action
+            android:id="@+id/action_fragmentHome_to_fragmentEditCard"
+            app:destination="@id/fragmentEditCard" />
     </fragment>
     <fragment
         android:id="@+id/fragmentAddGroup"
@@ -36,5 +39,14 @@
         <argument
             android:name="groupName"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentEditCard"
+        android:name="com.example.tracker.presentation.fragments.FragmentEditCard"
+        android:label="fragment_edit_card"
+        tools:layout="@layout/fragment_edit_card" >
+        <argument
+            android:name="card"
+            app:argType="com.example.tracker.domain.entities.Card" />
     </fragment>
 </navigation>

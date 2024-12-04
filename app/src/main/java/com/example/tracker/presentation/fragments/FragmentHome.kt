@@ -1,10 +1,12 @@
 package com.example.tracker.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,7 +22,7 @@ import javax.inject.Inject
 
 class FragmentHome : Fragment() {
 
-    lateinit var binding: FragmentHomeBinding
+    private lateinit var binding: FragmentHomeBinding
 
     private val args by navArgs<FragmentHomeArgs>()
 
@@ -50,9 +52,9 @@ class FragmentHome : Fragment() {
             inflater,
             container,
             false
-        ).apply {
-            binding = this
-            return this.root
+        ).let {
+            binding = it
+            return it.root
         }
 
     }
@@ -60,29 +62,20 @@ class FragmentHome : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = CardAdapter()
-        viewModel.state.observe(viewLifecycleOwner) {
-            when(it) {
-                is LoadCards -> {
-                    adapter.submitList(it.cards.toList())
-                }
-            }
-        }
 
-        with(binding) {
-            recyclerViewCards.layoutManager = LinearLayoutManager(activity)
-            recyclerViewCards.adapter = adapter
-        }
+        observeViewModel(adapter)
 
-        binding.textViewGroupNameMain.text = args.groupName
+        setupRecyclerView(adapter)
 
-        binding.textViewReturnDeletedCards.setOnClickListener {
-            viewModel.returnCards(args.groupName)
-        }
+        bindCardGroupName()
 
-        viewModel.loadGroups(args.groupName)
+        setupReturningDeletedCardsClickListener()
+
+        loadGroups()
 
         setupItemTouchHelper(adapter)
 
+        setupOnCardLongClickListener(adapter)
     }
 
     private fun setupItemTouchHelper(adapter: CardAdapter) {
@@ -106,5 +99,50 @@ class FragmentHome : Fragment() {
         }).apply {
             attachToRecyclerView(binding.recyclerViewCards)
         }
+    }
+
+    private fun observeViewModel(adapter: CardAdapter) {
+        viewModel.state.observe(viewLifecycleOwner) {
+            when (it) {
+                is LoadCards -> {
+                    adapter.submitList(it.cards.toList())
+                }
+            }
+        }
+    }
+
+    private fun setupRecyclerView(adapter: CardAdapter) {
+        with(binding) {
+            recyclerViewCards.layoutManager = LinearLayoutManager(activity)
+            recyclerViewCards.adapter = adapter
+        }
+    }
+
+    private fun loadGroups() {
+        viewModel.loadCards(args.groupName)
+    }
+
+    private fun bindCardGroupName() {
+        binding.textViewGroupNameMain.text = args.groupName
+    }
+
+    private fun setupReturningDeletedCardsClickListener() {
+        binding.textViewReturnDeletedCards.setOnClickListener {
+            viewModel.returnCards(args.groupName)
+        }
+    }
+
+    private fun setupOnCardLongClickListener(adapter: CardAdapter) {
+        adapter.onCardLongClickListener = {
+            findNavController().navigate(
+                FragmentHomeDirections.actionFragmentHomeToFragmentEditCard(
+                    it
+                )
+            )
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
     }
 }

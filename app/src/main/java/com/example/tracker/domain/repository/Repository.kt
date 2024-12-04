@@ -20,4 +20,6 @@ interface Repository {
     suspend fun getAllGroups(): List<Group>
 
     suspend fun deleteGroup(groupName: String)
+
+    suspend fun editCard(card: Card)
 }
