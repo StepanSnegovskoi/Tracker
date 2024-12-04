@@ -24,7 +24,7 @@ class FragmentAddGroup : Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    lateinit var binding: FragmentAddGroupBinding
+    private lateinit var binding: FragmentAddGroupBinding
 
     @Inject
     lateinit var viewModel: FragmentAddGroupViewModel
@@ -45,24 +45,18 @@ class FragmentAddGroup : Fragment() {
             inflater,
             container,
             false
-        ).apply {
-            binding = this
-            return this.root
+        ).let {
+            binding = it
+            return it.root
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.buttonAddGroup.setOnClickListener {
-            viewModel.addGroup(binding.textInputLayoutHint.text.toString())
-        }
 
-        viewModel.state.observe(viewLifecycleOwner) {
-            when(it){
-                is Error -> showToast(it.errorText)
-                is GroupName -> showToast("Группа ${it.groupName} успешно добавлена")
-            }
-        }
+        setupButtonClickListener()
+
+        observeViewModel()
     }
 
     private fun showToast(text: String) {
@@ -71,5 +65,20 @@ class FragmentAddGroup : Fragment() {
             text,
             Toast.LENGTH_SHORT
         ).show()
+    }
+
+    private fun observeViewModel(){
+        viewModel.state.observe(viewLifecycleOwner) {
+            when(it){
+                is Error -> showToast(it.errorText)
+                is GroupName -> showToast("Группа ${it.groupName} успешно добавлена")
+            }
+        }
+    }
+
+    private fun setupButtonClickListener() {
+        binding.buttonAddGroup.setOnClickListener {
+            viewModel.addGroup(binding.textInputLayoutHint.text.toString())
+        }
     }
 }

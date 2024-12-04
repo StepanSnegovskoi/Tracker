@@ -52,7 +52,7 @@ class FragmentHomeViewModel @Inject constructor(
         }
     }
 
-    fun loadGroups(groupName: String){
+    fun loadCards(groupName: String){
         getCardsByName(groupName)
     }
 
@@ -72,13 +72,3 @@ class FragmentHomeViewModel @Inject constructor(
         }.await()
     }
 }
-/*
-fun returnCards(card: Card) {
-        viewModelScope.launch (Dispatchers.IO) {
-            getCardsByName(card.groupName)
-            withContext(Dispatchers.Main){
-                _state.value = LoadCards(allCards)
-            }
-        }
-    }
- */

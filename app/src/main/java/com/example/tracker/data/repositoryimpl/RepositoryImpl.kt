@@ -51,4 +51,8 @@ class RepositoryImpl @Inject constructor(
     override suspend fun deleteCardsByGroupName(groupName: String) {
         cardDao.deleteCardsByGroupName(groupName)
     }
+
+    override suspend fun editCard(card: Card) {
+        cardDao.edit(cardMapper.mapCardToCardDbModel(card))
+    }
 }

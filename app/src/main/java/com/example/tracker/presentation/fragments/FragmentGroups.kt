@@ -24,7 +24,7 @@ class FragmentGroups : Fragment() {
         (requireActivity().application as App).component
     }
 
-    lateinit var binding: FragmentGroupsBinding
+    private lateinit var binding: FragmentGroupsBinding
 
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
@@ -48,46 +48,28 @@ class FragmentGroups : Fragment() {
             inflater,
             container,
             false
-        ).apply {
-            binding = this
-            return this.root
+        ).let {
+            binding = it
+            return it.root
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = GroupAdapter()
-        viewModel.state.observe(viewLifecycleOwner) {
-            when(it) {
 
-                is LoadGroups -> {
-                    adapter.submitList(it.cards)
-                }
-            }
+        observeViewModel(adapter)
 
-        }
-        with(binding){
-            recyclerViewGroups.layoutManager = LinearLayoutManager(activity)
-            recyclerViewGroups.adapter = adapter
-        }
+        setupRecyclerView(adapter)
 
-        adapter.onGroupClick = {
-            findNavController().navigate(FragmentGroupsDirections.actionFragmentGroupsToFragmentHome(it))
-        }
+        setupOnGroupClickListener(adapter)
 
-        adapter.onImageDeleteClick = {
-            Toast.makeText(
-                activity,
-                "За удалением группы последует удаление всех карточек с ней связанных, вы уверены?",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        setupOnImageClickListener(adapter)
 
         setupItemTouchHelper(adapter)
-
     }
 
-    private fun setupItemTouchHelper(adapter: GroupAdapter){
+    private fun setupItemTouchHelper(adapter: GroupAdapter) {
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
@@ -107,6 +89,45 @@ class FragmentGroups : Fragment() {
             }
         }).apply {
             attachToRecyclerView(binding.recyclerViewGroups)
+        }
+    }
+
+    private fun observeViewModel(adapter: GroupAdapter) {
+        viewModel.state.observe(viewLifecycleOwner) {
+            when (it) {
+
+                is LoadGroups -> {
+                    adapter.submitList(it.cards)
+                }
+            }
+
+        }
+    }
+
+    private fun setupRecyclerView(adapter: GroupAdapter) {
+        with(binding) {
+            recyclerViewGroups.layoutManager = LinearLayoutManager(activity)
+            recyclerViewGroups.adapter = adapter
+        }
+    }
+
+    private fun setupOnGroupClickListener(adapter: GroupAdapter){
+        adapter.onGroupClick = {
+            findNavController().navigate(
+                FragmentGroupsDirections.actionFragmentGroupsToFragmentHome(
+                    it
+                )
+            )
+        }
+    }
+
+    private fun setupOnImageClickListener(adapter: GroupAdapter) {
+        adapter.onImageDeleteClick = {
+            Toast.makeText(
+                activity,
+                "За удалением группы последует удаление всех карточек с ней связанных, вы уверены?",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
