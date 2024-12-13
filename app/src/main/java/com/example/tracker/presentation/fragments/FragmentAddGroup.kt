@@ -1,11 +1,14 @@
 package com.example.tracker.presentation.fragments
 
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import com.example.tracker.databinding.FragmentAddGroupBinding
 import com.example.tracker.presentation.App
 import com.example.tracker.presentation.sealed.fragmentAddGroup.Error
@@ -63,16 +66,20 @@ class FragmentAddGroup : Fragment() {
         Toast.makeText(
             context,
             text,
-            Toast.LENGTH_SHORT
+            Toast.LENGTH_LONG
         ).show()
     }
 
-    private fun observeViewModel(){
+    private fun observeViewModel() {
         viewModel.state.observe(viewLifecycleOwner) {
-            when(it){
+            when (it) {
                 is Error -> showToast(it.errorText)
-                is GroupName -> showToast("Группа ${it.groupName} успешно добавлена")
+                is GroupName -> {
+                    showToast("Группа ${it.groupName} успешно добавлена")
+                    reset()
+                }
             }
+            closeKeyboard()
         }
     }
 
@@ -80,5 +87,18 @@ class FragmentAddGroup : Fragment() {
         binding.buttonAddGroup.setOnClickListener {
             viewModel.addGroup(binding.textInputLayoutHint.text.toString())
         }
+    }
+
+    private fun reset() {
+        binding.textInputLayoutHint.setText("")
+    }
+
+    private fun closeKeyboard(){
+        val imm = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        var view = requireActivity().currentFocus
+        if (view == null) {
+            view = View(activity)
+        }
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

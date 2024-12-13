@@ -13,7 +13,6 @@ class GroupAdapter : ListAdapter<Group, GroupViewHolder>(
 ) {
 
     var onGroupClick: ((String) -> Unit)? = null
-    var onImageDeleteClick: ((String) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GroupViewHolder {
 
@@ -28,15 +27,10 @@ class GroupAdapter : ListAdapter<Group, GroupViewHolder>(
 
     override fun onBindViewHolder(viewHolder: GroupViewHolder, position: Int) {
         val groupName = viewHolder.groupName
-        val imageViewDelete = viewHolder.imageViewDelete
         groupName.text = currentList[position].name
 
         groupName.setOnClickListener {
             onGroupClick?.invoke(currentList[position].name)
-        }
-
-        imageViewDelete.setOnClickListener {
-            onImageDeleteClick?.invoke(currentList[position].name)
         }
     }
 }

@@ -8,5 +8,4 @@ import com.example.tracker.R
 
 class GroupViewHolder(item: View) : RecyclerView.ViewHolder(item) {
     val groupName = item.findViewById<TextView>(R.id.textViewGroupName)
-    val imageViewDelete = item.findViewById<ImageView>(R.id.imageViewDeleteGroup)
 }

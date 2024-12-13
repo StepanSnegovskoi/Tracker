@@ -44,22 +44,83 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/editTextAddCardDeadline"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/linearLayoutDate"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
+        android:weightSum="10"
         app:layout_constraintTop_toBottomOf="@id/editTextAddCardDescription">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textInputEditTextCardDeadline"
-            android:layout_width="match_parent"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutDate"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="Deadline: " />
+            android:layout_margin="4dp"
+            android:layout_weight="8">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputEditTextDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="DD-MM-YYYY"
+                android:inputType="datetime" />
+
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonSetDate"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:layout_weight="2"
+            android:padding="4dp"
+            android:text="Date"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="10"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutDate">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:layout_weight="8">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/textInputEditTextTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="MM:SS"
+                android:inputType="datetime" />
+
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonSetTime"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:layout_weight="2"
+            android:padding="4dp"
+            android:text="Time"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/editTextAddCardGroupName"
@@ -68,7 +129,7 @@
         android:layout_margin="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextAddCardDeadline">
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTime">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/textInputEditTextCardGroupName"

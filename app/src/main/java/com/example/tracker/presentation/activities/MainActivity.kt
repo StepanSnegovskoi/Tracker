@@ -1,25 +1,27 @@
 package com.example.tracker.presentation.activities
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Intent
+import android.icu.util.Calendar
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import com.example.tracker.R
 import com.example.tracker.databinding.ActivityMainBinding
-import com.example.tracker.domain.entities.Card
-import com.example.tracker.domain.useCases.AddCardUseCase
 import com.example.tracker.presentation.App
-import com.example.tracker.presentation.viewModelFactories.ViewModelFactory
-import com.example.tracker.presentation.viewModels.MainViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
+import com.example.tracker.presentation.alarmReceiver.AlarmReceiver
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat.CLOCK_24H
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,14 +29,14 @@ class MainActivity : AppCompatActivity() {
         (application as App).component
     }
 
-/*
-    @Inject
-    lateinit var viewModelFactory: ViewModelFactory
+    /*
+        @Inject
+        lateinit var viewModelFactory: ViewModelFactory
 
-    @Inject
-    lateinit var viewModel: MainViewModel
-*/
-    val binding by lazy {
+        @Inject
+        lateinit var viewModel: MainViewModel
+    */
+    private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
 
@@ -50,46 +52,13 @@ class MainActivity : AppCompatActivity() {
 
         component.inject(this)
 
+        setupBottomNavigation()
+    }
+
+    private fun setupBottomNavigation() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-
         val navController: NavController = navHostFragment.navController
-
         NavigationUI.setupWithNavController(binding.bottomNavigationView, navController)
-
-
-
     }
 }
-
-/* Добавить карты
-lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-                addCardUseCase(
-                    Card(
-                        name = "Card1",
-                        groupName = "gyy",
-                        description = "description1",
-                        deadline = 2
-                    )
-                )
-                addCardUseCase(
-                    Card(
-                        name = "Card2",
-                        groupName = "gyy",
-                        description = "description2",
-                        deadline = 1
-                    )
-                )
-                addCardUseCase(
-                    Card(
-                        name = "Card3",
-                        groupName = "gyy",
-                        description = "description3",
-                        deadline = 3
-                    )
-                )
-            }
-        }
- */
-

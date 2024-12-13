@@ -21,7 +21,11 @@
     <fragment
         android:id="@+id/fragmentAddGroup"
         android:name="com.example.tracker.presentation.fragments.FragmentAddGroup"
-        android:label="FragmentAddGroup" />
+        android:label="FragmentAddGroup" >
+        <action
+            android:id="@+id/action_fragmentAddGroup_to_fragmentGroups"
+            app:destination="@id/fragmentGroups" />
+    </fragment>
     <fragment
         android:id="@+id/fragmentGroups"
         android:name="com.example.tracker.presentation.fragments.FragmentGroups"

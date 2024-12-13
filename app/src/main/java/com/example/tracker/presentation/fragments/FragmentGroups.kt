@@ -1,6 +1,7 @@
 package com.example.tracker.presentation.fragments
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -64,8 +65,6 @@ class FragmentGroups : Fragment() {
 
         setupOnGroupClickListener(adapter)
 
-        setupOnImageClickListener(adapter)
-
         setupItemTouchHelper(adapter)
     }
 
@@ -112,22 +111,14 @@ class FragmentGroups : Fragment() {
     }
 
     private fun setupOnGroupClickListener(adapter: GroupAdapter){
+        Log.d("TEST231", "setupOnGroupClickListener")
         adapter.onGroupClick = {
+            Log.d("TEST231", "onGroupClick")
             findNavController().navigate(
                 FragmentGroupsDirections.actionFragmentGroupsToFragmentHome(
                     it
                 )
             )
-        }
-    }
-
-    private fun setupOnImageClickListener(adapter: GroupAdapter) {
-        adapter.onImageDeleteClick = {
-            Toast.makeText(
-                activity,
-                "За удалением группы последует удаление всех карточек с ней связанных, вы уверены?",
-                Toast.LENGTH_SHORT
-            ).show()
         }
     }
 }
