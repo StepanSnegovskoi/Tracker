@@ -53,6 +53,7 @@ dependencies {
 
     // Dagger
     implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

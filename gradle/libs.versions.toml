@@ -34,6 +34,7 @@ mvikotlin-ext = { group = "com.arkivanov.mvikotlin", name = "mvikotlin-extension
 decompose = { group = "com.arkivanov.decompose", name = "decompose", version.ref = "decompose" }
 decompose-ext = { group = "com.arkivanov.decompose", name = "extensions-compose", version.ref = "decompose" }
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
