@@ -49,6 +49,7 @@ dependencies {
 
     // Decompose
     implementation(libs.decompose)
+    implementation(libs.decompose.ext)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
