@@ -47,6 +47,9 @@ dependencies {
     implementation(libs.mvikotlin.main)
     implementation(libs.mvikotlin.ext)
 
+    // Decompose
+    implementation(libs.decompose)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
