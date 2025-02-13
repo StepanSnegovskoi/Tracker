@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    kotlin("plugin.serialization") version "2.1.0"
 }
 
 android {
@@ -40,6 +42,27 @@ android {
 }
 
 dependencies {
+
+    // MVIKotlin
+    implementation(libs.mvikotlin)
+    implementation(libs.mvikotlin.main)
+    implementation(libs.mvikotlin.ext)
+
+    // Decompose
+    implementation(libs.decompose)
+    implementation(libs.decompose.ext)
+
+    // Dagger
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
+
+    // Room
+    implementation(libs.room)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    // Gson
+    implementation(libs.gson)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
