@@ -57,6 +57,7 @@ dependencies {
 
     // Room
     implementation(libs.room)
+    implementation(libs.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
