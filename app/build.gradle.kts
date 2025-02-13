@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.decompose)
     implementation(libs.decompose.ext)
 
+    // Dagger
+    implementation(libs.dagger)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
