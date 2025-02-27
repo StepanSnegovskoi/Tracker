@@ -7,5 +7,6 @@ data class Task(
     val name: String,
     val description: String,
     val isCompleted: Boolean,
-    val addingTime: Calendar
+    val addingTime: Calendar,
+    val deadline: Calendar
 )
