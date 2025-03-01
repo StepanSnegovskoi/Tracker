@@ -1,6 +1,5 @@
 package com.example.trackernew.presentation.add.task
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,15 +14,14 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+
+val items = listOf("Математика", "КГ", "Диффуры")
 
 @Preview
 @Composable
@@ -33,89 +31,117 @@ fun AddTaskContent() {
             .fillMaxSize()
     ) {
         Column {
-            OutlinedTextFieldName()
-            OutlinedTextFieldDescription()
+            OutlinedTextFieldNameWithMenu()
+            OutlinedTextFieldDescriptionWithMenu()
             OutlinedTextFieldDeadline()
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OutlinedTextFieldName() {
-    var expanded by remember {
+fun OutlinedTextFieldNameWithMenu() {
+    val expanded = remember {
         mutableStateOf(false)
     }
-    ExposedDropdownMenuBox(
+    Menu(
         expanded = expanded,
-        onExpandedChange = {
-
-        }
-    ) {
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
-            readOnly = true,
-            label = {
-                Text(text = "Название")
-            },
-            trailingIcon = {
-                Icon(
-                    modifier = Modifier
-                        .clickable {
-                            expanded = !expanded
-                        },
-                    imageVector = Icons.Default.KeyboardArrowUp,
-                    contentDescription = null,
-
-                    )
-            },
-            value = "",
-            onValueChange = {
-
-            }
-        )
-
-        DropdownMenu(
-            modifier = Modifier
-                .fillMaxWidth(),
-            expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-            }
-        ) {
-            DropdownMenuItem(
-                text = {
-                    Text(text = "Математика")
-                },
-                onClick = {
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = {
-                    Text(text = "КГ")
-                },
-                onClick = {
-                    expanded = false
+        items = items,
+        onDismissRequest = {
+            expanded.value = false
+        },
+        onItemClick = {
+            expanded.value = false
+        },
+        content = { modifier ->
+            OutlinedTextFieldName(
+                modifier = modifier,
+                onIconClick = {
+                    expanded.value = !expanded.value
                 }
             )
         }
-    }
+    )
 }
 
 @Composable
-fun OutlinedTextFieldDescription() {
+fun OutlinedTextFieldName(
+    modifier: Modifier = Modifier,
+    onIconClick: () -> Unit
+) {
     OutlinedTextField(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .then(modifier),
+        readOnly = true,
         label = {
-            Text(text = "Описание")
+            Text(text = "Название")
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onIconClick()
+                    },
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+            )
         },
         value = "",
         onValueChange = {
+        }
+    )
+}
 
+@Composable
+fun OutlinedTextFieldDescriptionWithMenu() {
+    val expanded = remember {
+        mutableStateOf(false)
+    }
+    Menu(
+        expanded = expanded,
+        items = items,
+        onDismissRequest = {
+            expanded.value = false
+        },
+        onItemClick = {
+            expanded.value = false
+        },
+        content = { modifier ->
+            OutlinedTextFieldDescription (
+                modifier = modifier,
+                onIconClick = {
+                    expanded.value = !expanded.value
+                }
+            )
+        }
+    )
+}
+
+@Composable
+fun OutlinedTextFieldDescription(
+    modifier: Modifier = Modifier,
+    onIconClick: () -> Unit
+) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
+        readOnly = true,
+        label = {
+            Text(text = "Описание")
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onIconClick()
+                    },
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+            )
+        },
+        value = "",
+        onValueChange = {
         }
     )
 }
@@ -133,4 +159,42 @@ fun OutlinedTextFieldDeadline() {
 
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Menu(
+    expanded: State<Boolean>,
+    items: List<String>,
+    onDismissRequest: () -> Unit,
+    onItemClick: () -> Unit,
+    content: @Composable (Modifier) -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded.value,
+        onExpandedChange = {
+        }
+    ) {
+        content(Modifier.menuAnchor())
+
+        DropdownMenu(
+            modifier = Modifier
+                .fillMaxWidth(),
+            expanded = expanded.value,
+            onDismissRequest = {
+                onDismissRequest()
+            }
+        ) {
+            items.forEach {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = it)
+                    },
+                    onClick = {
+                        onItemClick()
+                    }
+                )
+            }
+        }
+    }
 }
