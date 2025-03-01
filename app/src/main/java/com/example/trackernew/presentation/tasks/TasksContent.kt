@@ -1,11 +1,13 @@
 package com.example.trackernew.presentation.tasks
 
+import android.util.EventLogTags.Description
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +25,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -147,32 +151,51 @@ private fun TaskItem(
                 )
             }
 
+            AnimatedDescriptionAndDeadline(
+                task = task,
+                state = stateDescription
+            )
 
-            AnimatedVisibility(
-                visible = stateDescription.value,
-            ) {
-                Column {
-                    Text(text = task.description)
-                    Row(
-                        modifier = Modifier
-                            .padding(end = 4.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = task.addingTime.toDateString(),
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = "-",
-                            fontSize = 12.sp)
-                        Text(
-                            text = task.deadline.toDateString(),
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            }
         }
+    }
+}
+
+@Composable
+fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>) {
+    AnimatedVisibility(
+        visible = state.value,
+    ) {
+        Column {
+            Description(task = task)
+            Deadline(task = task)
+        }
+    }
+}
+
+@Composable
+fun Description(task: Task) {
+    Text(text = task.description)
+}
+
+@Composable
+fun Deadline(task: Task) {
+    Row(
+        modifier = Modifier
+            .padding(end = 4.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = task.addingTime.toDateString(),
+            fontSize = 12.sp
+        )
+        Text(
+            text = "-",
+            fontSize = 12.sp
+        )
+        Text(
+            text = task.deadline.toDateString(),
+            fontSize = 12.sp
+        )
     }
 }
