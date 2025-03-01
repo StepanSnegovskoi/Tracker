@@ -1,6 +1,5 @@
 package com.example.trackernew.presentation.tasks
 
-import android.util.EventLogTags.Description
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,13 +18,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
+import com.example.trackernew.presentation.utils.sortTypes
 import java.util.Calendar
 import kotlin.random.Random
 
@@ -68,13 +70,44 @@ private val tasks = buildList {
 @Preview
 @Composable
 fun TasksContent() {
+    val stateTopBar = remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Задачи")
+                    Row {
+                        Text(
+                            modifier = Modifier,
+                            fontSize = 20.sp,
+                            text = "Общее"
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Menu(
+                            expanded = stateTopBar,
+                            onDismissRequest = {
+                                stateTopBar.value = false
+                            },
+                            onItemClick = {
+                                stateTopBar.value = false
+                            },
+                            content = { modifier ->
+                                Text(
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .clickable {
+                                            stateTopBar.value = true
+                                        }
+                                        .then(modifier),
+                                    fontSize = 16.sp,
+                                    text = "По дате добавления"
+                                )
+                            }
+                        )
+                    }
                 }
             )
         }
@@ -198,5 +231,42 @@ fun Deadline(task: Task) {
             text = task.deadline.toDateString(),
             fontSize = 12.sp
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Menu(
+    expanded: State<Boolean>,
+    onDismissRequest: () -> Unit,
+    onItemClick: (String) -> Unit,
+    content: @Composable (Modifier) -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded.value,
+        onExpandedChange = {
+        }
+    ) {
+        content(Modifier.menuAnchor())
+
+        DropdownMenu(
+            modifier = Modifier
+                .fillMaxWidth(),
+            expanded = expanded.value,
+            onDismissRequest = {
+                onDismissRequest()
+            }
+        ) {
+            sortTypes.forEach {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = it.value)
+                    },
+                    onClick = {
+                        onItemClick(it.value)
+                    }
+                )
+            }
+        }
     }
 }
