@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.add.task
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,7 @@ fun AddTaskContent() {
         Column {
             OutlinedTextFieldNameWithMenu()
             OutlinedTextFieldDescriptionWithMenu()
-            OutlinedTextFieldDeadline()
+            OutlinedTextFieldDeadlineWithMenu()
         }
     }
 }
@@ -147,16 +148,55 @@ fun OutlinedTextFieldDescription(
 }
 
 @Composable
-fun OutlinedTextFieldDeadline() {
+fun OutlinedTextFieldDeadlineWithMenu() {
+    val expanded = remember {
+        mutableStateOf(false)
+    }
+    Menu(
+        expanded = expanded,
+        items = items,
+        onDismissRequest = {
+            expanded.value = false
+        },
+        onItemClick = {
+            expanded.value = false
+        },
+        content = { modifier ->
+            OutlinedTextFieldDeadline (
+                modifier = modifier,
+                onIconClick = {
+                    expanded.value = !expanded.value
+                }
+            )
+        }
+    )
+}
+
+@Composable
+fun OutlinedTextFieldDeadline(
+    modifier: Modifier = Modifier,
+    onIconClick: () -> Unit
+) {
     OutlinedTextField(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .then(modifier),
+        readOnly = true,
         label = {
             Text(text = "Дедлайн")
         },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onIconClick()
+                    },
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+            )
+        },
         value = "",
         onValueChange = {
-
         }
     )
 }
