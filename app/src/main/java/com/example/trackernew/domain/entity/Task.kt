@@ -8,6 +8,6 @@ data class Task(
     val description: String,
     val category: String,
     val isCompleted: Boolean,
-    val addingTime: Calendar,
-    val deadline: Calendar
+    val addingTime: Long,
+    val deadline: Long
 )
