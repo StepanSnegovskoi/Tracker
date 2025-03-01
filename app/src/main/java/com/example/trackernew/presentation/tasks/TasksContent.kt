@@ -55,6 +55,7 @@ private val tasks = buildList {
             """.trimMargin(),
                 isCompleted = Random.nextBoolean(),
                 addingTime = Calendar.getInstance(),
+                category = "category",
                 deadline = Calendar.getInstance().apply {
                     add(Calendar.DAY_OF_WEEK, 2)
                 },
