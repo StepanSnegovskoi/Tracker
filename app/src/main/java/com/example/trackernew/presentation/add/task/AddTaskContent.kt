@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -76,16 +77,17 @@ fun OutlinedTextFieldName() {
             }
         )
 
-        ExposedDropdownMenu(
-            modifier = Modifier,
+        DropdownMenu(
+            modifier = Modifier
+                .fillMaxWidth(),
             expanded = expanded,
             onDismissRequest = {
-
+                expanded = false
             }
         ) {
             DropdownMenuItem(
                 text = {
-                    Text(text = "text")
+                    Text(text = "Математика")
                 },
                 onClick = {
                     expanded = false
@@ -93,7 +95,7 @@ fun OutlinedTextFieldName() {
             )
             DropdownMenuItem(
                 text = {
-                    Text(text = "text")
+                    Text(text = "КГ")
                 },
                 onClick = {
                     expanded = false
