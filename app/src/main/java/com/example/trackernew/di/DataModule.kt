@@ -3,12 +3,18 @@ package com.example.trackernew.di
 import android.content.Context
 import com.example.trackernew.data.db.AppDatabase
 import com.example.trackernew.data.db.TasksDao
+import com.example.trackernew.data.repository.TasksRepositoryImpl
+import com.example.trackernew.domain.repository.TasksRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 
 @Module
 interface DataModule {
+
+    @ApplicationScope
+    @Binds
+    fun bindTasksRepository(tasksRepositoryImpl: TasksRepositoryImpl): TasksRepository
 
     companion object {
 
@@ -21,5 +27,4 @@ interface DataModule {
         @Provides
         fun provideTasksDao(database: AppDatabase): TasksDao = database.dao()
     }
-
 }
