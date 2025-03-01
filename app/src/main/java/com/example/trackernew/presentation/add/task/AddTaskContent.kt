@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -32,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
+
+private val items = listOf("item1", "item2", "item3", "item4")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -60,6 +66,8 @@ fun AddTaskContent() {
             OutlinedTextFieldDescription {
 
             }
+
+            OutlinedTextFieldCategoryWithMenu()
 
             val stateVisibleDatePicker = remember {
                 mutableStateOf(false)
@@ -128,6 +136,98 @@ fun OutlinedTextFieldName(
             onValueChange(it)
         }
     )
+}
+
+@Composable
+fun OutlinedTextFieldCategory(
+    modifier: Modifier = Modifier,
+    onIconClick: () -> Unit
+) {
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier),
+        readOnly = true,
+        label = {
+            Text(text = "Категория")
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onIconClick()
+                    },
+                imageVector = Icons.Default.KeyboardArrowUp,
+                contentDescription = null,
+            )
+        },
+        value = "",
+        onValueChange = {
+        }
+    )
+}
+
+@Composable
+fun OutlinedTextFieldCategoryWithMenu() {
+    val expanded = remember {
+        mutableStateOf(false)
+    }
+    Menu(
+        expanded = expanded,
+        items = items,
+        onDismissRequest = {
+            expanded.value = false
+        },
+        onItemClick = {
+            expanded.value = false
+        },
+        content = { modifier ->
+            OutlinedTextFieldCategory(
+                modifier = modifier,
+                onIconClick = {
+                    expanded.value = !expanded.value
+                }
+            )
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Menu(
+    expanded: State<Boolean>,
+    items: List<String>,
+    onDismissRequest: () -> Unit,
+    onItemClick: () -> Unit,
+    content: @Composable (Modifier) -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded.value,
+        onExpandedChange = {
+        }
+    ) {
+        content(Modifier.menuAnchor())
+
+        DropdownMenu(
+            modifier = Modifier
+                .fillMaxWidth(),
+            expanded = expanded.value,
+            onDismissRequest = {
+                onDismissRequest()
+            }
+        ) {
+            items.forEach {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = it)
+                    },
+                    onClick = {
+                        onItemClick()
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
