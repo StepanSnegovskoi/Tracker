@@ -7,7 +7,13 @@ import dagger.Component
 import dagger.Provides
 
 @ApplicationScope
-@Component(modules = [DataModule::class])
+@Component
+    (
+    modules = [
+        DataModule::class,
+        PresentationModule::class
+    ]
+)
 interface ApplicationComponent {
 
     fun inject(mainActivity: MainActivity)
