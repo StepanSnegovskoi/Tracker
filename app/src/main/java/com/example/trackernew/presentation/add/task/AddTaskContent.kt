@@ -122,6 +122,7 @@ fun OutlinedTextFieldName(
         label = {
             Text(text = "Название")
         },
+        colors = getOutlinedTextFieldColors(),
         value = "",
         onValueChange = {
             onValueChange(it)
@@ -139,6 +140,7 @@ fun OutlinedTextFieldDescription(
         label = {
             Text(text = "Описание")
         },
+        colors = getOutlinedTextFieldColors(),
         value = "",
         onValueChange = {
             onValueChange(it)
