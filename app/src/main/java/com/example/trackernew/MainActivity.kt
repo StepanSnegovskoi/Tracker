@@ -11,15 +11,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.decompose.defaultComponentContext
+import com.example.trackernew.presentation.root.DefaultRootComponent
+import com.example.trackernew.presentation.root.RootContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
+import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var rootComponent: DefaultRootComponent.Factory
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            TrackerNewTheme {
+        (application as App).component.inject(this)
 
-            }
+        val defaultComponentContext = defaultComponentContext()
+
+        setContent {
+            RootContent(component = rootComponent.create(defaultComponentContext))
         }
     }
 }
