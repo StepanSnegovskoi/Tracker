@@ -56,11 +56,11 @@ private val tasks = buildList {
                                 |Description Description Description
             """.trimMargin(),
                 isCompleted = Random.nextBoolean(),
-                addingTime = Calendar.getInstance(),
+                addingTime = Calendar.getInstance().timeInMillis,
                 category = "category",
                 deadline = Calendar.getInstance().apply {
                     add(Calendar.DAY_OF_WEEK, 2)
-                },
+                }.timeInMillis,
             )
         )
     }
