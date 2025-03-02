@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.example.trackernew.presentation.add.task.AddTaskContent
+import com.example.trackernew.presentation.edit.EditTaskContent
+import com.example.trackernew.presentation.tasks.TasksContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @Composable
@@ -17,8 +19,12 @@ fun RootContent(component: RootComponent) {
         ) {
             Children(stack = component.stack) {
                 when (val instance = it.instance) {
+
                     is RootComponent.Child.AddTask -> {
                         AddTaskContent(instance.component)
+                    }
+                    is RootComponent.Child.Tasks -> {
+                        TasksContent(instance.component)
                     }
                 }
             }
