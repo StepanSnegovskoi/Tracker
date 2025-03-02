@@ -11,23 +11,30 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -56,21 +63,21 @@ private val tasks = buildList {
                                 |Description Description Description
             """.trimMargin(),
                 isCompleted = Random.nextBoolean(),
-                addingTime = Calendar.getInstance(),
+                addingTime = Calendar.getInstance().timeInMillis,
                 category = "category",
                 deadline = Calendar.getInstance().apply {
                     add(Calendar.DAY_OF_WEEK, 2)
-                },
+                }.timeInMillis,
             )
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun TasksContent() {
-    val stateTopBar = remember {
+fun TasksContent(component: TasksComponent) {
+    val state by component.model.collectAsState()
+    val stateSortTypes = remember {
         mutableStateOf(false)
     }
     Scaffold(
@@ -87,19 +94,19 @@ fun TasksContent() {
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Menu(
-                            expanded = stateTopBar,
+                            expanded = stateSortTypes,
                             onDismissRequest = {
-                                stateTopBar.value = false
+                                stateSortTypes.value = false
                             },
                             onItemClick = {
-                                stateTopBar.value = false
+                                stateSortTypes.value = false
                             },
                             content = { modifier ->
                                 Text(
                                     modifier = Modifier
                                         .padding(end = 12.dp)
                                         .clickable {
-                                            stateTopBar.value = true
+                                            stateSortTypes.value = true
                                         }
                                         .then(modifier),
                                     fontSize = 16.sp,
@@ -108,8 +115,17 @@ fun TasksContent() {
                             }
                         )
                     }
-                }
+                },
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    component.onAddClicked()
+                }
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            }
         }
     ) { paddingValues ->
         Column(
@@ -117,7 +133,7 @@ fun TasksContent() {
                 .padding(paddingValues = paddingValues)
                 .padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            TasksLazyColumn(tasks = tasks)
+            TasksLazyColumn(state = state)
         }
     }
 }
@@ -125,19 +141,22 @@ fun TasksContent() {
 @Composable
 private fun TasksLazyColumn(
     modifier: Modifier = Modifier,
-    tasks: List<Task>
+    state: TasksStore.State
 ) {
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 6.dp),
     ) {
         items(
-            items = tasks,
+            items = state.tasks,
             key = { it.id }
         ) {
             TaskItem(
                 task = it
             )
+        }
+        item {
+            Spacer(modifier = Modifier.height(72.dp))
         }
     }
 }

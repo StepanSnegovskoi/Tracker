@@ -4,6 +4,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-fun Calendar.toDateString(): String {
-    return SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault()).format(this.time).toString()
+fun Long.toDateString(): String {
+    if (this == 0L) return ""
+
+    return SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        .format(this)
+        .toString()
 }
