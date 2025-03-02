@@ -39,7 +39,6 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 
 private val items = listOf("item1", "item2", "item3", "item4")
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun EditTaskContent() {
@@ -69,52 +68,13 @@ fun EditTaskContent() {
 
             OutlinedTextFieldCategoryWithMenu()
 
-            val stateVisibleDatePicker = remember {
-                mutableStateOf(false)
-            }
-            val stateVisibleTimePicker = remember {
-                mutableStateOf(false)
-            }
-
             OutlinedTextFieldDeadline(
                 onValueChange = {
 
                 },
                 onClick = {
-                    stateVisibleDatePicker.value = true
+
                 }
-            )
-
-            val dateInMillis = remember {
-                mutableLongStateOf(0)
-            }
-
-            val datePickerState = rememberDatePickerState()
-            val timePickerState = rememberTimePickerState()
-
-            DateAndTimePicker(
-                stateVisibleDatePicker = stateVisibleDatePicker,
-                stateVisibleTimePicker = stateVisibleTimePicker,
-                datePickerState = datePickerState,
-                timePickerState = timePickerState,
-                onContinueClick = {
-                    dateInMillis.value += datePickerState.selectedDateMillis ?: 0
-                    stateVisibleDatePicker.value = false
-                    stateVisibleTimePicker.value = true
-                },
-                onSelectClick = {
-                    dateInMillis.value +=
-                        (timePickerState.hour * 60 + timePickerState.minute) * 60 * 1000L
-                    stateVisibleTimePicker.value = false
-                },
-                onCancelClick = {
-                    stateVisibleDatePicker.value = false
-                    stateVisibleTimePicker.value = false
-                },
-                onDismiss = {
-                    stateVisibleTimePicker.value = false
-                    stateVisibleDatePicker.value = false
-                },
             )
         }
     }
@@ -270,119 +230,4 @@ fun OutlinedTextFieldDeadline(
             onValueChange(it)
         }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DateAndTimePicker(
-    stateVisibleDatePicker: State<Boolean>,
-    stateVisibleTimePicker: State<Boolean>,
-    datePickerState: DatePickerState,
-    timePickerState: TimePickerState,
-    onContinueClick: () -> Unit,
-    onSelectClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-
-    MyDatePicker(
-        stateVisibleDatePicker = stateVisibleDatePicker,
-        datePickerState = datePickerState,
-        onContinueClick = onContinueClick,
-        onCancelClick = onCancelClick,
-        onDismiss = onDismiss
-    )
-
-    MyTimePicker(
-        stateVisibleTimePicker = stateVisibleTimePicker,
-        timePickerState = timePickerState,
-        onSelectClick = onSelectClick,
-        onCancelClick = onCancelClick,
-        onDismiss = onDismiss
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyDatePicker(
-    stateVisibleDatePicker: State<Boolean>,
-    datePickerState: DatePickerState,
-    onContinueClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    onDismiss: () -> Unit,
-    ) {
-    if (stateVisibleDatePicker.value){
-        DatePickerDialog(
-            onDismissRequest = {
-                onDismiss()
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onContinueClick()
-                    }
-                ) {
-                    Text("Продолжить")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        onCancelClick()
-                    }
-                ) {
-                    Text("Отменить")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyTimePicker(
-    stateVisibleTimePicker: State<Boolean>,
-    timePickerState: TimePickerState,
-    onSelectClick: () -> Unit,
-    onCancelClick: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    if (stateVisibleTimePicker.value) {
-        DatePickerDialog(
-            onDismissRequest = {
-                onDismiss()
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onSelectClick()
-                    }
-                ) {
-                    Text("Выбрать")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        onCancelClick()
-                    }
-                ) {
-                    Text("Отменить")
-                }
-            }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                TimePicker(
-                    state = timePickerState
-                )
-            }
-        }
-    }
 }
