@@ -26,6 +26,10 @@ fun RootContent(component: RootComponent) {
                     is RootComponent.Child.Tasks -> {
                         TasksContent(instance.component)
                     }
+
+                    is RootComponent.Child.EditTask -> {
+                        EditTaskContent(instance.component)
+                    }
                 }
             }
         }
