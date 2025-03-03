@@ -36,6 +36,7 @@ import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import java.time.LocalTime
+import java.time.ZoneId
 
 private val items = listOf("item1", "item2", "item3", "item4")
 
@@ -419,9 +420,15 @@ fun DateAndTimePickerDialog2(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val timeMillis = (timePickerState.hour * 3_600_000L) +
-                                (timePickerState.minute * 60_000L)
-                        val finalDateTime = (datePickerState.selectedDateMillis ?: 0) + timeMillis
+                        val selectedLocalDateTime = (datePickerState.selectedDateMillis ?: 0)
+                            .toLocalDateTime()
+
+                        val finalDateTime = selectedLocalDateTime
+                            .withHour(timePickerState.hour)
+                            .withMinute(timePickerState.minute)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
                         onDateTimeSelected(finalDateTime)
                         showTimePicker = false
                     }
