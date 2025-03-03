@@ -13,10 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 
 class DefaultEditTaskComponent @AssistedInject constructor(
     private val storeFactory: EditTaskStoreFactory,
-    @Assisted("componentContext") componentContext: ComponentContext
+    @Assisted("componentContext") componentContext: ComponentContext,
+    @Assisted("task") task: Task,
 ): EditTaskComponent, ComponentContext by componentContext {
 
-    private val store = instanceKeeper.getStore { storeFactory.create() }
+    private val store = instanceKeeper.getStore { storeFactory.create(task) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<EditTaskStore.State> = store.stateFlow
@@ -45,7 +46,8 @@ class DefaultEditTaskComponent @AssistedInject constructor(
     interface Factory {
 
         fun create(
-            @Assisted("componentContext") componentContext: ComponentContext
+            @Assisted("componentContext") componentContext: ComponentContext,
+            @Assisted("task") task: Task,
         ): DefaultEditTaskComponent
     }
 }

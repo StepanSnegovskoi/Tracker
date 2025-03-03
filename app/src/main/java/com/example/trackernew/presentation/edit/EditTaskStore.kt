@@ -30,10 +30,13 @@ interface EditTaskStore : Store<Intent, State, Label> {
     }
 
     data class State(
+        val id: Int,
         val name: String,
         val description: String,
         val category: String,
-        val deadline: Long
+        val isCompleted: Boolean,
+        val addingTime: Long,
+        val deadline: Long,
     )
 
     sealed interface Label {
@@ -45,14 +48,17 @@ class EditTaskStoreFactory @Inject constructor(
     private val editTaskUseCase: EditTaskUseCase
 ) {
 
-    fun create(): EditTaskStore =
+    fun create(task: Task): EditTaskStore =
         object : EditTaskStore, Store<Intent, State, Label> by storeFactory.create(
             name = "EditTaskStore",
             initialState = State(
-                name = "",
-                description = "",
-                category = "",
-                deadline = 0
+                id = task.id,
+                name = task.name,
+                description = task.description,
+                category = task.category,
+                isCompleted = task.isCompleted,
+                addingTime = task.addingTime,
+                deadline = task.deadline
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -98,12 +104,12 @@ class EditTaskStoreFactory @Inject constructor(
                     scope.launch {
                         editTaskUseCase(
                             Task(
-                                id = 0,
+                                id = state.id,
                                 name = state.name,
                                 description = state.description,
                                 category = state.category,
-                                isCompleted = false,
-                                addingTime = Calendar.getInstance().timeInMillis,
+                                isCompleted = state.isCompleted,
+                                addingTime = state.addingTime,
                                 deadline = state.deadline
                             )
                         )

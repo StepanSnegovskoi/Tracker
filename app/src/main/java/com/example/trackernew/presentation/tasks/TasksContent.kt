@@ -135,7 +135,7 @@ private fun TasksLazyColumn(
             TaskItem(
                 task = it,
                 onLongClick = {
-                    component.onTaskLongClicked()
+                    component.onTaskLongClicked(it)
                 }
             )
         }
