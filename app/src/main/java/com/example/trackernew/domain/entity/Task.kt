@@ -1,5 +1,8 @@
 package com.example.trackernew.domain.entity
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Task(
     val id: Int,
     val name: String,
