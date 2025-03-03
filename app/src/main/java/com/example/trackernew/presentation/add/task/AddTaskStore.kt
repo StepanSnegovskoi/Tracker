@@ -1,15 +1,20 @@
 package com.example.trackernew.presentation.add.task
 
+import android.util.Log
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
+import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.SaveTaskUseCase
 import com.example.trackernew.presentation.add.task.AddTaskStore.Intent
 import com.example.trackernew.presentation.add.task.AddTaskStore.Label
 import com.example.trackernew.presentation.add.task.AddTaskStore.State
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
@@ -19,6 +24,8 @@ interface AddTaskStore : Store<Intent, State, Label> {
     sealed interface Intent {
 
         data object SaveTaskClicked : Intent
+
+        data object CategoriesClickedAndTheyAreEmpty : Intent
 
         data class ChangeName(val name: String) : Intent
 
@@ -33,16 +40,20 @@ interface AddTaskStore : Store<Intent, State, Label> {
         val name: String,
         val description: String,
         val category: String,
-        val deadline: Long
+        val deadline: Long,
+        val categories: List<Category>
     )
 
     sealed interface Label {
+
+        data object CategoriesClickedAndTheyAreEmpty : Label
     }
 }
 
 class AddTaskStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val saveTaskUseCase: SaveTaskUseCase
+    private val saveTaskUseCase: SaveTaskUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase
 ) {
 
     fun create(): AddTaskStore =
@@ -52,7 +63,8 @@ class AddTaskStoreFactory @Inject constructor(
                 name = "",
                 description = "",
                 category = "",
-                deadline = 0
+                deadline = 0,
+                categories = listOf()
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -60,6 +72,8 @@ class AddTaskStoreFactory @Inject constructor(
         ) {}
 
     private sealed interface Action {
+
+        data class CategoriesLoaded(val categories: List<Category>) : Action
     }
 
     private sealed interface Msg {
@@ -71,28 +85,37 @@ class AddTaskStoreFactory @Inject constructor(
         data class ChangeCategory(val category: String) : Msg
 
         data class ChangeDeadline(val deadline: Long) : Msg
+
+        data class CategoriesLoaded(val categories: List<Category>) : Msg
     }
 
-    private class BootstrapperImpl : CoroutineBootstrapper<Action>() {
+    private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
         override fun invoke() {
+            getCategoriesUseCase().onEach {
+                dispatch(Action.CategoriesLoaded(it))
+            }.launchIn(scope)
         }
     }
 
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
-            when(intent){
+            when (intent) {
                 is Intent.ChangeCategory -> {
                     dispatch(Msg.ChangeCategory(intent.category))
                 }
+
                 is Intent.ChangeDeadline -> {
                     dispatch(Msg.ChangeDeadline(intent.deadline))
                 }
+
                 is Intent.ChangeDescription -> {
                     dispatch(Msg.ChangeDescription(intent.description))
                 }
+
                 is Intent.ChangeName -> {
                     dispatch(Msg.ChangeName(intent.name))
                 }
+
                 Intent.SaveTaskClicked -> {
                     val state = getState()
                     scope.launch {
@@ -109,26 +132,43 @@ class AddTaskStoreFactory @Inject constructor(
                         )
                     }
                 }
+
+                Intent.CategoriesClickedAndTheyAreEmpty -> {
+                    publish(Label.CategoriesClickedAndTheyAreEmpty)
+                }
             }
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
+            when(action){
+                is Action.CategoriesLoaded -> {
+                    dispatch(Msg.CategoriesLoaded(action.categories))
+                }
+            }
         }
     }
 
     private object ReducerImpl : Reducer<State, Msg> {
-        override fun State.reduce(msg: Msg): State = when(msg){
+        override fun State.reduce(msg: Msg): State = when (msg) {
             is Msg.ChangeCategory -> {
                 copy(category = msg.category)
             }
+
             is Msg.ChangeDeadline -> {
                 copy(deadline = msg.deadline)
             }
+
             is Msg.ChangeDescription -> {
                 copy(description = msg.description)
             }
+
             is Msg.ChangeName -> {
                 copy(name = msg.name)
+            }
+
+            is Msg.CategoriesLoaded -> {
+                Log.d("TEST_TEST", msg.categories.toString())
+                copy(categories = msg.categories)
             }
         }
     }
