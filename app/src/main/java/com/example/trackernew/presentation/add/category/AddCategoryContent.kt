@@ -12,23 +12,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.tooling.preview.Preview
 
-@Preview
 @Composable
-fun AddCategoryContent() {
+fun AddCategoryContent(component: AddCategoryComponent) {
+    val state by component.model.collectAsState()
     Scaffold (
         modifier = Modifier
             .fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-
+                    component.onAddClicked()
                 }
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
@@ -36,17 +37,19 @@ fun AddCategoryContent() {
         }
     ) { paddingValues ->
         OutlinedTextFieldCategory(
+            state = state,
             modifier = Modifier
                 .padding(paddingValues),
             onValueChange = {
-
-            }
+                component.onCategoryChanged(it)
+            },
         )
     }
 }
 
 @Composable
 fun OutlinedTextFieldCategory(
+    state: AddCategoryStore.State,
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit
 ) {
@@ -69,7 +72,7 @@ fun OutlinedTextFieldCategory(
         label = {
             Text(text = "Категория")
         },
-        value = "",
+        value = state.category,
         onValueChange = {
             onValueChange(it)
         },

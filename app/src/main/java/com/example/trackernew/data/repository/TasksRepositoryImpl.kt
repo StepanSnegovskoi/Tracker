@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class TasksRepositoryImpl @Inject constructor(
-    private val dao: TasksDao
+    private val tasksDao: TasksDao
 ): TasksRepository {
 
-    override val tasks: Flow<List<Task>> = dao.getTasks()
+    override val tasks: Flow<List<Task>> = tasksDao.getTasks()
         .map { it.toEntities() }
 }

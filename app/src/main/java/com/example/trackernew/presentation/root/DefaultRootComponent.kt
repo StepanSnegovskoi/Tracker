@@ -6,6 +6,9 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.push
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.presentation.add.category.DefaultAddCategoryComponent
+import com.example.trackernew.presentation.add.task.AddTaskStore
+import com.example.trackernew.presentation.add.task.AddTaskStoreFactory
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
 import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
@@ -19,7 +22,8 @@ class DefaultRootComponent @AssistedInject constructor(
     @Assisted("componentContext") componentContext: ComponentContext,
     private val addTaskStoreFactory: DefaultAddTaskComponent.Factory,
     private val tasksStoreFactory: DefaultTasksComponent.Factory,
-    private val editTaskStoreFactory: DefaultEditTaskComponent.Factory
+    private val editTaskStoreFactory: DefaultEditTaskComponent.Factory,
+    private val addCategoryStoreFactory: DefaultAddCategoryComponent.Factory
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -39,7 +43,12 @@ class DefaultRootComponent @AssistedInject constructor(
     ): RootComponent.Child {
         return when (val config = config) {
             Config.AddTask -> {
-                val component = addTaskStoreFactory.create(componentContext)
+                val component = addTaskStoreFactory.create(
+                    componentContext = componentContext,
+                    ifCategoriesAreEmpty = {
+                        navigation.push(Config.AddCategory)
+                    },
+                )
                 RootComponent.Child.AddTask(component)
             }
 
@@ -63,6 +72,13 @@ class DefaultRootComponent @AssistedInject constructor(
                 )
                 RootComponent.Child.EditTask(component)
             }
+
+            Config.AddCategory -> {
+                val component = addCategoryStoreFactory.create(
+                    componentContext = componentContext
+                )
+                RootComponent.Child.AddCategory(component)
+            }
         }
     }
 
@@ -85,5 +101,8 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data object Tasks : Config
+
+        @Serializable
+        data object AddCategory : Config
     }
 }

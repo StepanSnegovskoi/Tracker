@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.example.trackernew.presentation.add.category.AddCategoryContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
 import com.example.trackernew.presentation.edit.EditTaskContent
 import com.example.trackernew.presentation.tasks.TasksContent
@@ -26,9 +27,11 @@ fun RootContent(component: RootComponent) {
                     is RootComponent.Child.Tasks -> {
                         TasksContent(instance.component)
                     }
-
                     is RootComponent.Child.EditTask -> {
                         EditTaskContent(instance.component)
+                    }
+                    is RootComponent.Child.AddCategory -> {
+                        AddCategoryContent(instance.component)
                     }
                 }
             }
