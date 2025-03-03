@@ -7,9 +7,11 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
+import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.add.task.AddTaskStore
 import com.example.trackernew.presentation.add.task.AddTaskStoreFactory
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
+import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -20,8 +22,9 @@ import kotlinx.serialization.serializer
 class DefaultRootComponent @AssistedInject constructor(
     @Assisted("componentContext") componentContext: ComponentContext,
     private val addTaskStoreFactory: DefaultAddTaskComponent.Factory,
-    private val tasksStoreFactory: DefaultTasksComponent.Factory
-): RootComponent, ComponentContext by componentContext {
+    private val tasksStoreFactory: DefaultTasksComponent.Factory,
+    private val editTaskStoreFactory: DefaultEditTaskComponent.Factory
+) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
 
@@ -38,7 +41,7 @@ class DefaultRootComponent @AssistedInject constructor(
         config: Config,
         componentContext: ComponentContext
     ): RootComponent.Child {
-        return when(config){
+        return when (config) {
             Config.AddTask -> {
                 val component = addTaskStoreFactory.create(componentContext)
                 RootComponent.Child.AddTask(component)
@@ -49,9 +52,19 @@ class DefaultRootComponent @AssistedInject constructor(
                     componentContext = componentContext,
                     onAddClick = {
                         navigation.push(Config.AddTask)
+                    },
+                    onTaskLongClick = {
+                        navigation.push(Config.EditTask)
                     }
                 )
                 RootComponent.Child.Tasks(component)
+            }
+
+            Config.EditTask -> {
+                val component = editTaskStoreFactory.create(
+                    componentContext = componentContext
+                )
+                RootComponent.Child.EditTask(component)
             }
         }
     }
@@ -69,6 +82,9 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data object AddTask : Config
+
+        @Serializable
+        data object EditTask : Config
 
         @Serializable
         data object Tasks : Config
