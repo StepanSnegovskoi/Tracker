@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.tasks
 
+import com.example.trackernew.domain.entity.Task
 import kotlinx.coroutines.flow.StateFlow
 
 interface TasksComponent {
@@ -8,5 +9,5 @@ interface TasksComponent {
 
     fun onAddClicked()
 
-    fun onTaskLongClicked()
+    fun onTaskLongClicked(task: Task)
 }

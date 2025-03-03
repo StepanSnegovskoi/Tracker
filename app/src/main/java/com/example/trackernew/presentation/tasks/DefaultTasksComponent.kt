@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
+import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.componentScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -17,19 +18,19 @@ class DefaultTasksComponent @AssistedInject constructor(
     private val tasksStoreFactory: TasksStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("onAddClick") private val onAddClick: () -> Unit,
-    @Assisted("onTaskLongClick") private val onTaskLongClick: () -> Unit
+    @Assisted("onTaskLongClick") private val onTaskLongClick: (Task) -> Unit
 ) : TasksComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { tasksStoreFactory.create() }
 
     init {
         store.labels.onEach {
-            when(it){
+            when(val label = it){
                 TasksStore.Label.ClickAdd -> {
                     onAddClick()
                 }
-                TasksStore.Label.LongClickTask -> {
-                    onTaskLongClick()
+                is TasksStore.Label.LongClickTask -> {
+                    onTaskLongClick(label.task)
                 }
             }
         }.launchIn(componentScope())
@@ -42,8 +43,8 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ClickAdd)
     }
 
-    override fun onTaskLongClicked() {
-        store.accept(TasksStore.Intent.LongClickTask)
+    override fun onTaskLongClicked(task: Task) {
+        store.accept(TasksStore.Intent.LongClickTask(task))
     }
 
     @AssistedFactory
@@ -52,7 +53,7 @@ class DefaultTasksComponent @AssistedInject constructor(
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onAddClick") onAddClick: () -> Unit,
-            @Assisted("onTaskLongClick") onTaskLongClick: () -> Unit,
+            @Assisted("onTaskLongClick") onTaskLongClick: (Task) -> Unit,
         ): DefaultTasksComponent
     }
 }

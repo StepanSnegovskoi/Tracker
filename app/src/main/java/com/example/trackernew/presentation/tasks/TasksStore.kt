@@ -20,7 +20,7 @@ interface TasksStore : Store<Intent, State, Label> {
 
         data object ClickAdd : Intent
 
-        data object LongClickTask : Intent
+        data class LongClickTask(val task: Task) : Intent
     }
 
     data class State(val tasks: List<Task>)
@@ -29,7 +29,7 @@ interface TasksStore : Store<Intent, State, Label> {
 
         data object ClickAdd : Label
 
-        data object LongClickTask : Label
+        data class LongClickTask(val task: Task) : Label
     }
 }
 
@@ -73,8 +73,8 @@ class TasksStoreFactory @Inject constructor(
                     publish(Label.ClickAdd)
                 }
 
-                Intent.LongClickTask -> {
-                    publish(Label.LongClickTask)
+                is Intent.LongClickTask -> {
+                    publish(Label.LongClickTask(intent.task))
                 }
             }
         }
