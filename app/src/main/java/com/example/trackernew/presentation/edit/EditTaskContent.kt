@@ -96,8 +96,10 @@ fun EditTaskContent(component: EditTaskComponent) {
                 }
             )
 
-            DateAndTimePickerDialog(
+
+            DateAndTimePickerDialogEditScreen (
                 state = stateDateAndTimePicker,
+                initialDateMillis = state.deadline,
                 onDateTimeSelected = {
                     component.onDeadlineChanged(it)
                     stateDateAndTimePicker.value = false
@@ -363,7 +365,7 @@ fun DateAndTimePickerDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateAndTimePickerDialog2(
+fun DateAndTimePickerDialogEditScreen(
     state: State<Boolean>,
     initialDateMillis: Long? = null,
     onDateTimeSelected: (Long) -> Unit,
