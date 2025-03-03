@@ -38,8 +38,6 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import java.time.LocalTime
 import java.time.ZoneId
 
-private val items = listOf("item1", "item2", "item3", "item4")
-
 @Composable
 fun EditTaskContent(component: EditTaskComponent) {
     val state by component.model.collectAsState()
@@ -174,7 +172,7 @@ fun OutlinedTextFieldCategoryWithMenu(
     }
     Menu(
         expanded = expanded,
-        items = items,
+        items = state.categories.map { it.name },
         onDismissRequest = {
             expanded.value = false
         },
