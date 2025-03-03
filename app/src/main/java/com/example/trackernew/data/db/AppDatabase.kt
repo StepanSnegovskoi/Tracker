@@ -4,10 +4,18 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.trackernew.data.entity.CategoryDbModel
 import com.example.trackernew.data.entity.TaskDbModel
 
-@Database(entities = [TaskDbModel::class], version = 1, exportSchema = false)
-abstract class AppDatabase: RoomDatabase() {
+@Database(
+    entities = [
+        TaskDbModel::class,
+        CategoryDbModel::class
+    ],
+    version = 2,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private var INSTANCE: AppDatabase? = null
@@ -17,7 +25,7 @@ abstract class AppDatabase: RoomDatabase() {
         fun getInstance(appContext: Context): AppDatabase {
             INSTANCE?.let { return it }
 
-            synchronized(LOCK){
+            synchronized(LOCK) {
                 INSTANCE?.let { return it }
 
                 Room.databaseBuilder(
@@ -26,12 +34,14 @@ abstract class AppDatabase: RoomDatabase() {
                     name = DB_NAME
                 ).fallbackToDestructiveMigration()
                     .build().also {
-                    INSTANCE = it
-                    return it
-                }
+                        INSTANCE = it
+                        return it
+                    }
             }
         }
     }
 
-    abstract fun dao(): TasksDao
+    abstract fun tasksDao(): TasksDao
+
+    abstract fun categoryDao(): CategoryDao
 }
