@@ -7,4 +7,6 @@ interface TasksComponent {
     val model: StateFlow<TasksStore.State>
 
     fun onAddClicked()
+
+    fun onTaskLongClicked()
 }
