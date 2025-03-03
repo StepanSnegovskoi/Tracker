@@ -2,14 +2,9 @@ package com.example.trackernew.presentation.root
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DelicateDecomposeApi
-import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.push
-import com.arkivanov.decompose.value.Value
-import com.example.trackernew.domain.entity.Task
-import com.example.trackernew.presentation.add.task.AddTaskStore
-import com.example.trackernew.presentation.add.task.AddTaskStoreFactory
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
 import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
