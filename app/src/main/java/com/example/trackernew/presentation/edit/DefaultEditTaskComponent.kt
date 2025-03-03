@@ -3,6 +3,7 @@ package com.example.trackernew.presentation.edit
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
+import com.example.trackernew.domain.entity.Task
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -12,10 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 
 class DefaultEditTaskComponent @AssistedInject constructor(
     private val storeFactory: EditTaskStoreFactory,
-    @Assisted("componentContext") componentContext: ComponentContext
+    @Assisted("componentContext") componentContext: ComponentContext,
+    @Assisted("task") task: Task,
 ): EditTaskComponent, ComponentContext by componentContext {
 
-    private val store = instanceKeeper.getStore { storeFactory.create() }
+    private val store = instanceKeeper.getStore { storeFactory.create(task) }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<EditTaskStore.State> = store.stateFlow
@@ -44,7 +46,8 @@ class DefaultEditTaskComponent @AssistedInject constructor(
     interface Factory {
 
         fun create(
-            @Assisted("componentContext") componentContext: ComponentContext
+            @Assisted("componentContext") componentContext: ComponentContext,
+            @Assisted("task") task: Task,
         ): DefaultEditTaskComponent
     }
 }
