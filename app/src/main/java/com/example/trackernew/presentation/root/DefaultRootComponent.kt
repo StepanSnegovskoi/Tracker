@@ -5,6 +5,7 @@ import com.arkivanov.decompose.DelicateDecomposeApi
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.push
+import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
 import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
@@ -36,7 +37,7 @@ class DefaultRootComponent @AssistedInject constructor(
         config: Config,
         componentContext: ComponentContext
     ): RootComponent.Child {
-        return when (config) {
+        return when (val config = config) {
             Config.AddTask -> {
                 val component = addTaskStoreFactory.create(componentContext)
                 RootComponent.Child.AddTask(component)
@@ -49,15 +50,16 @@ class DefaultRootComponent @AssistedInject constructor(
                         navigation.push(Config.AddTask)
                     },
                     onTaskLongClick = {
-                        navigation.push(Config.EditTask)
+                        navigation.push(Config.EditTask(it))
                     }
                 )
                 RootComponent.Child.Tasks(component)
             }
 
-            Config.EditTask -> {
+            is Config.EditTask -> {
                 val component = editTaskStoreFactory.create(
-                    componentContext = componentContext
+                    componentContext = componentContext,
+                    task = config.task
                 )
                 RootComponent.Child.EditTask(component)
             }
@@ -79,7 +81,7 @@ class DefaultRootComponent @AssistedInject constructor(
         data object AddTask : Config
 
         @Serializable
-        data object EditTask : Config
+        data class EditTask(val task: Task) : Config
 
         @Serializable
         data object Tasks : Config
