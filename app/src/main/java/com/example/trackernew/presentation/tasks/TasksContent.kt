@@ -1,8 +1,10 @@
 package com.example.trackernew.presentation.tasks
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,36 +43,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.utils.sortTypes
-import java.util.Calendar
-import kotlin.random.Random
-
-private val tasks = buildList {
-    repeat(times = 100) {
-        add(
-            Task(
-                id = it,
-                name = "Task $it",
-                description = """Description Description Description
-                                |Description Description Description
-                                |Description Description Description
-            """.trimMargin(),
-                isCompleted = Random.nextBoolean(),
-                addingTime = Calendar.getInstance().timeInMillis,
-                category = "category",
-                deadline = Calendar.getInstance().apply {
-                    add(Calendar.DAY_OF_WEEK, 2)
-                }.timeInMillis,
-            )
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,7 +110,10 @@ fun TasksContent(component: TasksComponent) {
                 .padding(paddingValues = paddingValues)
                 .padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            TasksLazyColumn(state = state)
+            TasksLazyColumn(
+                state = state,
+                component = component
+            )
         }
     }
 }
@@ -141,7 +121,8 @@ fun TasksContent(component: TasksComponent) {
 @Composable
 private fun TasksLazyColumn(
     modifier: Modifier = Modifier,
-    state: TasksStore.State
+    state: TasksStore.State,
+    component: TasksComponent
 ) {
     LazyColumn(
         modifier = modifier,
@@ -152,7 +133,10 @@ private fun TasksLazyColumn(
             key = { it.id }
         ) {
             TaskItem(
-                task = it
+                task = it,
+                onLongClick = {
+                    component.onTaskLongClicked()
+                }
             )
         }
         item {
@@ -161,22 +145,29 @@ private fun TasksLazyColumn(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TaskItem(
     modifier: Modifier = Modifier,
-    task: Task
+    task: Task,
+    onLongClick: () -> Unit
 ) {
     val stateDescription = rememberSaveable {
         mutableStateOf(value = false)
     }
+
     Card(
         modifier = Modifier
-            .clickable(
+            .combinedClickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                stateDescription.value = !stateDescription.value
-            }
+                indication = null,
+                onClick = {
+                    stateDescription.value = !stateDescription.value
+                },
+                onLongClick = {
+                    onLongClick()
+                }
+            )
             .then(other = modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -220,7 +211,9 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>
     ) {
         Column {
             Description(task = task)
-            Deadline(task = task)
+            if (task.deadline != 0L){
+                Deadline(task = task)
+            }
         }
     }
 }

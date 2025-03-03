@@ -19,6 +19,8 @@ interface TasksStore : Store<Intent, State, Label> {
     sealed interface Intent {
 
         data object ClickAdd : Intent
+
+        data object LongClickTask : Intent
     }
 
     data class State(val tasks: List<Task>)
@@ -26,6 +28,8 @@ interface TasksStore : Store<Intent, State, Label> {
     sealed interface Label {
 
         data object ClickAdd : Label
+
+        data object LongClickTask : Label
     }
 }
 
@@ -67,6 +71,10 @@ class TasksStoreFactory @Inject constructor(
             when(intent){
                 Intent.ClickAdd -> {
                     publish(Label.ClickAdd)
+                }
+
+                Intent.LongClickTask -> {
+                    publish(Label.LongClickTask)
                 }
             }
         }
