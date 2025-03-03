@@ -8,6 +8,8 @@ interface AddTaskComponent {
 
     fun onSaveTaskClicked()
 
+    fun ifCategoriesAreEmpty()
+
     fun onNameChanged(name: String)
 
     fun onDescriptionChanged(description: String)
