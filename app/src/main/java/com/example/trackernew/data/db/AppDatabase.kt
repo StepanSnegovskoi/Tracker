@@ -12,7 +12,7 @@ import com.example.trackernew.data.entity.TaskDbModel
         TaskDbModel::class,
         CategoryDbModel::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
