@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.tasks
 
+import android.util.Log
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -10,6 +11,7 @@ import com.example.trackernew.domain.usecase.GetTasksUseCase
 import com.example.trackernew.presentation.tasks.TasksStore.Intent
 import com.example.trackernew.presentation.tasks.TasksStore.Label
 import com.example.trackernew.presentation.tasks.TasksStore.State
+import com.example.trackernew.presentation.utils.Sort
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
@@ -21,9 +23,14 @@ interface TasksStore : Store<Intent, State, Label> {
         data object ClickAdd : Intent
 
         data class LongClickTask(val task: Task) : Intent
+
+        data class ChangeSort(val sort: Sort) : Intent
     }
 
-    data class State(val tasks: List<Task>)
+    data class State(
+        val tasks: List<Task>,
+        val sort: Sort
+    )
 
     sealed interface Label {
 
@@ -41,7 +48,10 @@ class TasksStoreFactory @Inject constructor(
     fun create(): TasksStore =
         object : TasksStore, Store<Intent, State, Label> by storeFactory.create(
             name = "TasksStore",
-            initialState = State(listOf()),
+            initialState = State(
+                tasks = listOf(),
+                sort = Sort.ByName
+            ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
             reducer = ReducerImpl
@@ -55,6 +65,8 @@ class TasksStoreFactory @Inject constructor(
     private sealed interface Msg {
 
         data class TasksLoaded(val tasks: List<Task>) : Msg
+
+        data class ChangeSort(val sort: Sort) : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -68,7 +80,7 @@ class TasksStoreFactory @Inject constructor(
 
     private class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
-            when(intent){
+            when (intent) {
                 Intent.ClickAdd -> {
                     publish(Label.ClickAdd)
                 }
@@ -76,11 +88,15 @@ class TasksStoreFactory @Inject constructor(
                 is Intent.LongClickTask -> {
                     publish(Label.LongClickTask(intent.task))
                 }
+
+                is Intent.ChangeSort -> {
+                    dispatch(Msg.ChangeSort(intent.sort))
+                }
             }
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
-            when(action){
+            when (action) {
                 is Action.TasksLoaded -> {
                     dispatch(Msg.TasksLoaded(action.tasks))
                 }
@@ -93,6 +109,13 @@ class TasksStoreFactory @Inject constructor(
             when (msg) {
                 is Msg.TasksLoaded -> {
                     copy(tasks = msg.tasks)
+                }
+
+                is Msg.ChangeSort -> {
+                    copy(
+                        sort = msg.sort,
+                        tasks = tasks.sortedWith(msg.sort.comparator())
+                    )
                 }
             }
     }
