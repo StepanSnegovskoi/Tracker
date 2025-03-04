@@ -46,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
+import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.utils.Sort
@@ -58,6 +59,9 @@ fun TasksContent(component: TasksComponent) {
     val stateSortTypes = remember {
         mutableStateOf(false)
     }
+    val stateCategories = remember {
+        mutableStateOf(false)
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -65,13 +69,31 @@ fun TasksContent(component: TasksComponent) {
             TopAppBar(
                 title = {
                     Row {
-                        Text(
-                            modifier = Modifier,
-                            fontSize = 20.sp,
-                            text = "Общее"
+                        MenuCategories (
+                            state = state,
+                            expanded = stateCategories,
+                            onDismissRequest = {
+                                stateCategories.value = false
+                            },
+                            onItemClick = {
+                                component.onCategoryChanged(it)
+                                stateCategories.value = false
+                            },
+                            content = { modifier ->
+                                Text(
+                                    modifier = Modifier
+                                        .clickable {
+                                            stateCategories.value = true
+                                        }
+                                        .then(modifier),
+                                    fontSize = 20.sp,
+                                    text = state.category.name
+                                )
+                            }
                         )
+
                         Spacer(modifier = Modifier.weight(1f))
-                        Menu(
+                        MenuSortTypes (
                             expanded = stateSortTypes,
                             onDismissRequest = {
                                 stateSortTypes.value = false
@@ -250,7 +272,7 @@ fun Deadline(task: Task) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Menu(
+fun MenuSortTypes(
     expanded: State<Boolean>,
     onDismissRequest: () -> Unit,
     onItemClick: (Sort) -> Unit,
@@ -275,6 +297,44 @@ fun Menu(
                 DropdownMenuItem(
                     text = {
                         Text(text = it.value)
+                    },
+                    onClick = {
+                        onItemClick(it)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MenuCategories(
+    state: TasksStore.State,
+    expanded: State<Boolean>,
+    onDismissRequest: () -> Unit,
+    onItemClick: (Category) -> Unit,
+    content: @Composable (Modifier) -> Unit
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded.value,
+        onExpandedChange = {
+        }
+    ) {
+        content(Modifier.menuAnchor())
+
+        DropdownMenu(
+            modifier = Modifier
+                .fillMaxWidth(),
+            expanded = expanded.value,
+            onDismissRequest = {
+                onDismissRequest()
+            }
+        ) {
+            state.categories.forEach {
+                DropdownMenuItem(
+                    text = {
+                        Text(text = it.name)
                     },
                     onClick = {
                         onItemClick(it)
