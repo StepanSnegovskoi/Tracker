@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
+import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.componentScope
 import com.example.trackernew.presentation.utils.Sort
@@ -50,6 +51,10 @@ class DefaultTasksComponent @AssistedInject constructor(
 
     override fun onSortChanged(sort: Sort) {
         store.accept(TasksStore.Intent.ChangeSort(sort))
+    }
+
+    override fun onCategoryChanged(category: Category) {
+        store.accept(TasksStore.Intent.ChangeCategory(category))
     }
 
     @AssistedFactory
