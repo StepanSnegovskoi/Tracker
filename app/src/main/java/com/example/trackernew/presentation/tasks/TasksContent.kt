@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
+import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +77,7 @@ fun TasksContent(component: TasksComponent) {
                                 stateSortTypes.value = false
                             },
                             onItemClick = {
+                                component.onSortChanged(it)
                                 stateSortTypes.value = false
                             },
                             content = { modifier ->
@@ -87,7 +89,7 @@ fun TasksContent(component: TasksComponent) {
                                         }
                                         .then(modifier),
                                     fontSize = 16.sp,
-                                    text = "По дате добавления"
+                                    text = state.sort.value
                                 )
                             }
                         )
@@ -251,7 +253,7 @@ fun Deadline(task: Task) {
 fun Menu(
     expanded: State<Boolean>,
     onDismissRequest: () -> Unit,
-    onItemClick: (String) -> Unit,
+    onItemClick: (Sort) -> Unit,
     content: @Composable (Modifier) -> Unit
 ) {
     ExposedDropdownMenuBox(
@@ -275,7 +277,7 @@ fun Menu(
                         Text(text = it.value)
                     },
                     onClick = {
-                        onItemClick(it.value)
+                        onItemClick(it)
                     }
                 )
             }

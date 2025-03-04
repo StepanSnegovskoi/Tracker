@@ -6,6 +6,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.componentScope
+import com.example.trackernew.presentation.utils.Sort
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -45,6 +46,10 @@ class DefaultTasksComponent @AssistedInject constructor(
 
     override fun onTaskLongClicked(task: Task) {
         store.accept(TasksStore.Intent.LongClickTask(task))
+    }
+
+    override fun onSortChanged(sort: Sort) {
+        store.accept(TasksStore.Intent.ChangeSort(sort))
     }
 
     @AssistedFactory
