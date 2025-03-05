@@ -7,6 +7,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.domain.usecase.DeleteTaskByIdUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.GetTasksUseCase
 import com.example.trackernew.presentation.extensions.filterBySortTypeAndCategory
@@ -17,14 +18,16 @@ import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.acos
 
 interface TasksStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
         data object ClickAdd : Intent
+
+        data class ClickDeleteTask(val task: Task) : Intent
 
         data class LongClickTask(val task: Task) : Intent
 
@@ -34,10 +37,15 @@ interface TasksStore : Store<Intent, State, Label> {
     }
 
     data class State(
-        val tasks: List<Task>,
+        val tasks: Tasks,
         val categories: List<Category>,
         val sort: Sort,
         val category: Category
+    )
+
+    data class Tasks(
+        val currentTasks: List<Task>,
+        val filteredTasks: List<Task>
     )
 
     sealed interface Label {
@@ -51,14 +59,15 @@ interface TasksStore : Store<Intent, State, Label> {
 class TasksStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
     private val getTasksUseCase: GetTasksUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val deleteTaskByIdUseCase: DeleteTaskByIdUseCase
 ) {
 
     fun create(): TasksStore =
         object : TasksStore, Store<Intent, State, Label> by storeFactory.create(
             name = "TasksStore",
             initialState = State(
-                tasks = listOf(),
+                tasks = TasksStore.Tasks(listOf(), listOf()),
                 sort = Sort.ByName,
                 category = Category(INITIAL_CATEGORY_NAME),
                 categories = listOf()
@@ -100,7 +109,7 @@ class TasksStoreFactory @Inject constructor(
         }
     }
 
-    private class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
+    private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
                 Intent.ClickAdd -> {
@@ -117,6 +126,13 @@ class TasksStoreFactory @Inject constructor(
 
                 is Intent.ChangeCategory -> {
                     dispatch(Msg.ChangeCategory(intent.category))
+                }
+
+                is Intent.ClickDeleteTask -> {
+                    val id = intent.task.id
+                    scope.launch {
+                        deleteTaskByIdUseCase(id)
+                    }
                 }
             }
         }
@@ -139,17 +155,21 @@ class TasksStoreFactory @Inject constructor(
             when (msg) {
                 is Msg.TasksLoaded -> {
                     copy(
-                        tasks = msg.tasks
-                            .filterBySortTypeAndCategory(sort, category)
+                        tasks = TasksStore.Tasks(
+                            currentTasks = msg.tasks,
+                            filteredTasks = msg.tasks
+                                .filterBySortTypeAndCategory(sort, category)
+                        )
                     )
                 }
 
                 is Msg.ChangeSort -> {
                     copy(
                         sort = msg.sort,
-                        tasks = tasks.filterBySortTypeAndCategory(
-                            sort = msg.sort,
-                            category = category
+                        tasks = TasksStore.Tasks(
+                            currentTasks = tasks.currentTasks,
+                            filteredTasks = tasks.currentTasks
+                                .filterBySortTypeAndCategory(msg.sort, category)
                         )
                     )
                 }
@@ -157,9 +177,10 @@ class TasksStoreFactory @Inject constructor(
                 is Msg.ChangeCategory -> {
                     copy(
                         category = msg.category,
-                        tasks = tasks.filterBySortTypeAndCategory(
-                            sort = sort,
-                            category = msg.category
+                        tasks = TasksStore.Tasks(
+                            currentTasks = tasks.currentTasks,
+                            filteredTasks = tasks.currentTasks
+                                .filterBySortTypeAndCategory(sort, msg.category)
                         )
                     )
                 }
