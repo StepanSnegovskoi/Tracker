@@ -57,6 +57,10 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ChangeCategory(category))
     }
 
+    override fun onDeleteTaskClicked(task: Task) {
+        store.accept(TasksStore.Intent.ClickDeleteTask(task))
+    }
+
     @AssistedFactory
     interface Factory {
 
