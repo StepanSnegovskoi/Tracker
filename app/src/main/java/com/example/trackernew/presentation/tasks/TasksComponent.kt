@@ -16,4 +16,6 @@ interface TasksComponent {
     fun onSortChanged(sort: Sort)
 
     fun onCategoryChanged(category: Category)
+
+    fun onDeleteTaskClicked(task: Task)
 }
