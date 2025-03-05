@@ -23,15 +23,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -43,12 +47,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
+import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
 
@@ -62,84 +68,75 @@ fun TasksContent(component: TasksComponent) {
     val stateCategories = remember {
         mutableStateOf(false)
     }
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row {
-                        MenuCategories (
-                            state = state,
-                            expanded = stateCategories,
-                            onDismissRequest = {
-                                stateCategories.value = false
-                            },
-                            onItemClick = {
-                                component.onCategoryChanged(it)
-                                stateCategories.value = false
-                            },
-                            content = { modifier ->
-                                Text(
-                                    modifier = Modifier
-                                        .clickable {
-                                            stateCategories.value = true
-                                        }
-                                        .then(modifier),
-                                    fontSize = 20.sp,
-                                    text = state.category.name
-                                )
-                            }
-                        )
 
-                        Spacer(modifier = Modifier.weight(1f))
-                        MenuSortTypes (
-                            expanded = stateSortTypes,
-                            onDismissRequest = {
-                                stateSortTypes.value = false
-                            },
-                            onItemClick = {
-                                component.onSortChanged(it)
-                                stateSortTypes.value = false
-                            },
-                            content = { modifier ->
-                                Text(
-                                    modifier = Modifier
-                                        .padding(end = 12.dp)
-                                        .clickable {
-                                            stateSortTypes.value = true
-                                        }
-                                        .then(modifier),
-                                    fontSize = 16.sp,
-                                    text = state.sort.value
+    ModalDrawer(
+        state = state,
+        stateCategories = stateCategories,
+        onCategoriesClick = {
+            stateCategories.value = !stateCategories.value
+        },
+        onCategoryClick = {
+            component.onCategoryChanged(it)
+        },
+        content = {
+            Scaffold(
+                modifier = Modifier
+                    .fillMaxSize(),
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Row {
+                                Text(text = state.category.name)
+                                Spacer(modifier = Modifier.weight(1f))
+                                MenuSortTypes(
+                                    expanded = stateSortTypes,
+                                    onDismissRequest = {
+                                        stateSortTypes.value = false
+                                    },
+                                    onItemClick = {
+                                        component.onSortChanged(it)
+                                        stateSortTypes.value = false
+                                    },
+                                    content = { modifier ->
+                                        Text(
+                                            modifier = Modifier
+                                                .padding(end = 12.dp)
+                                                .clickable {
+                                                    stateSortTypes.value = true
+                                                }
+                                                .then(modifier),
+                                            fontSize = 16.sp,
+                                            text = state.sort.value
+                                        )
+                                    }
                                 )
                             }
-                        )
-                    }
+                        }
+                    )
                 },
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddClicked()
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = {
+                            component.onAddClicked()
+                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                    }
                 }
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .padding(paddingValues = paddingValues)
+                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                ) {
+                    TasksLazyColumn(
+                        state = state,
+                        component = component
+                    )
+                }
             }
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues = paddingValues)
-                .padding(vertical = 4.dp, horizontal = 8.dp)
-        ) {
-            TasksLazyColumn(
-                state = state,
-                component = component
-            )
-        }
-    }
+    )
 }
 
 @Composable
@@ -153,11 +150,12 @@ private fun TasksLazyColumn(
         verticalArrangement = Arrangement.spacedBy(space = 6.dp),
     ) {
         items(
-            items = state.tasks,
+            items = state.tasks.filteredTasks,
             key = { it.id }
         ) {
             TaskItem(
                 task = it,
+                component = component,
                 onLongClick = {
                     component.onTaskLongClicked(it)
                 }
@@ -173,6 +171,7 @@ private fun TasksLazyColumn(
 @Composable
 private fun TaskItem(
     modifier: Modifier = Modifier,
+    component: TasksComponent,
     task: Task,
     onLongClick: () -> Unit
 ) {
@@ -212,7 +211,18 @@ private fun TaskItem(
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     modifier = Modifier
-                        .size(32.dp),
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp)
+                        .clickable {
+                            component.onDeleteTaskClicked(task)
+                        },
+                    painter = painterResource(R.drawable.delete_outline_24),
+                    contentDescription = null
+                )
+                Icon(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp),
                     painter = painterResource(R.drawable.done_24),
                     contentDescription = null,
                     tint = if (task.isCompleted) Color(0xFF33D01E) else Color.Transparent,
@@ -235,7 +245,7 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>
     ) {
         Column {
             Description(task = task)
-            if (task.deadline != 0L){
+            if (task.deadline != 0L) {
                 Deadline(task = task)
             }
         }
@@ -267,6 +277,45 @@ fun Deadline(task: Task) {
             text = task.deadline.toDateString(),
             fontSize = 12.sp
         )
+    }
+}
+
+@Composable
+private fun CategoriesLazyColumn(
+    modifier: Modifier = Modifier,
+    state: TasksStore.State,
+    onCategoryClick: (Category) -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(space = 6.dp),
+    ) {
+        items(
+            items = state.categories,
+            key = { it.name }
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillParentMaxWidth()
+                    .clickable {
+                        onCategoryClick(it)
+                    },
+                text = it.name
+            )
+        }
+        item {
+            Text(
+                modifier = Modifier
+                    .fillParentMaxWidth()
+                    .clickable {
+                        onCategoryClick(Category(INITIAL_CATEGORY_NAME))
+                    },
+                text = INITIAL_CATEGORY_NAME
+            )
+        }
+        item {
+            Spacer(modifier = Modifier.height(72.dp))
+        }
     }
 }
 
@@ -307,40 +356,59 @@ fun MenuSortTypes(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuCategories(
+fun ModalDrawer(
     state: TasksStore.State,
-    expanded: State<Boolean>,
-    onDismissRequest: () -> Unit,
-    onItemClick: (Category) -> Unit,
-    content: @Composable (Modifier) -> Unit
+    stateCategories: State<Boolean>,
+    onCategoriesClick: () -> Unit,
+    onCategoryClick: (Category) -> Unit,
+    content: @Composable () -> Unit
 ) {
-    ExposedDropdownMenuBox(
-        expanded = expanded.value,
-        onExpandedChange = {
-        }
-    ) {
-        content(Modifier.menuAnchor())
-
-        DropdownMenu(
-            modifier = Modifier
-                .fillMaxWidth(),
-            expanded = expanded.value,
-            onDismissRequest = {
-                onDismissRequest()
-            }
-        ) {
-            state.categories.forEach {
-                DropdownMenuItem(
-                    text = {
-                        Text(text = it.name)
-                    },
-                    onClick = {
-                        onItemClick(it)
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier
+                    .width(340.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        text = "Todo List",
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                            .clickable {
+                                onCategoriesClick()
+                            },
+                        text = "Категории",
+                        fontSize = 18.sp
+                    )
+                    if (stateCategories.value){
+                        CategoriesLazyColumn(
+                            modifier = Modifier
+                                .padding(start = 16.dp),
+                            state = state,
+                            onCategoryClick = {
+                                onCategoryClick(it)
+                            }
+                        )
                     }
-                )
+                }
             }
+        },
+        content = {
+            content()
         }
-    }
+    )
 }
