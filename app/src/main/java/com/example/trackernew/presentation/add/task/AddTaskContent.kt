@@ -161,6 +161,7 @@ fun OutlinedTextFieldCategory(
         label = {
             Text(text = "Категория")
         },
+        colors = getOutlinedTextFieldColors(),
         trailingIcon = {
             Icon(
                 modifier = Modifier
