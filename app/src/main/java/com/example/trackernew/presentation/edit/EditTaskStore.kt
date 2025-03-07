@@ -31,6 +31,8 @@ interface EditTaskStore : Store<Intent, State, Label> {
         data class ChangeCategory(val category: String) : Intent
 
         data class ChangeDeadline(val deadline: Long) : Intent
+
+        data object ChangeCompletedStatusClicked : Intent
     }
 
     data class State(
@@ -88,6 +90,8 @@ class EditTaskStoreFactory @Inject constructor(
         data class ChangeDeadline(val deadline: Long) : Msg
 
         data class CategoriesLoaded(val categories: List<Category>) : Msg
+
+        data object ChangeCompletedStatusClicked : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -133,6 +137,10 @@ class EditTaskStoreFactory @Inject constructor(
                         )
                     }
                 }
+
+                Intent.ChangeCompletedStatusClicked -> {
+                    dispatch(Msg.ChangeCompletedStatusClicked)
+                }
             }
         }
 
@@ -166,6 +174,10 @@ class EditTaskStoreFactory @Inject constructor(
 
                 is Msg.CategoriesLoaded -> {
                     copy(categories = msg.categories)
+                }
+
+                Msg.ChangeCompletedStatusClicked -> {
+                    copy(isCompleted = !isCompleted)
                 }
             }
     }

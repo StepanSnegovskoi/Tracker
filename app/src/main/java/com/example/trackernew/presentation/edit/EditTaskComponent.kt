@@ -15,4 +15,6 @@ interface EditTaskComponent {
     fun onCategoryChanged(category: String)
 
     fun onDeadlineChanged(deadline: Long)
+
+    fun onChangeCompletedStatusClick()
 }
