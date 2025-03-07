@@ -25,7 +25,9 @@ interface TasksStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object ClickAdd : Intent
+        data object ClickAddTask : Intent
+
+        data object ClickAddCategory : Intent
 
         data class ClickDeleteTask(val task: Task) : Intent
 
@@ -50,7 +52,9 @@ interface TasksStore : Store<Intent, State, Label> {
 
     sealed interface Label {
 
-        data object ClickAdd : Label
+        data object ClickAddTask : Label
+
+        data object ClickAddCategory : Label
 
         data class LongClickTask(val task: Task) : Label
     }
@@ -112,8 +116,8 @@ class TasksStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.ClickAdd -> {
-                    publish(Label.ClickAdd)
+                Intent.ClickAddTask -> {
+                    publish(Label.ClickAddTask)
                 }
 
                 is Intent.LongClickTask -> {
@@ -133,6 +137,10 @@ class TasksStoreFactory @Inject constructor(
                     scope.launch {
                         deleteTaskByIdUseCase(id)
                     }
+                }
+
+                Intent.ClickAddCategory -> {
+                    publish(Label.ClickAddCategory)
                 }
             }
         }
