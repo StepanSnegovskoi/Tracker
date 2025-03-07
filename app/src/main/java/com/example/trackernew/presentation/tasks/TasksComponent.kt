@@ -9,7 +9,7 @@ interface TasksComponent {
 
     val model: StateFlow<TasksStore.State>
 
-    fun onAddClicked()
+    fun onAddTaskClicked()
 
     fun onTaskLongClicked(task: Task)
 
@@ -18,4 +18,6 @@ interface TasksComponent {
     fun onCategoryChanged(category: Category)
 
     fun onDeleteTaskClicked(task: Task)
+
+    fun onAddCategoryClicked()
 }

@@ -57,11 +57,8 @@ fun OutlinedTextFieldCategory(
         FocusRequester()
     }
 
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        keyboardController?.show()
     }
 
     OutlinedTextField(

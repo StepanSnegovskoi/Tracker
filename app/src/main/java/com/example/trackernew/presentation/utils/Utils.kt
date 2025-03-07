@@ -3,6 +3,7 @@ package com.example.trackernew.presentation.utils
 import com.example.trackernew.domain.entity.Task
 
 const val INITIAL_CATEGORY_NAME = "Всё вместе"
+const val ADD = "Добавить"
 
 sealed class Sort(val value: String) {
     abstract fun comparator(): Comparator<Task>

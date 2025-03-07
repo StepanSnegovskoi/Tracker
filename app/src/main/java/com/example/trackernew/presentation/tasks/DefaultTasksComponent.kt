@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.onEach
 class DefaultTasksComponent @AssistedInject constructor(
     private val tasksStoreFactory: TasksStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onAddClick") private val onAddClick: () -> Unit,
+    @Assisted("onAddTaskClick") private val onAddTaskClick: () -> Unit,
+    @Assisted("onAddCategoryClick") private val onAddCategoryClick: () -> Unit,
     @Assisted("onTaskLongClick") private val onTaskLongClick: (Task) -> Unit
 ) : TasksComponent, ComponentContext by componentContext {
 
@@ -28,11 +29,15 @@ class DefaultTasksComponent @AssistedInject constructor(
     init {
         store.labels.onEach {
             when(val label = it){
-                TasksStore.Label.ClickAdd -> {
-                    onAddClick()
+                TasksStore.Label.ClickAddTask -> {
+                    onAddTaskClick()
                 }
                 is TasksStore.Label.LongClickTask -> {
                     onTaskLongClick(label.task)
+                }
+
+                TasksStore.Label.ClickAddCategory -> {
+                    onAddCategoryClick()
                 }
             }
         }.launchIn(componentScope())
@@ -41,8 +46,8 @@ class DefaultTasksComponent @AssistedInject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<TasksStore.State> = store.stateFlow
 
-    override fun onAddClicked() {
-        store.accept(TasksStore.Intent.ClickAdd)
+    override fun onAddTaskClicked() {
+        store.accept(TasksStore.Intent.ClickAddTask)
     }
 
     override fun onTaskLongClicked(task: Task) {
@@ -61,13 +66,18 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ClickDeleteTask(task))
     }
 
+    override fun onAddCategoryClicked() {
+        store.accept(TasksStore.Intent.ClickAddCategory)
+    }
+
     @AssistedFactory
     interface Factory {
 
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
-            @Assisted("onAddClick") onAddClick: () -> Unit,
+            @Assisted("onAddTaskClick") onAddTaskClick: () -> Unit,
             @Assisted("onTaskLongClick") onTaskLongClick: (Task) -> Unit,
+            @Assisted("onAddCategoryClick") onAddCategoryClick: () -> Unit,
         ): DefaultTasksComponent
     }
 }
