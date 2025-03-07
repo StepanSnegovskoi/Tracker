@@ -2,6 +2,8 @@ package com.example.trackernew.presentation.edit
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,10 +34,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import com.example.trackernew.R
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
-import java.time.LocalTime
 import java.time.ZoneId
 
 @Composable
@@ -94,8 +98,14 @@ fun EditTaskContent(component: EditTaskComponent) {
                 }
             )
 
+            TaskCompletedStatus(
+                state = state,
+                onClick = {
+                    component.onChangeCompletedStatusClick()
+                }
+            )
 
-            DateAndTimePickerDialogEditScreen (
+            DateAndTimePickerDialogEditScreen(
                 state = stateDateAndTimePicker,
                 initialDateMillis = state.deadline,
                 onDateTimeSelected = {
@@ -277,112 +287,32 @@ fun OutlinedTextFieldDeadline(
     )
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DateAndTimePickerDialog(
-    state: State<Boolean>,
-    initialDateMillis: Long? = null,
-    onDateTimeSelected: (Long) -> Unit,
-    onDismiss: () -> Unit
-) {
-    if (!state.value) return
-    var showDatePicker by remember { mutableStateOf(true) }
-    var showTimePicker by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableLongStateOf(initialDateMillis ?: System.currentTimeMillis()) }
-
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate,
-        yearRange = IntRange(2020, 2030)
-    )
-
-    val timePickerState = rememberTimePickerState(
-        is24Hour = true,
-        initialHour = initialDateMillis?.toLocalDateTime()?.hour ?: LocalTime.now().hour,
-        initialMinute = initialDateMillis?.toLocalDateTime()?.minute ?: LocalTime.now().minute
-    )
-
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = onDismiss,
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let {
-                            selectedDate = it
-                            showDatePicker = false
-                            showTimePicker = true
-                        }
-                    }
-                ) {
-                    Text("Далее")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Отмена")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    if (showTimePicker) {
-        DatePickerDialog(
-            onDismissRequest = {
-                showTimePicker = false
-                onDismiss()
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val timeMillis = (timePickerState.hour * 3_600_000L) +
-                                (timePickerState.minute * 60_000L)
-                        val finalDateTime = (datePickerState.selectedDateMillis ?: 0) + timeMillis
-                        onDateTimeSelected(finalDateTime)
-                        showTimePicker = false
-                    }
-                ) {
-                    Text("Выбрать")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showTimePicker = false
-                    showDatePicker = true
-                }) {
-                    Text("Назад")
-                }
-            }
-        ) {
-            TimePicker(state = timePickerState)
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateAndTimePickerDialogEditScreen(
     state: State<Boolean>,
-    initialDateMillis: Long? = null,
+    initialDateMillis: Long,
     onDateTimeSelected: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     if (!state.value) return
     var showDatePicker by remember { mutableStateOf(true) }
     var showTimePicker by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableLongStateOf(initialDateMillis ?: System.currentTimeMillis()) }
+
+    val initialDate =
+        if (initialDateMillis == 0L) System.currentTimeMillis()
+        else initialDateMillis
+
+    var selectedDate by remember { mutableLongStateOf(initialDate) }
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate,
-        yearRange = IntRange(2020, 2030)
     )
 
     val timePickerState = rememberTimePickerState(
         is24Hour = true,
-        initialHour = initialDateMillis?.toLocalDateTime()?.hour ?: LocalTime.now().hour,
-        initialMinute = initialDateMillis?.toLocalDateTime()?.minute ?: LocalTime.now().minute
+        initialHour = initialDate.toLocalDateTime().hour,
+        initialMinute = initialDate.toLocalDateTime().minute
     )
 
     if (showDatePicker) {
@@ -447,5 +377,32 @@ fun DateAndTimePickerDialogEditScreen(
         ) {
             TimePicker(state = timePickerState)
         }
+    }
+}
+
+@Composable
+fun TaskCompletedStatus(
+    state: EditTaskStore.State,
+    onClick: () -> Unit
+) {
+    val text = when (state.isCompleted) {
+        true -> "Выполнен"
+        false -> "В процессе"
+    }
+    val icon = when (state.isCompleted) {
+        true -> R.drawable.done_24
+        false -> R.drawable.not_completed_24
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable {
+                onClick()
+            }
+    ) {
+        Text(text = text)
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(painter = painterResource(icon), contentDescription = null)
     }
 }
