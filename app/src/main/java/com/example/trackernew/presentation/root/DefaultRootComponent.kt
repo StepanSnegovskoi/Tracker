@@ -55,11 +55,14 @@ class DefaultRootComponent @AssistedInject constructor(
             Config.Tasks -> {
                 val component = tasksStoreFactory.create(
                     componentContext = componentContext,
-                    onAddClick = {
+                    onAddTaskClick = {
                         navigation.push(Config.AddTask)
                     },
                     onTaskLongClick = {
                         navigation.push(Config.EditTask(it))
+                    },
+                    onAddCategoryClick = {
+                        navigation.push(Config.AddCategory)
                     }
                 )
                 RootComponent.Child.Tasks(component)
