@@ -42,6 +42,10 @@ class DefaultEditTaskComponent @AssistedInject constructor(
         store.accept(EditTaskStore.Intent.ChangeDeadline(deadline))
     }
 
+    override fun onChangeCompletedStatusClick() {
+        store.accept(EditTaskStore.Intent.ChangeCompletedStatusClicked)
+    }
+
     @AssistedFactory
     interface Factory {
 
