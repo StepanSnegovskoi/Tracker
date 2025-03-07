@@ -54,6 +54,7 @@ import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.toDateString
+import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
@@ -77,6 +78,9 @@ fun TasksContent(component: TasksComponent) {
         },
         onCategoryClick = {
             component.onCategoryChanged(it)
+        },
+        onAddCategoryClick = {
+            component.onAddCategoryClicked()
         },
         content = {
             Scaffold(
@@ -117,7 +121,7 @@ fun TasksContent(component: TasksComponent) {
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = {
-                            component.onAddClicked()
+                            component.onAddTaskClicked()
                         }
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = null)
@@ -284,7 +288,8 @@ fun Deadline(task: Task) {
 private fun CategoriesLazyColumn(
     modifier: Modifier = Modifier,
     state: TasksStore.State,
-    onCategoryClick: (Category) -> Unit
+    onCategoryClick: (Category) -> Unit,
+    onAddClick: () -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -311,6 +316,16 @@ private fun CategoriesLazyColumn(
                         onCategoryClick(Category(INITIAL_CATEGORY_NAME))
                     },
                 text = INITIAL_CATEGORY_NAME
+            )
+        }
+        item {
+            Text(
+                modifier = Modifier
+                    .fillParentMaxWidth()
+                    .clickable {
+                        onAddClick()
+                    },
+                text = ADD
             )
         }
         item {
@@ -362,6 +377,7 @@ fun ModalDrawer(
     stateCategories: State<Boolean>,
     onCategoriesClick: () -> Unit,
     onCategoryClick: (Category) -> Unit,
+    onAddCategoryClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -401,6 +417,9 @@ fun ModalDrawer(
                             state = state,
                             onCategoryClick = {
                                 onCategoryClick(it)
+                            },
+                            onAddClick = {
+                                onAddCategoryClick()
                             }
                         )
                     }
