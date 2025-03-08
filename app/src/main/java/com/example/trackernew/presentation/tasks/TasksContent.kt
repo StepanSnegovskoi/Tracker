@@ -45,6 +45,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +60,8 @@ import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
+import com.example.trackernew.ui.theme.Green
+import com.example.trackernew.ui.theme.Red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -213,6 +217,17 @@ private fun TaskItem(
                     text = task.name
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                if (task.isCompleted) {
+                    Icon(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(horizontal = 4.dp),
+                        painter = painterResource(R.drawable.done_24),
+                        contentDescription = null,
+                        tint = Green
+                    )
+                }
+
                 Icon(
                     modifier = Modifier
                         .size(32.dp)
@@ -222,14 +237,6 @@ private fun TaskItem(
                         },
                     painter = painterResource(R.drawable.delete_outline_24),
                     contentDescription = null
-                )
-                Icon(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .padding(horizontal = 4.dp),
-                    painter = painterResource(R.drawable.done_24),
-                    contentDescription = null,
-                    tint = if (task.isCompleted) Color(0xFF33D01E) else Color.Transparent,
                 )
             }
 
@@ -249,20 +256,76 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>
     ) {
         Column {
             Description(task = task)
-            if (task.deadline != 0L) {
-                Deadline(task = task)
-            }
+            SubTasks(task)
+            Deadline(task = task)
         }
     }
 }
 
 @Composable
+fun SubTasks(task: Task) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                drawLine(
+                    color = Color.Black, start = Offset(0f, size.height), end = Offset(
+                        size.width,
+                        size.height
+                    )
+                )
+            }
+    ) {
+        task.subTasks.forEach {
+            val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
+            val color = if (it.isCompleted) Green else Red
+            Row {
+                Text(text = it.name)
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(icon),
+                    contentDescription = null,
+                    tint = color
+                )
+            }
+
+        }
+        Spacer(
+            modifier = Modifier
+                .height(4.dp)
+        )
+    }
+
+}
+
+@Composable
 fun Description(task: Task) {
-    Text(text = task.description)
+    if (task.description.isEmpty()) return
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawBehind {
+                drawLine(
+                    color = Color.Black, start = Offset(0f, size.height), end = Offset(
+                        size.width,
+                        size.height
+                    )
+                )
+            }
+    ) {
+        Text(
+            text = task.description
+        )
+    }
+    Spacer(
+        modifier = Modifier
+            .height(4.dp)
+    )
 }
 
 @Composable
 fun Deadline(task: Task) {
+    if (task.deadline == 0L) return
     Row(
         modifier = Modifier
             .padding(end = 4.dp)
@@ -410,7 +473,7 @@ fun ModalDrawer(
                         text = "Категории",
                         fontSize = 18.sp
                     )
-                    if (stateCategories.value){
+                    if (stateCategories.value) {
                         CategoriesLazyColumn(
                             modifier = Modifier
                                 .padding(start = 16.dp),
