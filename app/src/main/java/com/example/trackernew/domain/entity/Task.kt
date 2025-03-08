@@ -10,5 +10,6 @@ data class Task(
     val category: String,
     val isCompleted: Boolean,
     val addingTime: Long,
-    val deadline: Long
+    val deadline: Long,
+    val subTasks: List<SubTask>
 )
