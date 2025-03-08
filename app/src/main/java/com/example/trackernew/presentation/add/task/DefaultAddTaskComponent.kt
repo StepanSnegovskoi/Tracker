@@ -54,6 +54,18 @@ class DefaultAddTaskComponent @AssistedInject constructor(
         store.accept(AddTaskStore.Intent.CategoriesClickedAndTheyAreEmpty)
     }
 
+    override fun onSubTaskNameChanged(subTask: String) {
+        store.accept(AddTaskStore.Intent.ChangeSubTask(subTask))
+    }
+
+    override fun onAddSubTaskClicked() {
+        store.accept(AddTaskStore.Intent.AddSubTask)
+    }
+
+    override fun onDeleteSubTaskClicked(id: Int) {
+        store.accept(AddTaskStore.Intent.DeleteSubTask(id))
+    }
+
     @AssistedFactory
     interface Factory {
 
