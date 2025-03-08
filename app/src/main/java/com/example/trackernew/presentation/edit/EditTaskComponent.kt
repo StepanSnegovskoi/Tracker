@@ -17,4 +17,12 @@ interface EditTaskComponent {
     fun onDeadlineChanged(deadline: Long)
 
     fun onChangeCompletedStatusClick()
+
+    fun onSubTaskNameChanged(subTask: String)
+
+    fun onAddSubTaskClicked()
+
+    fun onDeleteSubTaskClicked(id: Int)
+
+    fun onSubTaskChangeStatusClicked(id: Int)
 }

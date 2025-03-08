@@ -17,4 +17,10 @@ interface AddTaskComponent {
     fun onCategoryChanged(category: String)
 
     fun onDeadlineChanged(deadline: Long)
+
+    fun onSubTaskNameChanged(subTask: String)
+
+    fun onAddSubTaskClicked()
+
+    fun onDeleteSubTaskClicked(id: Int)
 }

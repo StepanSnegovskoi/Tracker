@@ -1,11 +1,13 @@
 package com.example.trackernew.presentation.edit
 
+import android.util.Log
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
+import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.usecase.EditTaskUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
@@ -15,7 +17,6 @@ import com.example.trackernew.presentation.edit.EditTaskStore.State
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
 interface EditTaskStore : Store<Intent, State, Label> {
@@ -33,6 +34,14 @@ interface EditTaskStore : Store<Intent, State, Label> {
         data class ChangeDeadline(val deadline: Long) : Intent
 
         data object ChangeCompletedStatusClicked : Intent
+
+        data class ChangeSubTask(val subTask: String) : Intent
+
+        data object AddSubTask : Intent
+
+        data class DeleteSubTaskClicked(val id: Int) : Intent
+
+        data class ChangeSubTaskStatusClicked(val id: Int) : Intent
     }
 
     data class State(
@@ -43,7 +52,9 @@ interface EditTaskStore : Store<Intent, State, Label> {
         val isCompleted: Boolean,
         val addingTime: Long,
         val deadline: Long,
-        val categories: List<Category>
+        val categories: List<Category>,
+        val subTasks: List<SubTask>,
+        val subTask: String
     )
 
     sealed interface Label {
@@ -67,7 +78,9 @@ class EditTaskStoreFactory @Inject constructor(
                 isCompleted = task.isCompleted,
                 addingTime = task.addingTime,
                 deadline = task.deadline,
-                categories = listOf()
+                categories = listOf(),
+                subTasks = task.subTasks,
+                subTask = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -92,6 +105,14 @@ class EditTaskStoreFactory @Inject constructor(
         data class CategoriesLoaded(val categories: List<Category>) : Msg
 
         data object ChangeCompletedStatusClicked : Msg
+
+        data class ChangeSubTask(val subTask: String) : Msg
+
+        data object AddSubTask : Msg
+
+        data class DeleteSubTask(val id: Int) : Msg
+
+        data class ChangeSubTaskStatusClicked(val id: Int) : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -132,7 +153,8 @@ class EditTaskStoreFactory @Inject constructor(
                                 category = state.category,
                                 isCompleted = state.isCompleted,
                                 addingTime = state.addingTime,
-                                deadline = state.deadline
+                                deadline = state.deadline,
+                                subTasks = state.subTasks
                             )
                         )
                     }
@@ -141,11 +163,31 @@ class EditTaskStoreFactory @Inject constructor(
                 Intent.ChangeCompletedStatusClicked -> {
                     dispatch(Msg.ChangeCompletedStatusClicked)
                 }
+
+                is Intent.ChangeSubTask -> {
+                    dispatch(Msg.ChangeSubTask(intent.subTask))
+                }
+
+                Intent.AddSubTask -> {
+                    dispatch(
+                        Msg.AddSubTask
+                    )
+                }
+
+                is Intent.DeleteSubTaskClicked -> {
+                    dispatch(
+                        Msg.DeleteSubTask(intent.id)
+                    )
+                }
+
+                is Intent.ChangeSubTaskStatusClicked -> {
+                    dispatch(Msg.ChangeSubTaskStatusClicked(intent.id))
+                }
             }
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
-            when(action){
+            when (action) {
                 is Action.CategoriesLoaded -> {
                     dispatch(Msg.CategoriesLoaded(action.categories))
                 }
@@ -178,6 +220,46 @@ class EditTaskStoreFactory @Inject constructor(
 
                 Msg.ChangeCompletedStatusClicked -> {
                     copy(isCompleted = !isCompleted)
+                }
+
+                is Msg.ChangeSubTask -> {
+                    copy(subTask = msg.subTask)
+                }
+
+                is Msg.AddSubTask -> {
+                    copy(subTasks = buildList {
+                        subTasks.forEach { add(it) }
+                        val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
+                        add(
+                            SubTask(
+                                id = id,
+                                name = subTask,
+                                isCompleted = false
+                            )
+                        )
+                    })
+                }
+
+                is Msg.DeleteSubTask -> {
+                    copy(subTasks = buildList {
+                        subTasks.forEach {
+                            if (it.id != msg.id) {
+                                add(it)
+                            }
+                        }
+                    })
+                }
+
+                is Msg.ChangeSubTaskStatusClicked -> {
+                    copy(subTasks = buildList {
+                        subTasks.forEach { subTask ->
+                            if (subTask.id == msg.id) {
+                                add(subTask.copy(isCompleted = !subTask.isCompleted))
+                            } else {
+                                add(subTask)
+                            }
+                        }
+                    })
                 }
             }
     }

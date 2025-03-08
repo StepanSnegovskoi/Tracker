@@ -46,6 +46,22 @@ class DefaultEditTaskComponent @AssistedInject constructor(
         store.accept(EditTaskStore.Intent.ChangeCompletedStatusClicked)
     }
 
+    override fun onSubTaskNameChanged(subTask: String) {
+        store.accept(EditTaskStore.Intent.ChangeSubTask(subTask))
+    }
+
+    override fun onAddSubTaskClicked() {
+        store.accept(EditTaskStore.Intent.AddSubTask)
+    }
+
+    override fun onDeleteSubTaskClicked(id: Int) {
+        store.accept(EditTaskStore.Intent.DeleteSubTaskClicked(id))
+    }
+
+    override fun onSubTaskChangeStatusClicked(id: Int) {
+        store.accept(EditTaskStore.Intent.ChangeSubTaskStatusClicked(id))
+    }
+
     @AssistedFactory
     interface Factory {
 
