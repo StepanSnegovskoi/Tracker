@@ -7,6 +7,7 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
+import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.SaveTaskUseCase
@@ -34,6 +35,12 @@ interface AddTaskStore : Store<Intent, State, Label> {
         data class ChangeCategory(val category: String) : Intent
 
         data class ChangeDeadline(val deadline: Long) : Intent
+
+        data class ChangeSubTask(val subTask: String) : Intent
+
+        data object AddSubTask : Intent
+
+        data class DeleteSubTask(val id: Int) : Intent
     }
 
     data class State(
@@ -41,7 +48,9 @@ interface AddTaskStore : Store<Intent, State, Label> {
         val description: String,
         val category: String,
         val deadline: Long,
-        val categories: List<Category>
+        val categories: List<Category>,
+        val subTasks: List<SubTask>,
+        val subTask: String
     )
 
     sealed interface Label {
@@ -64,7 +73,9 @@ class AddTaskStoreFactory @Inject constructor(
                 description = "",
                 category = "",
                 deadline = 0,
-                categories = listOf()
+                categories = listOf(),
+                subTasks = listOf(),
+                subTask = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -87,6 +98,12 @@ class AddTaskStoreFactory @Inject constructor(
         data class ChangeDeadline(val deadline: Long) : Msg
 
         data class CategoriesLoaded(val categories: List<Category>) : Msg
+
+        data class ChangeSubTask(val subTask: String) : Msg
+
+        data object AddSubTask : Msg
+
+        data class DeleteSubTask(val id: Int) : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -127,7 +144,8 @@ class AddTaskStoreFactory @Inject constructor(
                                 category = state.category,
                                 isCompleted = false,
                                 addingTime = Calendar.getInstance().timeInMillis,
-                                deadline = state.deadline
+                                deadline = state.deadline,
+                                subTasks = state.subTasks
                             )
                         )
                     }
@@ -136,11 +154,23 @@ class AddTaskStoreFactory @Inject constructor(
                 Intent.CategoriesClickedAndTheyAreEmpty -> {
                     publish(Label.CategoriesClickedAndTheyAreEmpty)
                 }
+
+                is Intent.ChangeSubTask -> {
+                    dispatch(Msg.ChangeSubTask(intent.subTask))
+                }
+
+                Intent.AddSubTask -> {
+                    dispatch(Msg.AddSubTask)
+                }
+
+                is Intent.DeleteSubTask -> {
+                    dispatch(Msg.DeleteSubTask(intent.id))
+                }
             }
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
-            when(action){
+            when (action) {
                 is Action.CategoriesLoaded -> {
                     dispatch(Msg.CategoriesLoaded(action.categories))
                 }
@@ -167,8 +197,35 @@ class AddTaskStoreFactory @Inject constructor(
             }
 
             is Msg.CategoriesLoaded -> {
-                Log.d("TEST_TEST", msg.categories.toString())
                 copy(categories = msg.categories)
+            }
+
+            is Msg.ChangeSubTask -> {
+                copy(subTask = msg.subTask)
+            }
+
+            is Msg.AddSubTask -> {
+                copy(subTasks = buildList {
+                    subTasks.forEach { add(it) }
+                    val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
+                    add(
+                        SubTask(
+                            id = id,
+                            name = subTask,
+                            isCompleted = false
+                        )
+                    )
+                })
+            }
+
+            is Msg.DeleteSubTask -> {
+                copy(subTasks = buildList {
+                    subTasks.forEach {
+                        if (it.id != msg.id) {
+                            add(it)
+                        }
+                    }
+                })
             }
         }
     }
