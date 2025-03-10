@@ -12,7 +12,8 @@ data class ColorPalette(
     val onBackground: Color,
     val textColor: Color,
     val tintColor: Color,
-    val oppositeColor: Color = Color.Transparent
+    val oppositeColor: Color = Color.Transparent,
+    val averageColor: Color = Color.Transparent
 )
 
 val LightColorPalette = ColorPalette(
@@ -20,7 +21,7 @@ val LightColorPalette = ColorPalette(
     onBackground = Color(0xFFB4D2E7),
     textColor = Color.Black,
     tintColor = Color.Black,
-    oppositeColor = Color.Black
+    oppositeColor = Color.Black,
 )
 
 val DarkColorPalette = ColorPalette(
@@ -28,7 +29,8 @@ val DarkColorPalette = ColorPalette(
     onBackground = Color(0xFF464444),
     textColor = Color.White,
     tintColor = Color.White,
-    oppositeColor = Color.White
+    oppositeColor = Color.White,
+    averageColor = Color(0xFF726F6F)
 )
 
 val LocalColors = staticCompositionLocalOf<ColorPalette> {
