@@ -1,7 +1,7 @@
 package com.example.trackernew.presentation.add.task
 
-import android.app.DatePickerDialog
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,9 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,13 +30,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,18 +49,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.trackernew.R
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
 import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.Red
+import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import java.time.LocalTime
 import java.time.ZoneId
@@ -73,12 +75,16 @@ fun AddTaskContent(component: AddTaskComponent) {
             FloatingActionButton(
                 onClick = {
                     component.onSaveTaskClicked()
-                }
+                },
+                containerColor = TrackerNewTheme.colors.onBackground,
+                contentColor = TrackerNewTheme.colors.oppositeColor
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
-        }
+        },
+        containerColor = TrackerNewTheme.colors.background
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -172,7 +178,10 @@ fun OutlinedTextFieldName(
         modifier = Modifier
             .fillMaxWidth(),
         label = {
-            Text(text = "Название")
+            Text(
+                text = "Название",
+                color = TrackerNewTheme.colors.textColor
+            )
         },
         colors = getOutlinedTextFieldColors(),
         value = state.name,
@@ -191,7 +200,10 @@ fun OutlinedTextFieldDescription(
         modifier = Modifier
             .fillMaxWidth(),
         label = {
-            Text(text = "Описание")
+            Text(
+                text = "Описание",
+                color = TrackerNewTheme.colors.textColor
+            )
         },
         colors = getOutlinedTextFieldColors(),
         value = state.description,
@@ -214,7 +226,10 @@ fun OutlinedTextFieldCategory(
             .then(modifier),
         readOnly = true,
         label = {
-            Text(text = "Категория")
+            Text(
+                text = "Категория",
+                color = TrackerNewTheme.colors.textColor
+            )
         },
         colors = getOutlinedTextFieldColors(),
         trailingIcon = {
@@ -225,6 +240,7 @@ fun OutlinedTextFieldCategory(
                     },
                 imageVector = Icons.Default.KeyboardArrowUp,
                 contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
             )
         },
         value = state.category,
@@ -289,7 +305,8 @@ fun Menu(
 
         DropdownMenu(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .background(TrackerNewTheme.colors.onBackground),
             expanded = expanded.value,
             onDismissRequest = {
                 onDismissRequest()
@@ -298,7 +315,10 @@ fun Menu(
             items.forEach {
                 DropdownMenuItem(
                     text = {
-                        Text(text = it)
+                        Text(
+                            text = it,
+                            color = TrackerNewTheme.colors.textColor
+                        )
                     },
                     onClick = {
                         onItemClick(it)
@@ -315,17 +335,22 @@ fun OutlinedTextFieldDeadline(
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
+    var key by remember {
+        mutableIntStateOf(0)
+    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
+            .pointerInput(key++) {
                 onClick()
             },
         readOnly = true,
-        enabled = false,
         colors = getOutlinedTextFieldColors(),
         label = {
-            Text(text = "Дедлайн")
+            Text(
+                text = "Дедлайн",
+                color = TrackerNewTheme.colors.textColor
+            )
         },
         value = state.deadline.toDateString(),
         onValueChange = {
@@ -364,6 +389,9 @@ fun DateAndTimePickerDialog(
 
     if (showDatePicker) {
         DatePickerDialog(
+            colors = DatePickerDefaults.colors().copy(
+                containerColor = TrackerNewTheme.colors.background,
+            ),
             onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(
@@ -375,21 +403,42 @@ fun DateAndTimePickerDialog(
                         }
                     }
                 ) {
-                    Text("Далее")
+                    Text(
+                        text = "Далее",
+                        color = TrackerNewTheme.colors.textColor
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Отмена")
+                    Text(
+                        text = "Отмена",
+                        color = TrackerNewTheme.colors.textColor
+                    )
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                colors = DatePickerDefaults.colors().copy(
+                    containerColor = TrackerNewTheme.colors.background,
+                    titleContentColor = TrackerNewTheme.colors.textColor,
+                    headlineContentColor = TrackerNewTheme.colors.textColor,
+                    weekdayContentColor = TrackerNewTheme.colors.textColor,
+                    navigationContentColor = TrackerNewTheme.colors.textColor,
+                    dayContentColor = TrackerNewTheme.colors.textColor,
+                    yearContentColor = TrackerNewTheme.colors.textColor,
+                    dateTextFieldColors = getOutlinedTextFieldColors()
+                ),
+                state = datePickerState
+            )
         }
     }
 
     if (showTimePicker) {
         DatePickerDialog(
+            colors = DatePickerDefaults.colors().copy(
+                containerColor = TrackerNewTheme.colors.background
+            ),
             onDismissRequest = {
                 showTimePicker = false
                 onDismiss()
@@ -411,7 +460,10 @@ fun DateAndTimePickerDialog(
                         showTimePicker = false
                     }
                 ) {
-                    Text("Выбрать")
+                    Text(
+                        text = "Выбрать",
+                        color = TrackerNewTheme.colors.textColor
+                    )
                 }
             },
             dismissButton = {
@@ -419,11 +471,32 @@ fun DateAndTimePickerDialog(
                     showTimePicker = false
                     showDatePicker = true
                 }) {
-                    Text("Назад")
+                    Text(
+                        text = "Назад",
+                        color = TrackerNewTheme.colors.textColor
+                    )
                 }
             }
         ) {
-            TimePicker(state = timePickerState)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors().copy(
+                        clockDialColor = TrackerNewTheme.colors.onBackground,
+                        timeSelectorSelectedContainerColor = TrackerNewTheme.colors.averageColor,
+                        timeSelectorUnselectedContainerColor = TrackerNewTheme.colors.onBackground,
+                        timeSelectorSelectedContentColor = TrackerNewTheme.colors.textColor,
+                        timeSelectorUnselectedContentColor = TrackerNewTheme.colors.textColor,
+                        clockDialSelectedContentColor = TrackerNewTheme.colors.textColor,
+                        clockDialUnselectedContentColor = TrackerNewTheme.colors.textColor,
+                    )
+                )
+            }
         }
     }
 }
@@ -438,17 +511,19 @@ fun SubTasks(
         modifier = Modifier
             .padding(8.dp)
     ) {
+        val lineColor = TrackerNewTheme.colors.oppositeColor
         Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .drawBehind {
                     drawLine(
-                        color = Color.Black,
+                        color = lineColor,
                         start = Offset(0f, size.height),
                         end = Offset(size.width, size.height)
                     )
                 },
-            text = "Подзадачи"
+            text = "Подзадачи",
+            color = TrackerNewTheme.colors.textColor
         )
         LazyColumn(
             modifier = Modifier
@@ -474,7 +549,8 @@ fun SubTasks(
                                 onDeleteSubTaskClick(subTask.id)
                             },
                         painter = painterResource(R.drawable.delete_outline_24),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = TrackerNewTheme.colors.tintColor
                     )
                 }
             }
@@ -489,12 +565,14 @@ fun SubTasks(
         ) {
             Text(
                 text = ADD,
-                fontFamily = FontFamily.Serif
+                fontFamily = FontFamily.Serif,
+                color = TrackerNewTheme.colors.textColor
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
             )
         }
     }
@@ -512,6 +590,9 @@ fun AddSubTaskDialog(
 ) {
     if (!stateDialog.value) return
     DatePickerDialog(
+        colors = DatePickerDefaults.colors().copy(
+            containerColor = TrackerNewTheme.colors.background
+        ),
         onDismissRequest = {
             onDismiss()
         },
@@ -521,7 +602,10 @@ fun AddSubTaskDialog(
                     onAddClick()
                 }
             ) {
-                Text("Добавить")
+                Text(
+                    text = "Добавить",
+                    color = TrackerNewTheme.colors.textColor
+                )
             }
         },
         dismissButton = {
@@ -530,28 +614,39 @@ fun AddSubTaskDialog(
                     onCancelClick()
                 }
             ) {
-                Text("Отменить")
+                Text(
+                    text = "Отменить",
+                    color = TrackerNewTheme.colors.textColor
+                )
             }
         }
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
             Column(
+                modifier = Modifier
+                    .padding(top = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Подзадача")
+                Text(
+                    text = "Подзадача",
+                    color = TrackerNewTheme.colors.textColor
+                )
                 OutlinedTextField(
                     modifier = Modifier
                         .padding(8.dp),
                     value = state.subTask,
                     onValueChange = {
                         onValueChange(it)
-                    }
+                    },
+                    colors = getOutlinedTextFieldColors()
                 )
             }
+
         }
     }
 }
