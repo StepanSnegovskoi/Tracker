@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
@@ -62,6 +64,7 @@ import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
 import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.Red
+import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,11 +93,18 @@ fun TasksContent(component: TasksComponent) {
             Scaffold(
                 modifier = Modifier
                     .fillMaxSize(),
+                containerColor = TrackerNewTheme.colors.background,
                 topBar = {
                     TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = TrackerNewTheme.colors.background
+                        ),
                         title = {
                             Row {
-                                Text(text = state.category.name)
+                                Text(
+                                    text = state.category.name,
+                                    color = TrackerNewTheme.colors.textColor
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 MenuSortTypes(
                                     expanded = stateSortTypes,
@@ -113,6 +123,7 @@ fun TasksContent(component: TasksComponent) {
                                                     stateSortTypes.value = true
                                                 }
                                                 .then(modifier),
+                                            color = TrackerNewTheme.colors.textColor,
                                             fontSize = 16.sp,
                                             text = state.sort.value
                                         )
@@ -126,18 +137,22 @@ fun TasksContent(component: TasksComponent) {
                     FloatingActionButton(
                         onClick = {
                             component.onAddTaskClicked()
-                        }
+                        },
+                        containerColor = TrackerNewTheme.colors.onBackground,
+                        contentColor = TrackerNewTheme.colors.oppositeColor
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = null)
                     }
                 }
             ) { paddingValues ->
+
                 Column(
                     modifier = Modifier
                         .padding(paddingValues = paddingValues)
-                        .padding(vertical = 4.dp, horizontal = 8.dp)
                 ) {
                     TasksLazyColumn(
+                        modifier = Modifier
+                            .padding(top = 4.dp, bottom = 4.dp),
                         state = state,
                         component = component
                     )
@@ -205,7 +220,7 @@ private fun TaskItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color.Blue.copy(alpha = 0.05f))
+                .background(color = TrackerNewTheme.colors.onBackground)
                 .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             Row(
@@ -214,7 +229,9 @@ private fun TaskItem(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     modifier = Modifier,
-                    text = task.name
+                    text = task.name,
+                    color = TrackerNewTheme.colors.textColor,
+                    fontSize = 18.sp
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (task.isCompleted) {
@@ -236,6 +253,7 @@ private fun TaskItem(
                             component.onDeleteTaskClicked(task)
                         },
                     painter = painterResource(R.drawable.delete_outline_24),
+                    tint = TrackerNewTheme.colors.tintColor,
                     contentDescription = null
                 )
             }
@@ -255,7 +273,11 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>
         visible = state.value,
     ) {
         Column {
-            Description(task = task)
+            Description(
+                modifier = Modifier
+                    .padding(bottom = 8.dp),
+                task = task
+            )
             SubTasks(task)
             Deadline(task = task)
         }
@@ -264,12 +286,13 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>
 
 @Composable
 fun SubTasks(task: Task) {
+    val lineColor = TrackerNewTheme.colors.oppositeColor
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .drawBehind {
                 drawLine(
-                    color = Color.Black, start = Offset(0f, size.height), end = Offset(
+                    color = lineColor, start = Offset(0f, size.height), end = Offset(
                         size.width,
                         size.height
                     )
@@ -280,7 +303,10 @@ fun SubTasks(task: Task) {
             val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
             val color = if (it.isCompleted) Green else Red
             Row {
-                Text(text = it.name)
+                Text(
+                    text = it.name,
+                    color = TrackerNewTheme.colors.textColor
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     painter = painterResource(icon),
@@ -299,22 +325,28 @@ fun SubTasks(task: Task) {
 }
 
 @Composable
-fun Description(task: Task) {
+fun Description(
+    modifier: Modifier = Modifier,
+    task: Task
+) {
     if (task.description.isEmpty()) return
+    val lineColor = TrackerNewTheme.colors.oppositeColor
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .drawBehind {
                 drawLine(
-                    color = Color.Black, start = Offset(0f, size.height), end = Offset(
+                    color = lineColor, start = Offset(0f, size.height), end = Offset(
                         size.width,
                         size.height
                     )
                 )
             }
+            .then(modifier)
     ) {
         Text(
-            text = task.description
+            text = task.description,
+            color = TrackerNewTheme.colors.textColor
         )
     }
     Spacer(
@@ -328,21 +360,24 @@ fun Deadline(task: Task) {
     if (task.deadline == 0L) return
     Row(
         modifier = Modifier
-            .padding(end = 4.dp)
+            .padding(end = 4.dp, top = 8.dp)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = task.addingTime.toDateString(),
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            color = TrackerNewTheme.colors.textColor
         )
         Text(
             text = "-",
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            color = TrackerNewTheme.colors.textColor
         )
         Text(
             text = task.deadline.toDateString(),
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            color = TrackerNewTheme.colors.textColor
         )
     }
 }
@@ -368,7 +403,9 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onCategoryClick(it)
                     },
-                text = it.name
+                fontSize = 16.sp,
+                text = it.name,
+                color = TrackerNewTheme.colors.textColor
             )
         }
         item {
@@ -378,7 +415,9 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onCategoryClick(Category(INITIAL_CATEGORY_NAME))
                     },
-                text = INITIAL_CATEGORY_NAME
+                fontSize = 16.sp,
+                text = INITIAL_CATEGORY_NAME,
+                color = TrackerNewTheme.colors.textColor
             )
         }
         item {
@@ -388,7 +427,9 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onAddClick()
                     },
-                text = ADD
+                fontSize = 16.sp,
+                text = ADD,
+                color = TrackerNewTheme.colors.textColor
             )
         }
         item {
@@ -414,7 +455,8 @@ fun MenuSortTypes(
 
         DropdownMenu(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .background(TrackerNewTheme.colors.onBackground),
             expanded = expanded.value,
             onDismissRequest = {
                 onDismissRequest()
@@ -423,7 +465,10 @@ fun MenuSortTypes(
             sortTypes.forEach {
                 DropdownMenuItem(
                     text = {
-                        Text(text = it.value)
+                        Text(
+                            text = it.value,
+                            color = TrackerNewTheme.colors.textColor
+                        )
                     },
                     onClick = {
                         onItemClick(it)
@@ -448,43 +493,52 @@ fun ModalDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
+                drawerContainerColor = TrackerNewTheme.colors.background,
                 modifier = Modifier
                     .width(340.dp)
             ) {
-                Column(
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .fillMaxSize()
                 ) {
-                    Text(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        text = "Todo List",
-                        fontSize = 28.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                            .clickable {
-                                onCategoriesClick()
-                            },
-                        text = "Категории",
-                        fontSize = 18.sp
-                    )
-                    if (stateCategories.value) {
-                        CategoriesLazyColumn(
+                            .padding(8.dp)
+                    ) {
+                        Text(
                             modifier = Modifier
-                                .padding(start = 16.dp),
-                            state = state,
-                            onCategoryClick = {
-                                onCategoryClick(it)
-                            },
-                            onAddClick = {
-                                onAddCategoryClick()
-                            }
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            text = "Todo List",
+                            color = TrackerNewTheme.colors.textColor,
+                            fontSize = 28.sp,
+                            textAlign = TextAlign.Center,
+
                         )
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                                .clickable {
+                                    onCategoriesClick()
+                                },
+                            text = "Категории",
+                            color = TrackerNewTheme.colors.textColor,
+                            fontSize = 20.sp
+                        )
+                        if (stateCategories.value) {
+                            CategoriesLazyColumn(
+                                modifier = Modifier
+                                    .padding(start = 16.dp),
+                                state = state,
+                                onCategoryClick = {
+                                    onCategoryClick(it)
+                                },
+                                onAddClick = {
+                                    onAddCategoryClick()
+                                }
+                            )
+                        }
                     }
                 }
             }
