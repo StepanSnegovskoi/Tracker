@@ -6,15 +6,16 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun getOutlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    disabledBorderColor = Color.Black.copy(0.3f),
-    focusedBorderColor = Color.Black.copy(0.3f),
-    unfocusedBorderColor = Color.Black.copy(0.3f),
-    disabledTextColor = Color.Black,
-    focusedTextColor = Color.Black,
-    unfocusedTextColor = Color.Black,
-    disabledLabelColor = Color.Black.copy(0.7f),
-    focusedLabelColor = Color.Black.copy(0.7f),
-    unfocusedLabelColor = Color.Black.copy(0.7f),
+    disabledBorderColor = TrackerNewTheme.colors.oppositeColor,
+    focusedBorderColor = TrackerNewTheme.colors.onBackground,
+    unfocusedBorderColor = TrackerNewTheme.colors.onBackground,
+    errorBorderColor = TrackerNewTheme.colors.onBackground,
+    disabledTextColor = TrackerNewTheme.colors.textColor,
+    focusedTextColor = TrackerNewTheme.colors.textColor,
+    unfocusedTextColor = TrackerNewTheme.colors.textColor,
+    cursorColor = TrackerNewTheme.colors.textColor,
+    focusedLabelColor = TrackerNewTheme.colors.textColor,
+    unfocusedLabelColor = TrackerNewTheme.colors.textColor,
 )
 
 val Purple80 = Color(0xFFD0BCFF)
