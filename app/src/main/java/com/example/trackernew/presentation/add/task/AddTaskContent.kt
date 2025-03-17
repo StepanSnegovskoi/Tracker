@@ -61,7 +61,9 @@ import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.Red
 import com.example.trackernew.ui.theme.TrackerNewTheme
+import com.example.trackernew.ui.theme.getDatePickerColors
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
+import com.example.trackernew.ui.theme.getTimePickerColors
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -419,16 +421,7 @@ fun DateAndTimePickerDialog(
             }
         ) {
             DatePicker(
-                colors = DatePickerDefaults.colors().copy(
-                    containerColor = TrackerNewTheme.colors.background,
-                    titleContentColor = TrackerNewTheme.colors.textColor,
-                    headlineContentColor = TrackerNewTheme.colors.textColor,
-                    weekdayContentColor = TrackerNewTheme.colors.textColor,
-                    navigationContentColor = TrackerNewTheme.colors.textColor,
-                    dayContentColor = TrackerNewTheme.colors.textColor,
-                    yearContentColor = TrackerNewTheme.colors.textColor,
-                    dateTextFieldColors = getOutlinedTextFieldColors()
-                ),
+                colors = getDatePickerColors(),
                 state = datePickerState
             )
         }
@@ -486,15 +479,7 @@ fun DateAndTimePickerDialog(
             ) {
                 TimePicker(
                     state = timePickerState,
-                    colors = TimePickerDefaults.colors().copy(
-                        clockDialColor = TrackerNewTheme.colors.onBackground,
-                        timeSelectorSelectedContainerColor = TrackerNewTheme.colors.averageColor,
-                        timeSelectorUnselectedContainerColor = TrackerNewTheme.colors.onBackground,
-                        timeSelectorSelectedContentColor = TrackerNewTheme.colors.textColor,
-                        timeSelectorUnselectedContentColor = TrackerNewTheme.colors.textColor,
-                        clockDialSelectedContentColor = TrackerNewTheme.colors.textColor,
-                        clockDialUnselectedContentColor = TrackerNewTheme.colors.textColor,
-                    )
+                    colors = getTimePickerColors()
                 )
             }
         }
