@@ -228,11 +228,17 @@ fun OutlinedTextFieldCategory(
     modifier: Modifier = Modifier,
     state: AddTaskStore.State,
     onValueChange: (String) -> Unit,
-    onIconClick: () -> Unit
+    onClick: () -> Unit
 ) {
+    var key by remember {
+        mutableIntStateOf(0)
+    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
+            .pointerInput(key++) {
+                onClick()
+            }
             .then(modifier),
         readOnly = true,
         label = {
@@ -242,17 +248,6 @@ fun OutlinedTextFieldCategory(
             )
         },
         colors = getOutlinedTextFieldColors(),
-        trailingIcon = {
-            Icon(
-                modifier = Modifier
-                    .clickable {
-                        onIconClick()
-                    },
-                imageVector = Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint = TrackerNewTheme.colors.tintColor
-            )
-        },
         value = state.category,
         onValueChange = {
             onValueChange(it)
@@ -283,11 +278,11 @@ fun OutlinedTextFieldCategoryWithMenu(
             OutlinedTextFieldCategory(
                 modifier = modifier,
                 state = state,
-                onIconClick = {
+                onClick = {
                     if (state.categories.isEmpty()) {
                         component.ifCategoriesAreEmpty()
                     }
-                    expanded.value = !expanded.value
+                    expanded.value = true
                 },
                 onValueChange = {
                     onValueChange(it)

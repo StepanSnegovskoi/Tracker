@@ -49,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -66,13 +65,9 @@ import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.Red
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksContent(component: TasksComponent) {
     val state by component.model.collectAsState()
-    val stateSortTypes = remember {
-        mutableStateOf(false)
-    }
     val stateCategories = remember {
         mutableStateOf(false)
     }
@@ -95,66 +90,35 @@ fun TasksContent(component: TasksComponent) {
                     .fillMaxSize(),
                 containerColor = TrackerNewTheme.colors.background,
                 topBar = {
-                    TopAppBar(
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = TrackerNewTheme.colors.background
-                        ),
-                        title = {
-                            Row {
-                                Text(
-                                    text = state.category.name,
-                                    color = TrackerNewTheme.colors.textColor
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                MenuSortTypes(
-                                    expanded = stateSortTypes,
-                                    onDismissRequest = {
-                                        stateSortTypes.value = false
-                                    },
-                                    onItemClick = {
-                                        component.onSortChanged(it)
-                                        stateSortTypes.value = false
-                                    },
-                                    content = { modifier ->
-                                        Text(
-                                            modifier = Modifier
-                                                .padding(end = 12.dp)
-                                                .clickable {
-                                                    stateSortTypes.value = true
-                                                }
-                                                .then(modifier),
-                                            color = TrackerNewTheme.colors.textColor,
-                                            fontSize = 16.sp,
-                                            text = state.sort.value
-                                        )
-                                    }
-                                )
-                            }
+                    ScaffoldTopAppBar(
+                        state = state,
+                        onSortItemClick = {
+                            component.onSortChanged(it)
                         }
                     )
                 },
                 floatingActionButton = {
-                    FloatingActionButton(
+                    ScaffoldFloatingActionButton(
                         onClick = {
                             component.onAddTaskClicked()
-                        },
-                        containerColor = TrackerNewTheme.colors.onBackground,
-                        contentColor = TrackerNewTheme.colors.oppositeColor
-                    ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
-                    }
+                        }
+                    )
                 }
             ) { paddingValues ->
-
                 Column(
                     modifier = Modifier
                         .padding(paddingValues = paddingValues)
                 ) {
                     TasksLazyColumn(
                         modifier = Modifier
-                            .padding(top = 4.dp, bottom = 4.dp),
+                            .padding(4.dp),
                         state = state,
-                        component = component
+                        onTaskLongClick = {
+                            component.onTaskLongClicked(it)
+                        },
+                        onDeleteIconClick = {
+                            component.onDeleteTaskClicked(it)
+                        }
                     )
                 }
             }
@@ -166,11 +130,12 @@ fun TasksContent(component: TasksComponent) {
 private fun TasksLazyColumn(
     modifier: Modifier = Modifier,
     state: TasksStore.State,
-    component: TasksComponent
+    onTaskLongClick: (Task) -> Unit,
+    onDeleteIconClick: (Task) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(space = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         items(
             items = state.tasks.filteredTasks,
@@ -178,9 +143,11 @@ private fun TasksLazyColumn(
         ) {
             TaskItem(
                 task = it,
-                component = component,
-                onLongClick = {
-                    component.onTaskLongClicked(it)
+                onTaskLongClick = {
+                    onTaskLongClick(it)
+                },
+                onDeleteIconClick = {
+                    onDeleteIconClick(it)
                 }
             )
         }
@@ -194,9 +161,9 @@ private fun TasksLazyColumn(
 @Composable
 private fun TaskItem(
     modifier: Modifier = Modifier,
-    component: TasksComponent,
     task: Task,
-    onLongClick: () -> Unit
+    onTaskLongClick: () -> Unit,
+    onDeleteIconClick: (Task) -> Unit
 ) {
     val stateDescription = rememberSaveable {
         mutableStateOf(value = false)
@@ -211,7 +178,7 @@ private fun TaskItem(
                     stateDescription.value = !stateDescription.value
                 },
                 onLongClick = {
-                    onLongClick()
+                    onTaskLongClick()
                 }
             )
             .then(other = modifier),
@@ -226,9 +193,9 @@ private fun TaskItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    modifier = Modifier,
+                    modifier = Modifier
+                        .padding(start = 4.dp),
                     text = task.name,
                     color = TrackerNewTheme.colors.textColor,
                     fontSize = 18.sp
@@ -244,60 +211,77 @@ private fun TaskItem(
                         tint = Green
                     )
                 }
-
                 Icon(
                     modifier = Modifier
                         .size(32.dp)
                         .padding(horizontal = 4.dp)
                         .clickable {
-                            component.onDeleteTaskClicked(task)
+                            onDeleteIconClick(task)
                         },
                     painter = painterResource(R.drawable.delete_outline_24),
                     tint = TrackerNewTheme.colors.tintColor,
                     contentDescription = null
                 )
             }
-
             AnimatedDescriptionAndDeadline(
                 task = task,
                 state = stateDescription
             )
-
         }
     }
 }
 
 @Composable
-fun ColumnScope.AnimatedDescriptionAndDeadline(task: Task, state: State<Boolean>) {
+fun ColumnScope.AnimatedDescriptionAndDeadline(
+    modifier: Modifier = Modifier,
+    task: Task,
+    state: State<Boolean>
+) {
     AnimatedVisibility(
+        modifier = modifier,
         visible = state.value,
     ) {
         Column {
             Description(
                 modifier = Modifier
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp)
+                    .fillMaxWidth(),
                 task = task
             )
-            SubTasks(task)
-            Deadline(task = task)
+            SubTasks(task = task)
+            Deadline(
+                modifier = Modifier
+                    .padding(end = 4.dp, top = 8.dp)
+                    .fillMaxWidth(),
+                task = task
+            )
+            val lineColor = TrackerNewTheme.colors.oppositeColor
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .drawBehind {
+                        drawLine(
+                            start = Offset(0f, 0f),
+                            end = Offset(size.width, 0f),
+                            color = lineColor
+                        )
+                    }
+            )
         }
     }
 }
 
 @Composable
-fun SubTasks(task: Task) {
-    val lineColor = TrackerNewTheme.colors.oppositeColor
+fun SubTasks(
+    modifier: Modifier = Modifier,
+    task: Task
+) {
+    if (task.subTasks.isEmpty()) return
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .drawBehind {
-                drawLine(
-                    color = lineColor, start = Offset(0f, size.height), end = Offset(
-                        size.width,
-                        size.height
-                    )
-                )
-            }
+            .then(modifier)
     ) {
         task.subTasks.forEach {
             val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
@@ -309,19 +293,15 @@ fun SubTasks(task: Task) {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp),
                     painter = painterResource(icon),
                     contentDescription = null,
                     tint = color
                 )
             }
-
         }
-        Spacer(
-            modifier = Modifier
-                .height(4.dp)
-        )
     }
-
 }
 
 @Composable
@@ -330,38 +310,24 @@ fun Description(
     task: Task
 ) {
     if (task.description.isEmpty()) return
-    val lineColor = TrackerNewTheme.colors.oppositeColor
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .drawBehind {
-                drawLine(
-                    color = lineColor, start = Offset(0f, size.height), end = Offset(
-                        size.width,
-                        size.height
-                    )
-                )
-            }
-            .then(modifier)
+        modifier = modifier
     ) {
         Text(
             text = task.description,
             color = TrackerNewTheme.colors.textColor
         )
     }
-    Spacer(
-        modifier = Modifier
-            .height(4.dp)
-    )
 }
 
 @Composable
-fun Deadline(task: Task) {
+fun Deadline(
+    modifier: Modifier = Modifier,
+    task: Task
+) {
     if (task.deadline == 0L) return
     Row(
-        modifier = Modifier
-            .padding(end = 4.dp, top = 8.dp)
-            .fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -441,12 +407,14 @@ private fun CategoriesLazyColumn(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MenuSortTypes(
+    modifier: Modifier = Modifier,
     expanded: State<Boolean>,
     onDismissRequest: () -> Unit,
     onItemClick: (Sort) -> Unit,
     content: @Composable (Modifier) -> Unit
 ) {
     ExposedDropdownMenuBox(
+        modifier = modifier,
         expanded = expanded.value,
         onExpandedChange = {
         }
@@ -481,6 +449,7 @@ fun MenuSortTypes(
 
 @Composable
 fun ModalDrawer(
+    modifier: Modifier = Modifier,
     state: TasksStore.State,
     stateCategories: State<Boolean>,
     onCategoriesClick: () -> Unit,
@@ -490,6 +459,7 @@ fun ModalDrawer(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     ModalNavigationDrawer(
+        modifier = modifier,
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
@@ -514,7 +484,7 @@ fun ModalDrawer(
                             fontSize = 28.sp,
                             textAlign = TextAlign.Center,
 
-                        )
+                            )
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -547,4 +517,88 @@ fun ModalDrawer(
             content()
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScaffoldTopAppBar(
+    modifier: Modifier = Modifier,
+    state: TasksStore.State,
+    onSortItemClick: (Sort) -> Unit
+) {
+    TopAppBar(
+        modifier = modifier,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = TrackerNewTheme.colors.background
+        ),
+        title = {
+            TopAppBarTitle(
+                state = state,
+                onSortItemClick = {
+                    onSortItemClick(it)
+                }
+            )
+        }
+    )
+}
+
+@Composable
+fun TopAppBarTitle(
+    modifier: Modifier = Modifier,
+    state: TasksStore.State,
+    onSortItemClick: (Sort) -> Unit
+) {
+    val stateSortTypes = remember {
+        mutableStateOf(false)
+    }
+    Row(
+        modifier = modifier
+    ) {
+        Text(
+            text = state.category.name,
+            color = TrackerNewTheme.colors.textColor
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        MenuSortTypes(
+            expanded = stateSortTypes,
+            onDismissRequest = {
+                stateSortTypes.value = false
+            },
+            onItemClick = {
+                onSortItemClick(it)
+                stateSortTypes.value = false
+            },
+            content = { modifier ->
+                Text(
+                    modifier = Modifier
+                        .padding(end = 12.dp)
+                        .clickable {
+                            stateSortTypes.value = true
+                        }
+                        .then(modifier),
+                    color = TrackerNewTheme.colors.textColor,
+                    fontSize = 16.sp,
+                    text = state.sort.value
+                )
+            }
+        )
+    }
+}
+
+@Composable
+fun ScaffoldFloatingActionButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    FloatingActionButton(
+        modifier = modifier,
+        onClick = {
+            onClick()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+    }
 }
