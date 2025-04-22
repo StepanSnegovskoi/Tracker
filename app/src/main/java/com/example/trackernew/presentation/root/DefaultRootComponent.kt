@@ -76,7 +76,10 @@ class DefaultRootComponent @AssistedInject constructor(
             is Config.EditTask -> {
                 val component = editTaskStoreFactory.create(
                     componentContext = componentContext,
-                    task = config.task
+                    task = config.task,
+                    onTaskEdited = {
+                        navigation.pop()
+                    }
                 )
                 RootComponent.Child.EditTask(component)
             }

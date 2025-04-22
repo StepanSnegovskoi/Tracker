@@ -58,6 +58,8 @@ interface EditTaskStore : Store<Intent, State, Label> {
     )
 
     sealed interface Label {
+
+        data object TaskEdited : Label
     }
 }
 
@@ -159,6 +161,7 @@ class EditTaskStoreFactory @Inject constructor(
                             )
                         )
                     }
+                    publish(Label.TaskEdited)
                 }
 
                 Intent.ChangeCompletedStatusClicked -> {
