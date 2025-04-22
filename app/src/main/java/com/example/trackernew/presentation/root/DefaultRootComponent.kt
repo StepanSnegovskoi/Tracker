@@ -86,7 +86,10 @@ class DefaultRootComponent @AssistedInject constructor(
 
             Config.AddCategory -> {
                 val component = addCategoryStoreFactory.create(
-                    componentContext = componentContext
+                    componentContext = componentContext,
+                    onCategorySaved = {
+                        navigation.pop()
+                    }
                 )
                 RootComponent.Child.AddCategory(component)
             }

@@ -27,6 +27,8 @@ interface AddCategoryStore : Store<Intent, State, Label> {
     )
 
     sealed interface Label {
+
+        data object CategorySaved : Label
     }
 }
 
@@ -72,6 +74,7 @@ class AddCategoryStoreFactory @Inject constructor(
                             )
                         )
                     }
+                    publish(Label.CategorySaved)
                 }
 
                 is Intent.ChangeCategory -> {
