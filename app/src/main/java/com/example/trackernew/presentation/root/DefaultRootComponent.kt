@@ -4,7 +4,9 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DelicateDecomposeApi
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.replaceCurrent
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.add.category.DefaultAddCategoryComponent
 import com.example.trackernew.presentation.add.task.AddTaskStore
@@ -48,6 +50,9 @@ class DefaultRootComponent @AssistedInject constructor(
                     ifCategoriesAreEmpty = {
                         navigation.push(Config.AddCategory)
                     },
+                    onTaskSaved = {
+                        navigation.pop()
+                    }
                 )
                 RootComponent.Child.AddTask(component)
             }

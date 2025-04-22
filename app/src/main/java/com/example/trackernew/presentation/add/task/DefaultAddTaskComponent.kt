@@ -17,13 +17,21 @@ class DefaultAddTaskComponent @AssistedInject constructor(
     private val storeFactory: AddTaskStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+    @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
 ): AddTaskComponent, ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            ifCategoriesAreEmpty()
+            when(val label = it){
+                AddTaskStore.Label.CategoriesClickedAndTheyAreEmpty -> {
+                    ifCategoriesAreEmpty()
+                }
+                AddTaskStore.Label.TaskSaved -> {
+                    onTaskSaved()
+                }
+            }
         }.launchIn(componentScope())
     }
 
@@ -72,6 +80,7 @@ class DefaultAddTaskComponent @AssistedInject constructor(
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+            @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
         ): DefaultAddTaskComponent
     }
 }

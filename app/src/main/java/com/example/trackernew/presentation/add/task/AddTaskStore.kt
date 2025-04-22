@@ -56,6 +56,8 @@ interface AddTaskStore : Store<Intent, State, Label> {
     sealed interface Label {
 
         data object CategoriesClickedAndTheyAreEmpty : Label
+
+        data object TaskSaved : Label
     }
 }
 
@@ -150,6 +152,7 @@ class AddTaskStoreFactory @Inject constructor(
                             )
                         )
                     }
+                    publish(Label.TaskSaved)
                 }
 
                 Intent.CategoriesClickedAndTheyAreEmpty -> {
