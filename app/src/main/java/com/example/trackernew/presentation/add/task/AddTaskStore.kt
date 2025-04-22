@@ -135,12 +135,13 @@ class AddTaskStoreFactory @Inject constructor(
 
                 Intent.SaveTaskClicked -> {
                     val state = getState()
+                    if (state.name.trim().isEmpty()) return
                     scope.launch {
                         saveTaskUseCase(
                             Task(
                                 id = 0,
-                                name = state.name,
-                                description = state.description,
+                                name = state.name.trim(),
+                                description = state.description.trim(),
                                 category = state.category,
                                 isCompleted = false,
                                 addingTime = Calendar.getInstance().timeInMillis,
@@ -160,6 +161,8 @@ class AddTaskStoreFactory @Inject constructor(
                 }
 
                 Intent.AddSubTask -> {
+                    val state = getState()
+                    if (state.subTask.trim().isEmpty()) return
                     dispatch(Msg.AddSubTask)
                 }
 
@@ -211,7 +214,7 @@ class AddTaskStoreFactory @Inject constructor(
                     add(
                         SubTask(
                             id = id,
-                            name = subTask,
+                            name = subTask.trim(),
                             isCompleted = false
                         )
                     )

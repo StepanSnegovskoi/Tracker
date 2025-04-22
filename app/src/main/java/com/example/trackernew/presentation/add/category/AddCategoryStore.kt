@@ -64,10 +64,11 @@ class AddCategoryStoreFactory @Inject constructor(
             when (intent) {
                 Intent.AddCategoryClicked -> {
                     val state = getState()
+                    if (state.category.trim().isEmpty()) return
                     scope.launch {
                         addCategoryUseCase(
                             Category(
-                                name = state.category
+                                name = state.category.trim()
                             )
                         )
                     }
@@ -77,7 +78,6 @@ class AddCategoryStoreFactory @Inject constructor(
                     dispatch(Msg.ChangeCategory(intent.category))
                 }
             }
-
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
