@@ -9,6 +9,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -27,12 +28,21 @@ class DefaultAddCategoryComponent @AssistedInject constructor (
                 AddCategoryStore.Label.CategorySaved -> {
                     onCategorySaved()
                 }
+
+                /**
+                 * Другие случаи обрабатываются не здесь
+                 */
+                else -> {
+
+                }
             }
         }.launchIn(componentScope())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<AddCategoryStore.State> = store.stateFlow
+
+    override val labels: Flow<AddCategoryStore.Label> = store.labels
 
     override fun onCategoryChanged(category: String) {
         store.accept(AddCategoryStore.Intent.ChangeCategory(category))

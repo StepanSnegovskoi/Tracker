@@ -21,18 +21,40 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.presentation.root.SnackbarManager
+import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun AddCategoryContent(component: AddCategoryComponent) {
+fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: SnackbarManager) {
     val state by component.model.collectAsState()
+    val rememberCoroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(
+        key1 = component
+    ) {
+        component.labels.onEach {
+            when(it){
+                AddCategoryStore.Label.AddCategoryClickedAndNameIsEmpty -> {
+                    snackbarManager.showMessage("Название не должно быть пустым")
+                }
+                AddCategoryStore.Label.CategorySaved -> {
+                    snackbarManager.showMessage("Категория сохранена")
+                }
+            }
+        }.launchIn(rememberCoroutineScope)
+    }
+
     Scaffold (
         modifier = Modifier
             .fillMaxSize(),
@@ -96,7 +118,7 @@ fun OutlinedTextFieldCategory(
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = Color.Red,
+                color = if(state.category.isNotEmpty()) Green else Color.Red,
                 fontSize = 12.sp
             )
         }
