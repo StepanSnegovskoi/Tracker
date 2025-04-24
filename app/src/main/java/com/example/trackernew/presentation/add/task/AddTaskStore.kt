@@ -1,6 +1,5 @@
 package com.example.trackernew.presentation.add.task
 
-import android.util.Log
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -9,6 +8,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.SaveTaskUseCase
 import com.example.trackernew.presentation.add.task.AddTaskStore.Intent
@@ -58,6 +58,12 @@ interface AddTaskStore : Store<Intent, State, Label> {
         data object CategoriesClickedAndTheyAreEmpty : Label
 
         data object TaskSaved : Label
+
+        data object SaveTaskClickedAndNameIsEmpty : Label
+
+        data object AddSubTaskClickedAndNameIsEmpty : Label
+
+        data object SubTaskSaved : Label
     }
 }
 
@@ -137,7 +143,10 @@ class AddTaskStoreFactory @Inject constructor(
 
                 Intent.SaveTaskClicked -> {
                     val state = getState()
-                    if (state.name.trim().isEmpty()) return
+                    if (state.name.trim().isEmpty()) {
+                        publish(Label.SaveTaskClickedAndNameIsEmpty)
+                        return
+                    }
                     scope.launch {
                         saveTaskUseCase(
                             Task(
@@ -145,14 +154,14 @@ class AddTaskStoreFactory @Inject constructor(
                                 name = state.name.trim(),
                                 description = state.description.trim(),
                                 category = state.category,
-                                isCompleted = false,
+                                status = TaskStatus.InTheProcess,
                                 addingTime = Calendar.getInstance().timeInMillis,
                                 deadline = state.deadline,
                                 subTasks = state.subTasks
                             )
                         )
+                        publish(Label.TaskSaved)
                     }
-                    publish(Label.TaskSaved)
                 }
 
                 Intent.CategoriesClickedAndTheyAreEmpty -> {
@@ -165,8 +174,12 @@ class AddTaskStoreFactory @Inject constructor(
 
                 Intent.AddSubTask -> {
                     val state = getState()
-                    if (state.subTask.trim().isEmpty()) return
+                    if (state.subTask.trim().isEmpty()) {
+                        publish(Label.AddSubTaskClickedAndNameIsEmpty)
+                        return
+                    }
                     dispatch(Msg.AddSubTask)
+                    publish(Label.SubTaskSaved)
                 }
 
                 is Intent.DeleteSubTask -> {

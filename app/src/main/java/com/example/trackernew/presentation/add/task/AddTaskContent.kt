@@ -3,6 +3,7 @@ package com.example.trackernew.presentation.add.task
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -30,12 +30,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
+import com.example.trackernew.presentation.root.SnackbarManager
 import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.ui.theme.Green
 import com.example.trackernew.ui.theme.Red
@@ -65,12 +66,44 @@ import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getDatePickerColors
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.time.LocalTime
 import java.time.ZoneId
 
 @Composable
-fun AddTaskContent(component: AddTaskComponent) {
+fun AddTaskContent(component: AddTaskComponent, snackbarManager: SnackbarManager) {
     val state by component.model.collectAsState()
+    val rememberCoroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(
+        key1 = component
+    ) {
+        component.labels.onEach {
+            when(it){
+                AddTaskStore.Label.CategoriesClickedAndTheyAreEmpty -> {
+                    snackbarManager.showMessage("Список категорий пуст")
+                }
+                AddTaskStore.Label.TaskSaved -> {
+                    snackbarManager.showMessage("Задача сохранена")
+                }
+
+                AddTaskStore.Label.SaveTaskClickedAndNameIsEmpty -> {
+                    snackbarManager.showMessage("Название не должно быть пустым")
+                }
+
+                AddTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
+                    snackbarManager.showMessage("Название не должно быть пустым")
+                }
+
+                AddTaskStore.Label.SubTaskSaved -> {
+                    snackbarManager.showMessage("Подзадача добавлена")
+                }
+            }
+        }.launchIn(rememberCoroutineScope)
+    }
+
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -194,7 +227,7 @@ fun OutlinedTextFieldName(
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = Color.Red,
+                color = if(state.name.isNotEmpty()) Color.Green else Color.Red,
                 fontSize = 12.sp
             )
         }
@@ -230,17 +263,21 @@ fun OutlinedTextFieldCategory(
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
-    var key by remember {
-        mutableIntStateOf(0)
+    val interactionSource = remember {
+        MutableInteractionSource()
     }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .pointerInput(key++) {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
                 onClick()
             }
             .then(modifier),
         readOnly = true,
+        enabled = false,
         label = {
             Text(
                 text = "Категория",
@@ -281,8 +318,9 @@ fun OutlinedTextFieldCategoryWithMenu(
                 onClick = {
                     if (state.categories.isEmpty()) {
                         component.ifCategoriesAreEmpty()
+                    } else {
+                        expanded.value = true
                     }
-                    expanded.value = true
                 },
                 onValueChange = {
                     onValueChange(it)
@@ -340,16 +378,20 @@ fun OutlinedTextFieldDeadline(
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
-    var key by remember {
-        mutableIntStateOf(0)
+    val interactionSource = remember {
+        MutableInteractionSource()
     }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .pointerInput(key++) {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
                 onClick()
             },
         readOnly = true,
+        enabled = false,
         colors = getOutlinedTextFieldColors(),
         label = {
             Text(
@@ -631,11 +673,14 @@ fun AddSubTaskDialog(
                     onValueChange = {
                         onValueChange(it)
                     },
+                    label = {
+                        Text(text = "Название")
+                    },
                     colors = getOutlinedTextFieldColors(),
                     supportingText = {
                         Text(
                             text = "*Обязательно",
-                            color = Color.Red,
+                            color = if(state.subTask.isNotEmpty()) Green else Color.Red,
                             fontSize = 12.sp
                         )
                     }
