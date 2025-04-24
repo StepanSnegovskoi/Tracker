@@ -16,7 +16,10 @@ import com.example.trackernew.data.entity.TaskDbModel
     version = 2,
     exportSchema = false
 )
-@TypeConverters(SubTasksConverter::class)
+@TypeConverters(
+    SubTasksConverter::class,
+    TaskStatusConverter::class
+)
 abstract class AppDatabase : RoomDatabase() {
 
     companion object {

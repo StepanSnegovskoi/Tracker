@@ -1,6 +1,7 @@
 package com.example.trackernew.presentation.tasks
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,19 +58,21 @@ import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
 import com.example.trackernew.presentation.utils.sortTypes
 import com.example.trackernew.ui.theme.Green
+import com.example.trackernew.ui.theme.Orange
 import com.example.trackernew.ui.theme.Red
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @Composable
 fun TasksContent(component: TasksComponent) {
     val state by component.model.collectAsState()
-    val stateCategories = remember {
+    val stateCategories = rememberSaveable() {
         mutableStateOf(false)
     }
 
@@ -201,16 +205,28 @@ private fun TaskItem(
                     fontSize = 18.sp
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                if (task.isCompleted) {
-                    Icon(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .padding(horizontal = 4.dp),
-                        painter = painterResource(R.drawable.done_24),
-                        contentDescription = null,
-                        tint = Green
-                    )
-                }
+
+                Icon(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp),
+                    painter = painterResource(
+                        when(task.status){
+                            TaskStatus.Completed -> R.drawable.question_24
+                            TaskStatus.Executed -> R.drawable.done_24
+                            TaskStatus.Failed -> R.drawable.not_completed_24
+                            TaskStatus.InTheProcess -> R.drawable.dots_24
+                        }
+                    ),
+                    contentDescription = null,
+                    tint = when(task.status){
+                        TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
+                        TaskStatus.Executed -> Green
+                        TaskStatus.Failed -> Red
+                        TaskStatus.InTheProcess -> Orange
+                    }
+                )
+
                 Icon(
                     modifier = Modifier
                         .size(32.dp)
@@ -283,6 +299,7 @@ fun SubTasks(
             .fillMaxWidth()
             .then(modifier)
     ) {
+
         task.subTasks.forEach {
             val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
             val color = if (it.isCompleted) Green else Red
@@ -381,7 +398,6 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onCategoryClick(Category(INITIAL_CATEGORY_NAME))
                     },
-                fontSize = 16.sp,
                 text = INITIAL_CATEGORY_NAME,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -393,7 +409,6 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onAddClick()
                     },
-                fontSize = 16.sp,
                 text = ADD,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -401,6 +416,27 @@ private fun CategoriesLazyColumn(
         item {
             Spacer(modifier = Modifier.height(72.dp))
         }
+    }
+}
+
+@Composable
+private fun ColumnScope.AnimatedCategoriesLazyColumn(
+    modifier: Modifier = Modifier,
+    state: TasksStore.State,
+    visibleState: State<Boolean>,
+    onCategoryClick: (Category) -> Unit,
+    onAddClick: () -> Unit,
+) {
+    val transitionState = remember { MutableTransitionState(false) }
+    transitionState.targetState = visibleState.value
+
+    AnimatedVisibility(visibleState = transitionState) {
+        CategoriesLazyColumn(
+            modifier = modifier,
+            state = state,
+            onCategoryClick = onCategoryClick,
+            onAddClick = onAddClick
+        )
     }
 }
 
@@ -479,7 +515,7 @@ fun ModalDrawer(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
-                            text = "Todo List",
+                            text = "Задачи",
                             color = TrackerNewTheme.colors.textColor,
                             fontSize = 28.sp,
                             textAlign = TextAlign.Center,
@@ -496,19 +532,18 @@ fun ModalDrawer(
                             color = TrackerNewTheme.colors.textColor,
                             fontSize = 20.sp
                         )
-                        if (stateCategories.value) {
-                            CategoriesLazyColumn(
-                                modifier = Modifier
-                                    .padding(start = 16.dp),
-                                state = state,
-                                onCategoryClick = {
-                                    onCategoryClick(it)
-                                },
-                                onAddClick = {
-                                    onAddCategoryClick()
-                                }
-                            )
-                        }
+                        AnimatedCategoriesLazyColumn(
+                            modifier = Modifier
+                                .padding(start = 16.dp),
+                            state = state,
+                            visibleState = stateCategories,
+                            onCategoryClick = {
+                                onCategoryClick(it)
+                            },
+                            onAddClick = {
+                                onAddCategoryClick()
+                            }
+                        )
                     }
                 }
             }

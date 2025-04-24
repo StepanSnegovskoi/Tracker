@@ -1,10 +1,13 @@
 package com.example.trackernew.presentation.add.task
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface AddTaskComponent {
 
     val model: StateFlow<AddTaskStore.State>
+
+    val labels: Flow<AddTaskStore.Label>
 
     fun onSaveTaskClicked()
 

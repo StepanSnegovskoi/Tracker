@@ -9,6 +9,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -17,13 +18,29 @@ class DefaultAddTaskComponent @AssistedInject constructor(
     private val storeFactory: AddTaskStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+    @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
 ): AddTaskComponent, ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore { storeFactory.create() }
 
+    override val labels: Flow<AddTaskStore.Label>
+        get() = store.labels
+
     init {
         store.labels.onEach {
-            ifCategoriesAreEmpty()
+            when(val label = it){
+                AddTaskStore.Label.CategoriesClickedAndTheyAreEmpty -> {
+                    ifCategoriesAreEmpty()
+                }
+                AddTaskStore.Label.TaskSaved -> {
+                    onTaskSaved()
+                }
+                /**
+                 * Другие случаи обрабатываются не здесь
+                 */
+                else -> {
+                }
+            }
         }.launchIn(componentScope())
     }
 
@@ -72,6 +89,7 @@ class DefaultAddTaskComponent @AssistedInject constructor(
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+            @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
         ): DefaultAddTaskComponent
     }
 }

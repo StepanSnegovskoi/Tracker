@@ -27,6 +27,10 @@ interface AddCategoryStore : Store<Intent, State, Label> {
     )
 
     sealed interface Label {
+
+        data object CategorySaved : Label
+
+        data object AddCategoryClickedAndNameIsEmpty : Label
     }
 }
 
@@ -64,13 +68,17 @@ class AddCategoryStoreFactory @Inject constructor(
             when (intent) {
                 Intent.AddCategoryClicked -> {
                     val state = getState()
-                    if (state.category.trim().isEmpty()) return
+                    if (state.category.trim().isEmpty()) {
+                        publish(Label.AddCategoryClickedAndNameIsEmpty)
+                        return
+                    }
                     scope.launch {
                         addCategoryUseCase(
                             Category(
                                 name = state.category.trim()
                             )
                         )
+                        publish(Label.CategorySaved)
                     }
                 }
 
