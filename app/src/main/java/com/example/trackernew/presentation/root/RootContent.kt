@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import javax.inject.Inject
 
 private const val TIME_IN_MILLIS_FOR_ANIMATED_CHANGE_CONTENT = 500
+private const val FAB_BOTTOM_PADDING_INT = 72
+private const val ENABLE_EDGE_TO_EDGE_BOTTOM_PADDING = 12
 
 @Composable
 fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
@@ -79,7 +81,10 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 72.dp)
+                    .padding(
+                        bottom = (
+                                FAB_BOTTOM_PADDING_INT + ENABLE_EDGE_TO_EDGE_BOTTOM_PADDING).dp
+                    )
             )
         }
     }
