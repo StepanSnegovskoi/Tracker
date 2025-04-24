@@ -1,10 +1,13 @@
 package com.example.trackernew.presentation.edit
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface EditTaskComponent {
 
     val model: StateFlow<EditTaskStore.State>
+
+    val labels: Flow<EditTaskStore.Label>
 
     fun onEditTaskClicked()
 

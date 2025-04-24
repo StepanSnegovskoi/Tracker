@@ -2,6 +2,7 @@ package com.example.trackernew.presentation.edit
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -27,17 +27,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -57,21 +53,51 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.R
+import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
+import com.example.trackernew.presentation.root.SnackbarManager
 import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.ui.theme.Green
+import com.example.trackernew.ui.theme.Orange
 import com.example.trackernew.ui.theme.Red
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getDatePickerColors
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.time.ZoneId
 
 @Composable
-fun EditTaskContent(component: EditTaskComponent) {
+fun EditTaskContent(component: EditTaskComponent, snackbarManager: SnackbarManager) {
     val state by component.model.collectAsState()
+    val rememberCoroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(
+        key1 = component
+    ) {
+        component.labels.onEach {
+            when (it) {
+                EditTaskStore.Label.TaskEdited -> {
+                    snackbarManager.showMessage("Задача изменена")
+                }
+
+                EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
+                    snackbarManager.showMessage("Название не должно быть пустым")
+                }
+
+                EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
+                    snackbarManager.showMessage("Название не должно быть пустым")
+                }
+
+                EditTaskStore.Label.SubTaskSaved -> {
+                    snackbarManager.showMessage("Подзадача сохранена")
+                }
+            }
+        }.launchIn(rememberCoroutineScope)
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -206,7 +232,7 @@ fun OutlinedTextFieldName(
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = Color.Red,
+                color = if (state.name.isNotEmpty()) Green else Color.Red,
                 fontSize = 12.sp
             )
         }
@@ -217,14 +243,24 @@ fun OutlinedTextFieldName(
 fun OutlinedTextFieldCategory(
     state: EditTaskStore.State,
     modifier: Modifier = Modifier,
-    onIconClick: () -> Unit,
+    onClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                onClick()
+            }
             .then(modifier),
         readOnly = true,
+        enabled = false,
         label = {
             Text(
                 text = "Категория",
@@ -232,17 +268,6 @@ fun OutlinedTextFieldCategory(
             )
         },
         colors = getOutlinedTextFieldColors(),
-        trailingIcon = {
-            Icon(
-                modifier = Modifier
-                    .clickable {
-                        onIconClick()
-                    },
-                imageVector = Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint = TrackerNewTheme.colors.tintColor
-            )
-        },
         value = state.category,
         onValueChange = {
             onValueChange(it)
@@ -273,7 +298,7 @@ fun OutlinedTextFieldCategoryWithMenu(
             OutlinedTextFieldCategory(
                 modifier = modifier,
                 state = state,
-                onIconClick = {
+                onClick = {
                     expanded.value = !expanded.value
                 },
                 onValueChange = {
@@ -355,10 +380,16 @@ fun OutlinedTextFieldDeadline(
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember {
+        MutableInteractionSource()
+    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
                 onClick()
             },
         readOnly = true,
@@ -648,11 +679,14 @@ fun AddSubTaskDialog(
                     onValueChange = {
                         onValueChange(it)
                     },
+                    label = {
+                        Text(text = "Название")
+                    },
                     colors = getOutlinedTextFieldColors(),
                     supportingText = {
                         Text(
                             text = "*Обязательно",
-                            color = Color.Red,
+                            color = if (state.subTask.isNotEmpty()) Green else Color.Red,
                             fontSize = 12.sp
                         )
                     }
@@ -668,17 +702,31 @@ fun TaskCompletedStatus(
     state: EditTaskStore.State,
     onClick: () -> Unit
 ) {
-    val text = when (state.isCompleted) {
-        true -> "Выполнен"
-        false -> "В процессе"
+    val text = when (state.status) {
+        TaskStatus.Completed -> "Завершён"
+        TaskStatus.Executed -> "Выполнен"
+        TaskStatus.Failed -> "Провален"
+        TaskStatus.InTheProcess -> "В процессе"
     }
-    val color = when (state.isCompleted) {
-        true -> Green
-        false -> Red
+    val color = when (state.status) {
+        TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
+        TaskStatus.Executed -> Green
+        TaskStatus.Failed -> Red
+        TaskStatus.InTheProcess -> Orange
     }
-    val icon = when (state.isCompleted) {
-        true -> R.drawable.done_24
-        false -> R.drawable.not_completed_24
+    val icon = when (state.status) {
+        TaskStatus.Completed -> {
+            R.drawable.question_24
+        }
+        TaskStatus.Executed -> {
+            R.drawable.done_24
+        }
+        TaskStatus.Failed -> {
+            R.drawable.not_completed_24
+        }
+        TaskStatus.InTheProcess -> {
+            R.drawable.dots_24
+        }
     }
     Row(
         modifier = Modifier

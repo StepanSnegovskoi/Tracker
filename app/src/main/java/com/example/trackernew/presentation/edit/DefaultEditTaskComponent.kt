@@ -10,6 +10,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -27,11 +28,20 @@ class DefaultEditTaskComponent @AssistedInject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<EditTaskStore.State> = store.stateFlow
 
+    override val labels: Flow<EditTaskStore.Label> = store.labels
+
     init {
         store.labels.onEach {
             when(val label = it){
                 EditTaskStore.Label.TaskEdited -> {
                     onTaskEdited()
+                }
+
+                /**
+                 * Другие случаи обрабатываются не здесь
+                 */
+                else -> {
+
                 }
             }
         }.launchIn(componentScope())
