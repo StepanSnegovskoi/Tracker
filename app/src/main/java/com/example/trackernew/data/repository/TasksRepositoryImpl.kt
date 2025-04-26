@@ -1,7 +1,7 @@
 package com.example.trackernew.data.repository
 
-import com.example.trackernew.data.db.CategoryDao
-import com.example.trackernew.data.db.TasksDao
+import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.TasksDao
 import com.example.trackernew.data.mapper.toEntities
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task

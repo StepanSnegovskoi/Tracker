@@ -1,6 +1,6 @@
 package com.example.trackernew.domain.usecase
 
-import com.example.trackernew.data.db.TasksDao
+import com.example.trackernew.data.db.dao.TasksDao
 import javax.inject.Inject
 
 class DeleteTaskByIdUseCase @Inject constructor(

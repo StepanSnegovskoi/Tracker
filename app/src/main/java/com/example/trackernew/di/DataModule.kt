@@ -2,8 +2,8 @@ package com.example.trackernew.di
 
 import android.content.Context
 import com.example.trackernew.data.db.AppDatabase
-import com.example.trackernew.data.db.CategoryDao
-import com.example.trackernew.data.db.TasksDao
+import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.TasksDao
 import com.example.trackernew.data.repository.AddCategoryRepositoryImpl
 import com.example.trackernew.data.repository.AddTaskRepositoryImpl
 import com.example.trackernew.data.repository.EditTaskRepositoryImpl
