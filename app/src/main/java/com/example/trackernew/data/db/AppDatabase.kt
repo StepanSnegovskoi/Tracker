@@ -5,20 +5,28 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.trackernew.data.db.converter.SubTasksConverter
+import com.example.trackernew.data.db.converter.TaskStatusConverter
+import com.example.trackernew.data.db.converter.TypeOfLessonConverter
+import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.TasksDao
 import com.example.trackernew.data.entity.CategoryDbModel
+import com.example.trackernew.data.entity.LessonDbModel
 import com.example.trackernew.data.entity.TaskDbModel
 
 @Database(
     entities = [
         TaskDbModel::class,
-        CategoryDbModel::class
+        CategoryDbModel::class,
+        LessonDbModel::class
     ],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(
     SubTasksConverter::class,
-    TaskStatusConverter::class
+    TaskStatusConverter::class,
+    TypeOfLessonConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
 
