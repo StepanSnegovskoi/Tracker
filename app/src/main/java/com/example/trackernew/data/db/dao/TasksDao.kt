@@ -1,4 +1,4 @@
-package com.example.trackernew.data.db
+package com.example.trackernew.data.db.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
