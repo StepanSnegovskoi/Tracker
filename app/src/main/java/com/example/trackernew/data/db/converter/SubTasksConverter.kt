@@ -1,4 +1,4 @@
-package com.example.trackernew.data.db
+package com.example.trackernew.data.db.converter
 
 import androidx.room.TypeConverter
 import com.example.trackernew.domain.entity.SubTask

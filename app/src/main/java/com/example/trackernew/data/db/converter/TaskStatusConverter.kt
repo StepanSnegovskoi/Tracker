@@ -1,11 +1,7 @@
-package com.example.trackernew.data.db
+package com.example.trackernew.data.db.converter
 
 import androidx.room.TypeConverter
-import com.example.trackernew.domain.entity.SubTask
-import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 class TaskStatusConverter {
 
