@@ -9,8 +9,11 @@ data class Lesson(
     val typeOfLesson: TypeOfLesson
 )
 
-sealed class TypeOfLesson(val value: String) {
-    data object Lecture : TypeOfLesson("Лекция")
-    data object Practise : TypeOfLesson("Практика")
-    data object Another : TypeOfLesson("Другое")
+sealed interface TypeOfLesson {
+
+    data object Practise : TypeOfLesson
+
+    data object Lesson : TypeOfLesson
+
+    data object Another : TypeOfLesson
 }
