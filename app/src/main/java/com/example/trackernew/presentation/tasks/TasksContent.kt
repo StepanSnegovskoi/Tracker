@@ -60,6 +60,7 @@ import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.presentation.extensions.toDateString
+import com.example.trackernew.presentation.tasks.TasksStore.Label
 import com.example.trackernew.presentation.utils.ADD
 import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
 import com.example.trackernew.presentation.utils.Sort
@@ -87,6 +88,9 @@ fun TasksContent(component: TasksComponent) {
         },
         onAddCategoryClick = {
             component.onAddCategoryClicked()
+        },
+        onScheduleClick = {
+            component.onScheduleClicked()
         },
         content = {
             Scaffold(
@@ -413,9 +417,6 @@ private fun CategoriesLazyColumn(
                 color = TrackerNewTheme.colors.textColor
             )
         }
-        item {
-            Spacer(modifier = Modifier.height(72.dp))
-        }
     }
 }
 
@@ -491,6 +492,7 @@ fun ModalDrawer(
     onCategoriesClick: () -> Unit,
     onCategoryClick: (Category) -> Unit,
     onAddCategoryClick: () -> Unit,
+    onScheduleClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -543,6 +545,17 @@ fun ModalDrawer(
                             onAddClick = {
                                 onAddCategoryClick()
                             }
+                        )
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                                .clickable {
+                                    onScheduleClick()
+                                },
+                            text = "Расписание",
+                            color = TrackerNewTheme.colors.textColor,
+                            fontSize = 20.sp
                         )
                     }
                 }

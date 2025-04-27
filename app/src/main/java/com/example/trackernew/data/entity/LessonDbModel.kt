@@ -9,7 +9,8 @@ data class LessonDbModel(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val name: String,
-    val time: String,
+    val start: String,
+    val end: String,
     val lecturer: String,
     val audience: String,
     val typeOfLesson: TypeOfLesson

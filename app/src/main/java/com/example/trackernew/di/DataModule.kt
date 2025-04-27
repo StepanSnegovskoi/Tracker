@@ -3,12 +3,15 @@ package com.example.trackernew.di
 import android.content.Context
 import com.example.trackernew.data.db.AppDatabase
 import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.LessonDao
 import com.example.trackernew.data.db.dao.TasksDao
 import com.example.trackernew.data.repository.AddCategoryRepositoryImpl
+import com.example.trackernew.data.repository.AddLessonRepositoryImpl
 import com.example.trackernew.data.repository.AddTaskRepositoryImpl
 import com.example.trackernew.data.repository.EditTaskRepositoryImpl
 import com.example.trackernew.data.repository.TasksRepositoryImpl
 import com.example.trackernew.domain.repository.AddCategoryRepository
+import com.example.trackernew.domain.repository.AddLessonRepository
 import com.example.trackernew.domain.repository.AddTaskRepository
 import com.example.trackernew.domain.repository.EditTaskRepository
 import com.example.trackernew.domain.repository.TasksRepository
@@ -35,6 +38,10 @@ interface DataModule {
     @Binds
     fun bindAddCategoryRepository(addCategoryRepositoryImpl: AddCategoryRepositoryImpl): AddCategoryRepository
 
+    @ApplicationScope
+    @Binds
+    fun bindAddLessonRepository(addLessonRepositoryImpl: AddLessonRepositoryImpl): AddLessonRepository
+
     companion object {
 
         @ApplicationScope
@@ -49,5 +56,9 @@ interface DataModule {
         @ApplicationScope
         @Provides
         fun provideCategoryDao(database: AppDatabase): CategoryDao = database.categoryDao()
+
+        @ApplicationScope
+        @Provides
+        fun provideLessonDao(database: AppDatabase): LessonDao = database.lessonDao()
     }
 }

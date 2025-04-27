@@ -21,7 +21,8 @@ class DefaultTasksComponent @AssistedInject constructor(
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("onAddTaskClick") private val onAddTaskClick: () -> Unit,
     @Assisted("onAddCategoryClick") private val onAddCategoryClick: () -> Unit,
-    @Assisted("onTaskLongClick") private val onTaskLongClick: (Task) -> Unit
+    @Assisted("onTaskLongClick") private val onTaskLongClick: (Task) -> Unit,
+    @Assisted("onScheduleClick") onScheduleClick: () -> Unit,
 ) : TasksComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { tasksStoreFactory.create() }
@@ -38,6 +39,10 @@ class DefaultTasksComponent @AssistedInject constructor(
 
                 TasksStore.Label.ClickAddCategory -> {
                     onAddCategoryClick()
+                }
+
+                TasksStore.Label.ClickSchedule -> {
+                    onScheduleClick()
                 }
             }
         }.launchIn(componentScope())
@@ -70,6 +75,10 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ClickAddCategory)
     }
 
+    override fun onScheduleClicked() {
+        store.accept(TasksStore.Intent.ClickSchedule)
+    }
+
     @AssistedFactory
     interface Factory {
 
@@ -78,6 +87,7 @@ class DefaultTasksComponent @AssistedInject constructor(
             @Assisted("onAddTaskClick") onAddTaskClick: () -> Unit,
             @Assisted("onTaskLongClick") onTaskLongClick: (Task) -> Unit,
             @Assisted("onAddCategoryClick") onAddCategoryClick: () -> Unit,
+            @Assisted("onScheduleClick") onScheduleClick: () -> Unit,
         ): DefaultTasksComponent
     }
 }

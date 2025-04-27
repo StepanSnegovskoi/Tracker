@@ -20,4 +20,6 @@ interface TasksComponent {
     fun onDeleteTaskClicked(task: Task)
 
     fun onAddCategoryClicked()
+
+    fun onScheduleClicked()
 }

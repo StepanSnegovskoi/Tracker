@@ -29,6 +29,8 @@ interface TasksStore : Store<Intent, State, Label> {
 
         data object ClickAddCategory : Intent
 
+        data object ClickSchedule : Intent
+
         data class ClickDeleteTask(val task: Task) : Intent
 
         data class LongClickTask(val task: Task) : Intent
@@ -56,7 +58,10 @@ interface TasksStore : Store<Intent, State, Label> {
 
         data object ClickAddCategory : Label
 
+        data object ClickSchedule : Label
+
         data class LongClickTask(val task: Task) : Label
+
     }
 }
 
@@ -141,6 +146,10 @@ class TasksStoreFactory @Inject constructor(
 
                 Intent.ClickAddCategory -> {
                     publish(Label.ClickAddCategory)
+                }
+
+                Intent.ClickSchedule -> {
+                    publish(Label.ClickSchedule)
                 }
             }
         }

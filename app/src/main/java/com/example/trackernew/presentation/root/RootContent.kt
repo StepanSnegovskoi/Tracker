@@ -3,23 +3,20 @@ package com.example.trackernew.presentation.root
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.stack.animation.plus
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.example.trackernew.presentation.add.category.AddCategoryContent
+import com.example.trackernew.presentation.add.lesson.lesson.AddLessonContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
 import com.example.trackernew.presentation.edit.EditTaskContent
 import com.example.trackernew.presentation.tasks.TasksContent
@@ -74,6 +71,10 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
 
                     is RootComponent.Child.AddCategory -> {
                         AddCategoryContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddLesson -> {
+                        AddLessonContent(instance.component)
                     }
                 }
             }

@@ -9,18 +9,25 @@ import com.example.trackernew.data.db.converter.SubTasksConverter
 import com.example.trackernew.data.db.converter.TaskStatusConverter
 import com.example.trackernew.data.db.converter.TypeOfLessonConverter
 import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.LessonDao
 import com.example.trackernew.data.db.dao.TasksDao
+import com.example.trackernew.data.entity.AudienceDbModel
 import com.example.trackernew.data.entity.CategoryDbModel
+import com.example.trackernew.data.entity.LecturerDbModel
 import com.example.trackernew.data.entity.LessonDbModel
+import com.example.trackernew.data.entity.LessonNameDbModel
 import com.example.trackernew.data.entity.TaskDbModel
 
 @Database(
     entities = [
         TaskDbModel::class,
         CategoryDbModel::class,
-        LessonDbModel::class
+        LessonDbModel::class,
+        AudienceDbModel::class,
+        LecturerDbModel::class,
+        LessonNameDbModel::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(
@@ -57,4 +64,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tasksDao(): TasksDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun lessonDao(): LessonDao
 }
