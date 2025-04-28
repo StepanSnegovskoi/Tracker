@@ -1,46 +1,46 @@
-package com.example.trackernew.presentation.add.category
+package com.example.trackernew.presentation.add.week
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.example.trackernew.domain.entity.Category
-import com.example.trackernew.domain.usecase.AddCategoryUseCase
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Intent
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Label
-import com.example.trackernew.presentation.add.category.AddCategoryStore.State
+import com.example.trackernew.domain.entity.Week
+import com.example.trackernew.domain.usecase.AddWeekUseCase
+import com.example.trackernew.presentation.add.week.AddWeekStore.Intent
+import com.example.trackernew.presentation.add.week.AddWeekStore.Label
+import com.example.trackernew.presentation.add.week.AddWeekStore.State
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-interface AddCategoryStore : Store<Intent, State, Label> {
+interface AddWeekStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddCategoryClicked : Intent
+        data object AddWeekClicked : Intent
 
-        data class ChangeCategory(val category: String) : Intent
+        data class ChangeWeek(val week: String) : Intent
     }
 
     data class State(
-        val category: String
+        val week: String
     )
 
     sealed interface Label {
 
-        data object CategorySaved : Label
+        data object WeekSaved : Label
 
-        data object AddCategoryClickedAndNameIsEmpty : Label
+        data object AddWeekClickedAndNameIsEmpty : Label
     }
 }
 
-class AddCategoryStoreFactory @Inject constructor(
+class AddWeekStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val addCategoryUseCase: AddCategoryUseCase
+    private val addWeekUseCase: AddWeekUseCase
 ) {
 
-    fun create(): AddCategoryStore =
-        object : AddCategoryStore, Store<Intent, State, Label> by storeFactory.create(
+    fun create(): AddWeekStore =
+        object : AddWeekStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddWeekStore",
             initialState = State(
                 ""
@@ -55,7 +55,7 @@ class AddCategoryStoreFactory @Inject constructor(
 
     private sealed interface Msg {
 
-        data class ChangeCategory(val category: String) : Msg
+        data class ChangeWeek(val week: String) : Msg
     }
 
     private class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -66,24 +66,27 @@ class AddCategoryStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddCategoryClicked -> {
+                Intent.AddWeekClicked -> {
                     val state = getState()
-                    if (state.category.trim().isEmpty()) {
-                        publish(Label.AddCategoryClickedAndNameIsEmpty)
+                    if (state.week.trim().isEmpty()) {
+                        publish(Label.AddWeekClickedAndNameIsEmpty)
                         return
                     }
                     scope.launch {
-                        addCategoryUseCase(
-                            Category(
-                                name = state.category.trim()
+                        addWeekUseCase(
+                            Week(
+                                id = 0,
+                                name = state.week.trim(),
+                                position = 0,
+                                isActive = false,
                             )
                         )
-                        publish(Label.CategorySaved)
+                        publish(Label.WeekSaved)
                     }
                 }
 
-                is Intent.ChangeCategory -> {
-                    dispatch(Msg.ChangeCategory(intent.category))
+                is Intent.ChangeWeek -> {
+                    dispatch(Msg.ChangeWeek(intent.week))
                 }
             }
         }
@@ -95,8 +98,8 @@ class AddCategoryStoreFactory @Inject constructor(
     private object ReducerImpl : Reducer<State, Msg> {
         override fun State.reduce(msg: Msg): State =
             when (msg) {
-                is Msg.ChangeCategory -> {
-                    copy(category = msg.category)
+                is Msg.ChangeWeek -> {
+                    copy(week = msg.week)
                 }
             }
     }

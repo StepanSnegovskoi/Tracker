@@ -9,6 +9,8 @@ import com.arkivanov.decompose.defaultComponentContext
 import com.example.trackernew.presentation.root.DefaultRootComponent
 import com.example.trackernew.presentation.root.RootContent
 import com.example.trackernew.presentation.root.SnackbarManager
+import com.example.trackernew.presentation.schedule.ScheduleContent
+import com.example.trackernew.presentation.weeks.WeeksContent
 import javax.inject.Inject
 
 class MainActivity : ComponentActivity() {
@@ -18,6 +20,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var snackbarManager: SnackbarManager
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +38,9 @@ class MainActivity : ComponentActivity() {
                 component = rootComponent.create(defaultComponentContext),
                 snackbarManager = snackbarManager
             )
+
+
+//            WeeksContent()
         }
     }
 }

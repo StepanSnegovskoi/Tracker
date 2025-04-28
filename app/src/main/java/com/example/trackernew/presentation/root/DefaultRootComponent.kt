@@ -8,9 +8,15 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.add.category.DefaultAddCategoryComponent
+import com.example.trackernew.presentation.add.lesson.audience.DefaultAddAudienceComponent
+import com.example.trackernew.presentation.add.lesson.lecturer.DefaultAddLecturerComponent
 import com.example.trackernew.presentation.add.lesson.lesson.DefaultAddLessonComponent
+import com.example.trackernew.presentation.add.lesson.name.DefaultAddLessonNameComponent
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
+import com.example.trackernew.presentation.add.week.AddWeekStoreFactory
+import com.example.trackernew.presentation.add.week.DefaultAddWeekComponent
 import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
+import com.example.trackernew.presentation.schedule.DefaultScheduleComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -24,7 +30,12 @@ class DefaultRootComponent @AssistedInject constructor(
     private val tasksStoreFactory: DefaultTasksComponent.Factory,
     private val editTaskStoreFactory: DefaultEditTaskComponent.Factory,
     private val addCategoryStoreFactory: DefaultAddCategoryComponent.Factory,
-    private val addLessonStoreFactory: DefaultAddLessonComponent.Factory
+    private val addLessonStoreFactory: DefaultAddLessonComponent.Factory,
+    private val addLessonNameStoreFactory: DefaultAddLessonNameComponent.Factory,
+    private val addAudienceStoreFactory: DefaultAddAudienceComponent.Factory,
+    private val scheduleStoreFactory: DefaultScheduleComponent.Factory,
+    private val addWeekStoreFactory: DefaultAddWeekComponent.Factory,
+    private val addLecturerStoreFactory: DefaultAddLecturerComponent.Factory
 ) : RootComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -69,7 +80,7 @@ class DefaultRootComponent @AssistedInject constructor(
                         navigation.push(Config.AddCategory)
                     },
                     onScheduleClick = {
-                        navigation.push(Config.AddLesson)
+                        navigation.push(Config.Schedule)
                     }
                 )
                 RootComponent.Child.Tasks(component)
@@ -98,10 +109,80 @@ class DefaultRootComponent @AssistedInject constructor(
 
             Config.AddLesson -> {
                 val component = addLessonStoreFactory.create(
-                    componentContext = componentContext
+                    componentContext = componentContext,
+                    ifLessonNamesAreEmpty = {
+                        navigation.push(Config.AddLessonName)
+                    },
+                    ifLecturersAreEmpty = {
+                        navigation.push(Config.AddLecturer)
+                    },
+                    ifAudiencesAreEmpty = {
+                        navigation.push(Config.AddAudience)
+                    },
+                    onLessonSaved = {
+                        navigation.pop()
+                    },
                 )
 
                 RootComponent.Child.AddLesson(component)
+            }
+
+            Config.AddLessonName -> {
+                val component = addLessonNameStoreFactory.create(
+                    componentContext = componentContext,
+                    onLessonNameSaved = {
+                        navigation.pop()
+                    }
+                )
+
+                RootComponent.Child.AddLessonName(component)
+            }
+
+            Config.AddLecturer -> {
+                val component = addLecturerStoreFactory.create(
+                    componentContext = componentContext,
+                    onLecturerSaved = {
+                        navigation.pop()
+                    }
+                )
+
+                RootComponent.Child.AddLecturer(component)
+            }
+
+            Config.AddAudience -> {
+                val component = addAudienceStoreFactory.create(
+                    componentContext = componentContext,
+                    onAudienceSaved = {
+                        navigation.pop()
+                    }
+                )
+
+                RootComponent.Child.AddAudience(component)
+            }
+
+            Config.Schedule -> {
+                val component = scheduleStoreFactory.create(
+                    componentContext = componentContext,
+                    onAddWeekClick = {
+                        navigation.push(Config.AddWeek)
+                    },
+                    onAddLessonClick = {
+                        navigation.push(Config.AddLesson)
+                    }
+                )
+
+                RootComponent.Child.Schedule(component)
+            }
+
+            Config.AddWeek -> {
+                val component = addWeekStoreFactory.create(
+                    componentContext = componentContext,
+                    onWeekSaved = {
+                        navigation.pop()
+                    }
+                )
+
+                RootComponent.Child.AddWeek(component)
             }
         }
     }
@@ -131,5 +212,20 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data object AddLesson : Config
+
+        @Serializable
+        data object AddLessonName : Config
+
+        @Serializable
+        data object AddLecturer : Config
+
+        @Serializable
+        data object AddAudience : Config
+
+        @Serializable
+        data object Schedule : Config
+
+        @Serializable
+        data object AddWeek : Config
     }
 }

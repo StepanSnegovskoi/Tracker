@@ -1,47 +1,47 @@
-package com.example.trackernew.presentation.add.category
+package com.example.trackernew.presentation.add.lesson.audience
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.example.trackernew.domain.entity.Category
-import com.example.trackernew.domain.usecase.AddCategoryUseCase
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Intent
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Label
-import com.example.trackernew.presentation.add.category.AddCategoryStore.State
+import com.example.trackernew.domain.entity.Audience
+import com.example.trackernew.domain.usecase.AddAudienceUseCase
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.Intent
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.State
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.Label
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-interface AddCategoryStore : Store<Intent, State, Label> {
+interface AddAudienceStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddCategoryClicked : Intent
+        data object AddAudienceClicked : Intent
 
-        data class ChangeCategory(val category: String) : Intent
+        data class ChangeAudience(val audience: String) : Intent
     }
 
     data class State(
-        val category: String
+        val audience: String
     )
 
     sealed interface Label {
 
-        data object CategorySaved : Label
+        data object AudienceSaved : Label
 
-        data object AddCategoryClickedAndNameIsEmpty : Label
+        data object AddAudienceClickedAndNameIsEmpty : Label
     }
 }
 
-class AddCategoryStoreFactory @Inject constructor(
+class AddAudienceStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val addCategoryUseCase: AddCategoryUseCase
+    private val addAudienceUseCase: AddAudienceUseCase
 ) {
 
-    fun create(): AddCategoryStore =
-        object : AddCategoryStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "AddWeekStore",
+    fun create(): AddAudienceStore =
+        object : AddAudienceStore, Store<Intent, State, Label> by storeFactory.create(
+            name = "AddAudienceStore",
             initialState = State(
                 ""
             ),
@@ -55,7 +55,7 @@ class AddCategoryStoreFactory @Inject constructor(
 
     private sealed interface Msg {
 
-        data class ChangeCategory(val category: String) : Msg
+        data class ChangeAudience(val audience: String) : Msg
     }
 
     private class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -66,24 +66,24 @@ class AddCategoryStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddCategoryClicked -> {
+                Intent.AddAudienceClicked -> {
                     val state = getState()
-                    if (state.category.trim().isEmpty()) {
-                        publish(Label.AddCategoryClickedAndNameIsEmpty)
+                    if (state.audience.trim().isEmpty()) {
+                        publish(Label.AddAudienceClickedAndNameIsEmpty)
                         return
                     }
                     scope.launch {
-                        addCategoryUseCase(
-                            Category(
-                                name = state.category.trim()
+                        addAudienceUseCase(
+                            Audience(
+                                name = state.audience.trim()
                             )
                         )
-                        publish(Label.CategorySaved)
+                        publish(Label.AudienceSaved)
                     }
                 }
 
-                is Intent.ChangeCategory -> {
-                    dispatch(Msg.ChangeCategory(intent.category))
+                is Intent.ChangeAudience -> {
+                    dispatch(Msg.ChangeAudience(intent.audience))
                 }
             }
         }
@@ -95,8 +95,8 @@ class AddCategoryStoreFactory @Inject constructor(
     private object ReducerImpl : Reducer<State, Msg> {
         override fun State.reduce(msg: Msg): State =
             when (msg) {
-                is Msg.ChangeCategory -> {
-                    copy(category = msg.category)
+                is Msg.ChangeAudience -> {
+                    copy(audience = msg.audience)
                 }
             }
     }

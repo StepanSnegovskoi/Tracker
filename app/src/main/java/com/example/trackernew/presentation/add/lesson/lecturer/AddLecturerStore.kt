@@ -1,47 +1,47 @@
-package com.example.trackernew.presentation.add.category
+package com.example.trackernew.presentation.add.lesson.lecturer
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import com.example.trackernew.domain.entity.Category
-import com.example.trackernew.domain.usecase.AddCategoryUseCase
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Intent
-import com.example.trackernew.presentation.add.category.AddCategoryStore.Label
-import com.example.trackernew.presentation.add.category.AddCategoryStore.State
+import com.example.trackernew.domain.entity.Lecturer
+import com.example.trackernew.domain.usecase.AddLecturerUseCase
+import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerStore.Intent
+import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerStore.Label
+import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerStore.State
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-interface AddCategoryStore : Store<Intent, State, Label> {
+interface AddLecturerStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddCategoryClicked : Intent
+        data object AddLecturerClicked : Intent
 
-        data class ChangeCategory(val category: String) : Intent
+        data class ChangeLecturer(val lecturer: String) : Intent
     }
 
     data class State(
-        val category: String
+        val lecturer: String
     )
 
     sealed interface Label {
 
-        data object CategorySaved : Label
+        data object LecturerSaved : Label
 
-        data object AddCategoryClickedAndNameIsEmpty : Label
+        data object AddLecturerClickedAndNameIsEmpty : Label
     }
 }
 
-class AddCategoryStoreFactory @Inject constructor(
+class AddLecturerStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val addCategoryUseCase: AddCategoryUseCase
+    private val addLecturerUseCase: AddLecturerUseCase
 ) {
 
-    fun create(): AddCategoryStore =
-        object : AddCategoryStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "AddWeekStore",
+    fun create(): AddLecturerStore =
+        object : AddLecturerStore, Store<Intent, State, Label> by storeFactory.create(
+            name = "AddLecturerStore",
             initialState = State(
                 ""
             ),
@@ -55,7 +55,7 @@ class AddCategoryStoreFactory @Inject constructor(
 
     private sealed interface Msg {
 
-        data class ChangeCategory(val category: String) : Msg
+        data class ChangeLecturer(val lecturer: String) : Msg
     }
 
     private class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -66,24 +66,24 @@ class AddCategoryStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddCategoryClicked -> {
+                Intent.AddLecturerClicked -> {
                     val state = getState()
-                    if (state.category.trim().isEmpty()) {
-                        publish(Label.AddCategoryClickedAndNameIsEmpty)
+                    if (state.lecturer.trim().isEmpty()) {
+                        publish(Label.AddLecturerClickedAndNameIsEmpty)
                         return
                     }
                     scope.launch {
-                        addCategoryUseCase(
-                            Category(
-                                name = state.category.trim()
+                        addLecturerUseCase(
+                            Lecturer(
+                                name = state.lecturer.trim()
                             )
                         )
-                        publish(Label.CategorySaved)
+                        publish(Label.LecturerSaved)
                     }
                 }
 
-                is Intent.ChangeCategory -> {
-                    dispatch(Msg.ChangeCategory(intent.category))
+                is Intent.ChangeLecturer -> {
+                    dispatch(Msg.ChangeLecturer(intent.lecturer))
                 }
             }
         }
@@ -95,8 +95,8 @@ class AddCategoryStoreFactory @Inject constructor(
     private object ReducerImpl : Reducer<State, Msg> {
         override fun State.reduce(msg: Msg): State =
             when (msg) {
-                is Msg.ChangeCategory -> {
-                    copy(category = msg.category)
+                is Msg.ChangeLecturer -> {
+                    copy(lecturer = msg.lecturer)
                 }
             }
     }

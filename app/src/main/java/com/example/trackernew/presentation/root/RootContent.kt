@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.root
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,9 +17,15 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.example.trackernew.presentation.add.category.AddCategoryContent
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceComponent
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceContent
+import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerContent
 import com.example.trackernew.presentation.add.lesson.lesson.AddLessonContent
+import com.example.trackernew.presentation.add.lesson.name.AddLessonNameContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
+import com.example.trackernew.presentation.add.week.AddWeekContent
 import com.example.trackernew.presentation.edit.EditTaskContent
+import com.example.trackernew.presentation.schedule.ScheduleContent
 import com.example.trackernew.presentation.tasks.TasksContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -74,7 +81,27 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                     }
 
                     is RootComponent.Child.AddLesson -> {
-                        AddLessonContent(instance.component)
+                        AddLessonContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddLessonName -> {
+                        AddLessonNameContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddLecturer -> {
+                        AddLecturerContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddAudience -> {
+                        AddAudienceContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.Schedule -> {
+                        ScheduleContent(instance.component)
+                    }
+
+                    is RootComponent.Child.AddWeek -> {
+                        AddWeekContent(instance.component, snackbarManager)
                     }
                 }
             }
