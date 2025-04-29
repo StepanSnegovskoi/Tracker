@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.domain.entity.Lesson
+import com.example.trackernew.domain.entity.TypeOfLesson
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -138,7 +139,18 @@ fun ScheduleContent(component: ScheduleComponent) {
                     Text(
                         modifier = Modifier
                             .clickable {
-                                component.onAddLessonButtonClick()
+                                if (weeks.isNotEmpty()) {
+                                    val lessons = days[pagerState.currentPage].lessons
+                                    var futureLessonId = 0
+                                    if (lessons.isNotEmpty()) {
+                                        futureLessonId = lessons.maxOf { it.id } + 1
+                                    }
+                                    component.onAddLessonButtonClick(
+                                        weeks[currentPage.intValue / DAYS_IN_WEEK].id.toString(),
+                                        days[pagerState.currentPage].name,
+                                        futureLessonId.toString()
+                                    )
+                                }
                             },
                         text = "Добавить занятие",
                         fontSize = 18.sp
@@ -201,7 +213,26 @@ fun Lesson(lesson: Lesson) {
                 ) {
                     Text(text = lesson.lecturer)
                     Text(text = lesson.audience)
-                    Text(text = lesson.typeOfLesson.toString())
+
+                    val typeOfLesson = when (lesson.typeOfLesson) {
+                        TypeOfLesson.Another -> {
+                            "Другое"
+                        }
+
+                        TypeOfLesson.Lesson -> {
+                            "Лекция"
+                        }
+
+                        TypeOfLesson.Practise -> {
+                            "практика"
+                        }
+
+                        else -> {
+                            throw IllegalArgumentException("Unknown typeOfLesson ${lesson.typeOfLesson}")
+                        }
+                    }
+
+                    Text(text = typeOfLesson)
                 }
             }
         }

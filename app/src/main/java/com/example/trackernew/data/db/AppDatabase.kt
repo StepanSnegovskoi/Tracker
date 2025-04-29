@@ -31,7 +31,7 @@ import com.example.trackernew.data.entity.WeekDbModel
         LessonNameDbModel::class,
         WeekDbModel::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(

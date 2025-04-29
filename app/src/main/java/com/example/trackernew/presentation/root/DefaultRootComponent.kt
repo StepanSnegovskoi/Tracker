@@ -107,9 +107,12 @@ class DefaultRootComponent @AssistedInject constructor(
                 RootComponent.Child.AddCategory(component)
             }
 
-            Config.AddLesson -> {
+            is Config.AddLesson -> {
                 val component = addLessonStoreFactory.create(
                     componentContext = componentContext,
+                    weekId = config.weekId,
+                    dayName = config.dayName,
+                    futureLessonId = config.futureLessonId,
                     ifLessonNamesAreEmpty = {
                         navigation.push(Config.AddLessonName)
                     },
@@ -166,8 +169,8 @@ class DefaultRootComponent @AssistedInject constructor(
                     onAddWeekClick = {
                         navigation.push(Config.AddWeek)
                     },
-                    onAddLessonClick = {
-                        navigation.push(Config.AddLesson)
+                    onAddLessonClick = { weekId, dayName, futureLessonId ->
+                        navigation.push(Config.AddLesson(weekId, dayName, futureLessonId))
                     }
                 )
 
@@ -211,7 +214,11 @@ class DefaultRootComponent @AssistedInject constructor(
         data object AddCategory : Config
 
         @Serializable
-        data object AddLesson : Config
+        data class AddLesson(
+            val weekId: String,
+            val dayName: String,
+            val futureLessonId: String
+        ) : Config
 
         @Serializable
         data object AddLessonName : Config

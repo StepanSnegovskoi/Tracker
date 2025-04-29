@@ -8,5 +8,5 @@ interface ScheduleComponent {
 
     fun onAddWeekButtonClick()
 
-    fun onAddLessonButtonClick()
+    fun onAddLessonButtonClick(weekId: String, dayName: String, futureLessonId: String)
 }

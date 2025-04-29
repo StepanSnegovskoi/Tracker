@@ -20,7 +20,11 @@ interface ScheduleStore : Store<Intent, State, Label> {
 
         data object ClickAddWeek : Intent
 
-        data object ClickAddLesson : Intent
+        data class ClickAddLesson(
+            val weekId: String,
+            val dayName: String,
+            val futureLessonId: String
+        ) : Intent
     }
 
     data class State(
@@ -31,7 +35,11 @@ interface ScheduleStore : Store<Intent, State, Label> {
 
         data object ClickAddWeek : Label
 
-        data object ClickAddLesson : Label
+        data class ClickAddLesson(
+            val weekId: String,
+            val dayName: String,
+            val futureLessonId: String
+        ) : Label
     }
 }
 
@@ -71,19 +79,19 @@ class ScheduleStoreFactory @Inject constructor(
 
     private class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
-            when(intent){
+            when (intent) {
                 Intent.ClickAddWeek -> {
                     publish(Label.ClickAddWeek)
                 }
 
-                Intent.ClickAddLesson -> {
-                    publish(Label.ClickAddLesson)
+                is Intent.ClickAddLesson -> {
+                    publish(Label.ClickAddLesson(intent.weekId, intent.dayName, intent.futureLessonId))
                 }
             }
         }
 
         override fun executeAction(action: Action, getState: () -> State) {
-            when(action){
+            when (action) {
                 is Action.WeeksLoaded -> {
                     dispatch(Msg.WeeksLoaded(action.weeks))
                 }

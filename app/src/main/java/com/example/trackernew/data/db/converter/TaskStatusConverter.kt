@@ -8,10 +8,10 @@ class TaskStatusConverter {
     @TypeConverter
     fun fromStatus(status: TaskStatus): String {
         return when (status) {
-            is TaskStatus.Executed -> "Executed"
-            is TaskStatus.Failed -> "Failed"
-            is TaskStatus.Completed -> "Completed"
-            is TaskStatus.InTheProcess -> "InTheProcess"
+            TaskStatus.Executed -> "Executed"
+            TaskStatus.Failed -> "Failed"
+            TaskStatus.Completed -> "Completed"
+            TaskStatus.InTheProcess -> "InTheProcess"
         }
     }
 

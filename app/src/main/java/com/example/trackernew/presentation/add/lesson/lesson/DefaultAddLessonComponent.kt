@@ -17,13 +17,16 @@ import kotlinx.coroutines.flow.onEach
 class DefaultAddLessonComponent @AssistedInject constructor(
     private val storeFactory: AddLessonFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
+    @Assisted("weekId") weekId: String,
+    @Assisted("dayName") dayName: String,
+    @Assisted("futureLessonId") futureLessonId: String,
     @Assisted("ifLessonNamesAreEmpty") ifLessonNamesAreEmpty: () -> Unit,
     @Assisted("ifLecturersAreEmpty") ifLecturersAreEmpty: () -> Unit,
     @Assisted("ifAudiencesAreEmpty") ifAudiencesAreEmpty: () -> Unit,
     @Assisted("onLessonSaved") onLessonSaved: () -> Unit,
 ) : AddLessonComponent, ComponentContext by componentContext {
 
-    private val store = instanceKeeper.getStore { storeFactory.create() }
+    private val store = instanceKeeper.getStore { storeFactory.create(weekId, dayName, futureLessonId) }
 
     override val labels: Flow<AddLessonStore.Label>
         get() = store.labels
@@ -91,6 +94,9 @@ class DefaultAddLessonComponent @AssistedInject constructor(
 
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
+            @Assisted("weekId") weekId: String,
+            @Assisted("dayName") dayName: String,
+            @Assisted("futureLessonId") futureLessonId: String,
             @Assisted("ifLessonNamesAreEmpty") ifLessonNamesAreEmpty: () -> Unit,
             @Assisted("ifLecturersAreEmpty") ifLecturersAreEmpty: () -> Unit,
             @Assisted("ifAudiencesAreEmpty") ifAudiencesAreEmpty: () -> Unit,

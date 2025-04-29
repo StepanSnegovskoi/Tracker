@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.onEach
 class DefaultScheduleComponent @AssistedInject constructor (
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("onAddWeekClick") onAddWeekClick: () -> Unit,
-    @Assisted("onAddLessonClick") onAddLessonClick: () -> Unit,
+    @Assisted("onAddLessonClick") onAddLessonClick: (String, String, String) -> Unit,
     private val storeFactory: ScheduleStoreFactory
 ): ScheduleComponent, ComponentContext by componentContext {
 
@@ -29,8 +29,8 @@ class DefaultScheduleComponent @AssistedInject constructor (
                     onAddWeekClick()
                 }
 
-                ScheduleStore.Label.ClickAddLesson -> {
-                    onAddLessonClick()
+                is ScheduleStore.Label.ClickAddLesson -> {
+                    onAddLessonClick(it.weekId, it.dayName, it.futureLessonId)
                 }
             }
         }.launchIn(componentScope())
@@ -43,8 +43,8 @@ class DefaultScheduleComponent @AssistedInject constructor (
         store.accept(ScheduleStore.Intent.ClickAddWeek)
     }
 
-    override fun onAddLessonButtonClick() {
-        store.accept(ScheduleStore.Intent.ClickAddLesson)
+    override fun onAddLessonButtonClick(weekId: String, dayName: String, futureLessonId: String) {
+        store.accept(ScheduleStore.Intent.ClickAddLesson(weekId, dayName, futureLessonId))
     }
 
     @AssistedFactory
@@ -53,7 +53,7 @@ class DefaultScheduleComponent @AssistedInject constructor (
         fun create (
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onAddWeekClick") onAddWeekClick: () -> Unit,
-            @Assisted("onAddLessonClick") onAddLessonClick: () -> Unit,
+            @Assisted("onAddLessonClick") onAddLessonClick: (String, String, String) -> Unit,
         ): DefaultScheduleComponent
     }
 }

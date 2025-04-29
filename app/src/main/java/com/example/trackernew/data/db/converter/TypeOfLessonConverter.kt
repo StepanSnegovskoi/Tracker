@@ -7,20 +7,20 @@ import com.example.trackernew.domain.entity.TypeOfLesson
 class TypeOfLessonConverter {
 
     @TypeConverter
-    fun fromTypeOfLesson(typeOfLesson: TypeOfLesson): String {
+    fun fromStatus(typeOfLesson: TypeOfLesson): String {
         return when (typeOfLesson) {
-            TypeOfLesson.Another -> "Другое"
-            TypeOfLesson.Lesson -> "Лекция"
-            TypeOfLesson.Practise -> "Практика"
+            TypeOfLesson.Lesson -> "Lesson"
+            TypeOfLesson.Practise -> "Practise"
+            TypeOfLesson.Another -> "Another"
         }
     }
 
     @TypeConverter
     fun fromJson(typeOfLessonJson: String): TypeOfLesson {
         return when (typeOfLessonJson) {
-            "Другое" -> TypeOfLesson.Another
-            "Лекция" -> TypeOfLesson.Lesson
-            "Практика" -> TypeOfLesson.Practise
+            "Lesson" -> TypeOfLesson.Lesson
+            "Practise" -> TypeOfLesson.Practise
+            "Another" -> TypeOfLesson.Another
             else -> throw IllegalArgumentException("Unknown TypeOfLesson: $typeOfLessonJson")
         }
     }

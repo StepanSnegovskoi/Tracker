@@ -10,10 +10,10 @@ import com.example.trackernew.domain.entity.Lecturer
 import com.example.trackernew.domain.entity.Lesson
 import com.example.trackernew.domain.entity.LessonName
 import com.example.trackernew.domain.entity.TypeOfLesson
-import com.example.trackernew.domain.usecase.AddLessonUseCase
 import com.example.trackernew.domain.usecase.GetAudiencesUseCase
 import com.example.trackernew.domain.usecase.GetLecturersUseCase
 import com.example.trackernew.domain.usecase.GetLessonNamesUseCase
+import com.example.trackernew.domain.usecase.UpdateWeekUseCase
 import com.example.trackernew.presentation.add.lesson.lesson.AddLessonStore.Intent
 import com.example.trackernew.presentation.add.lesson.lesson.AddLessonStore.Label
 import com.example.trackernew.presentation.add.lesson.lesson.AddLessonStore.State
@@ -47,7 +47,10 @@ interface AddLessonStore : Store<Intent, State, Label> {
         val lecturer: String,
         val lecturers: List<Lecturer>,
         val audience: String,
-        val audiences: List<Audience>
+        val audiences: List<Audience>,
+        val weekId: String,
+        val futureLessonId: Int,
+        val dayName: String
     )
 
     sealed interface Label {
@@ -64,13 +67,13 @@ interface AddLessonStore : Store<Intent, State, Label> {
 
 class AddLessonFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val saveLessonUseCase: AddLessonUseCase,
+    private val updateWeekUseCase: UpdateWeekUseCase,
     private val getLessonNamesUseCase: GetLessonNamesUseCase,
     private val getLecturersUseCase: GetLecturersUseCase,
     private val getAudiencesUseCase: GetAudiencesUseCase
 ) {
 
-    fun create(): AddLessonStore =
+    fun create(weekId: String, dayName: String, futureLessonId: String): AddLessonStore =
         object : AddLessonStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddLessonStore",
             initialState = State(
@@ -80,6 +83,9 @@ class AddLessonFactory @Inject constructor(
                 lecturers = emptyList(),
                 audience = "",
                 audiences = emptyList(),
+                weekId = weekId,
+                futureLessonId = futureLessonId.toInt(),
+                dayName = dayName
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -132,9 +138,11 @@ class AddLessonFactory @Inject constructor(
                 Intent.SaveLessonClicked -> {
                     val state = getState()
                     scope.launch {
-                        saveLessonUseCase(
-                            Lesson(
-                                id = 0,
+                        updateWeekUseCase(
+                            weekId = state.weekId,
+                            dayName = state.dayName,
+                            lesson =  Lesson(
+                                id = state.futureLessonId,
                                 name = state.lessonName,
                                 start = "",
                                 end = "",
