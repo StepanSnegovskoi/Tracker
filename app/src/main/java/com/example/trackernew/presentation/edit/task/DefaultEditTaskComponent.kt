@@ -1,4 +1,4 @@
-package com.example.trackernew.presentation.edit
+package com.example.trackernew.presentation.edit.task
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
@@ -32,23 +32,26 @@ class DefaultEditTaskComponent @AssistedInject constructor(
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                EditTaskStore.Label.TaskEdited -> {
-                    onTaskEdited()
+            when(it){
+                EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
+                    /** Nothing **/
+                }
+                EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
+                    /** Nothing **/
+                }
+                EditTaskStore.Label.SubTaskSaved -> {
+                    /** Nothing **/
                 }
 
-                /**
-                 * Другие случаи обрабатываются не здесь
-                 */
-                else -> {
-
+                EditTaskStore.Label.TaskEdited -> {
+                    onTaskEdited()
                 }
             }
         }.launchIn(componentScope())
     }
 
     override fun onEditTaskClicked() {
-        store.accept(EditTaskStore.Intent.EditTaskClicked)
+        store.accept(EditTaskStore.Intent.EditTask)
     }
 
     override fun onNameChanged(name: String) {
@@ -67,8 +70,8 @@ class DefaultEditTaskComponent @AssistedInject constructor(
         store.accept(EditTaskStore.Intent.ChangeDeadline(deadline))
     }
 
-    override fun onChangeCompletedStatusClick() {
-        store.accept(EditTaskStore.Intent.ChangeCompletedStatusClicked)
+    override fun onChangeStatusClicked() {
+        store.accept(EditTaskStore.Intent.ChangeTaskStatus)
     }
 
     override fun onSubTaskNameChanged(subTask: String) {
@@ -80,16 +83,15 @@ class DefaultEditTaskComponent @AssistedInject constructor(
     }
 
     override fun onDeleteSubTaskClicked(id: Int) {
-        store.accept(EditTaskStore.Intent.DeleteSubTaskClicked(id))
+        store.accept(EditTaskStore.Intent.DeleteSubTask(id))
     }
 
     override fun onSubTaskChangeStatusClicked(id: Int) {
-        store.accept(EditTaskStore.Intent.ChangeSubTaskStatusClicked(id))
+        store.accept(EditTaskStore.Intent.ChangeSubTaskStatus(id))
     }
 
     @AssistedFactory
     interface Factory {
-
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("task") task: Task,

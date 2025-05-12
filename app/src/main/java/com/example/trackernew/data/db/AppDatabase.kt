@@ -8,7 +8,6 @@ import androidx.room.TypeConverters
 import com.example.trackernew.data.db.converter.DaysConverter
 import com.example.trackernew.data.db.converter.SubTasksConverter
 import com.example.trackernew.data.db.converter.TaskStatusConverter
-import com.example.trackernew.data.db.converter.TypeOfLessonConverter
 import com.example.trackernew.data.db.dao.CategoryDao
 import com.example.trackernew.data.db.dao.LessonDao
 import com.example.trackernew.data.db.dao.TasksDao
@@ -37,7 +36,6 @@ import com.example.trackernew.data.entity.WeekDbModel
 @TypeConverters(
     SubTasksConverter::class,
     TaskStatusConverter::class,
-    TypeOfLessonConverter::class,
     DaysConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {

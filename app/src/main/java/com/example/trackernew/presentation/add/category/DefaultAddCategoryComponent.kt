@@ -14,26 +14,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class DefaultAddCategoryComponent @AssistedInject constructor (
+class DefaultAddCategoryComponent @AssistedInject constructor(
+    private val storeFactory: AddCategoryStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onCategorySaved") onCategorySaved: () -> Unit,
-    private val storeFactory: AddCategoryStoreFactory
-): AddCategoryComponent, ComponentContext by componentContext {
+    @Assisted("onCategorySaved") onCategorySaved: () -> Unit
+) : AddCategoryComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddCategoryStore.Label.CategorySaved -> {
-                    onCategorySaved()
+            when (it) {
+                AddCategoryStore.Label.AddCategoryClickedAndCategoryIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                /**
-                 * Другие случаи обрабатываются не здесь
-                 */
-                else -> {
-
+                AddCategoryStore.Label.CategorySaved -> {
+                    onCategorySaved()
                 }
             }
         }.launchIn(componentScope())
@@ -48,14 +45,13 @@ class DefaultAddCategoryComponent @AssistedInject constructor (
         store.accept(AddCategoryStore.Intent.ChangeCategory(category))
     }
 
-    override fun onAddClicked() {
-        store.accept(AddCategoryStore.Intent.AddCategoryClicked)
+    override fun onAddCategoryClicked() {
+        store.accept(AddCategoryStore.Intent.AddCategory)
     }
 
     @AssistedFactory
     interface Factory {
-
-        fun create (
+        fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onCategorySaved") onCategorySaved: () -> Unit
         ): DefaultAddCategoryComponent

@@ -5,14 +5,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 @Composable
 fun getOutlinedTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    disabledBorderColor = TrackerNewTheme.colors.onBackground,
-    focusedBorderColor = TrackerNewTheme.colors.onBackground,
-    unfocusedBorderColor = TrackerNewTheme.colors.onBackground,
-    errorBorderColor = TrackerNewTheme.colors.onBackground,
+    disabledBorderColor = TrackerNewTheme.colors.oppositeColor,
+    focusedBorderColor = TrackerNewTheme.colors.oppositeColor,
+    unfocusedBorderColor = TrackerNewTheme.colors.oppositeColor,
+    errorBorderColor = TrackerNewTheme.colors.oppositeColor,
     disabledTextColor = TrackerNewTheme.colors.textColor,
     focusedTextColor = TrackerNewTheme.colors.textColor,
     unfocusedTextColor = TrackerNewTheme.colors.textColor,
@@ -46,14 +47,47 @@ fun getTimePickerColors() = TimePickerDefaults.colors().copy(
     clockDialUnselectedContentColor = TrackerNewTheme.colors.textColor,
 )
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Green400 = Color(0xFF145B0C)
+val Green300 = Color(0xFF196710)
+val Green200 = Color(0xFF15720B)
+val Green100 = Color(0xFF217A17)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Red400 = Color(0xFF810C0C)
+val Red300 = Color(0xFFFF0000)
+val Red200 = Color(0xFFFF5555)
 
-val Green = Color(0xFF198D03)
-val Red = Color(0xFFFF4141)
-val Orange = Color(0xFFfc9003)
+val Gray100 = Color(0xFF726F6F)
+
+val Orange100 = Color(0xFFfc9003)
+
+val Black500 = Color(0xFF020202)
+val Black400 = Color(0xFF090909)
+val Black300 = Color(0xFF0d0d0d)
+val Black200 = Color(0xFF111111)
+val Black100 = Color(0xFF181818)
+
+val White300 = Color(0xFFeeeedd)
+val White200 = Color(0xFFffffee)
+val White100 = Color.White
+
+val linearGradientLightBackgroundBrush = Brush.linearGradient(colors = listOf(
+    White300,
+    White300,
+    White300,
+    White300,
+    White300,
+    White100,
+    White100,
+    White300,
+))
+
+val linearGradientDarkBackgroundBrush = Brush.linearGradient(colors = listOf(
+    Black300,
+    Black500,
+    Black200,
+    Black500,
+    Black400,
+    Black100,
+    Black100,
+    Black400,
+))

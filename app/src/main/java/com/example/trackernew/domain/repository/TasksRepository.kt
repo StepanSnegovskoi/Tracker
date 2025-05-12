@@ -9,4 +9,6 @@ interface TasksRepository {
     val categories: Flow<List<Category>>
 
     val tasks: Flow<List<Task>>
+
+    suspend fun deleteTask(taskId: Int)
 }

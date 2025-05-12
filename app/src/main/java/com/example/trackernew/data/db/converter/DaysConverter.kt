@@ -2,7 +2,6 @@ package com.example.trackernew.data.db.converter
 
 import androidx.room.TypeConverter
 import com.example.trackernew.domain.entity.Day
-import com.example.trackernew.domain.entity.SubTask
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

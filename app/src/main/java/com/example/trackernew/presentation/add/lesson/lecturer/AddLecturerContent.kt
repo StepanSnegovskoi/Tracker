@@ -1,5 +1,7 @@
 package com.example.trackernew.presentation.add.lesson.lecturer
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -22,9 +24,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.presentation.root.SnackbarManager
-import com.example.trackernew.ui.theme.Green
+import com.example.trackernew.ui.theme.Green200
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -37,45 +40,52 @@ fun AddLecturerContent(component: AddLecturerComponent, snackbarManager: Snackba
         key1 = component
     ) {
         component.labels.onEach {
-            when(it){
+            when (it) {
                 AddLecturerStore.Label.LecturerSaved -> {
                     snackbarManager.showMessage("Название сохранено")
                 }
 
-                AddLecturerStore.Label.AddLecturerClickedAndNameIsEmpty -> {
+                AddLecturerStore.Label.AddLecturerClickedAndLecturerIsEmpty -> {
                     snackbarManager.showMessage("Название не должно быть пустым")
                 }
             }
         }.launchIn(rememberCoroutineScope)
     }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         containerColor = TrackerNewTheme.colors.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    component.onAddClicked()
+                    component.onAddLecturerClicked()
                 },
                 containerColor = TrackerNewTheme.colors.onBackground,
                 contentColor = TrackerNewTheme.colors.oppositeColor
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.tintColor
                 )
             }
         }
     ) { paddingValues ->
-        OutlinedTextFieldLecturer(
-            state = state,
+        Box(
             modifier = Modifier
-                .padding(paddingValues),
-            onValueChange = {
-                component.onLecturerChanged(it)
-            },
-        )
+                .fillMaxSize()
+                .background(brush = TrackerNewTheme.colors.linearGradientBackground)
+        ) {
+            OutlinedTextFieldLecturer(
+                state = state,
+                modifier = Modifier
+                    .padding(paddingValues),
+                onValueChange = {
+                    component.onLecturerChanged(it)
+                }
+            )
+        }
     }
 }
 
@@ -90,6 +100,7 @@ fun OutlinedTextFieldLecturer(
     }
 
     LaunchedEffect(Unit) {
+        delay(550)
         focusRequester.requestFocus()
     }
 
@@ -98,23 +109,23 @@ fun OutlinedTextFieldLecturer(
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .then(modifier),
+        value = state.lecturer,
+        onValueChange = {
+            onValueChange(it)
+        },
         label = {
             Text(
                 text = "Преподаватель",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        colors = getOutlinedTextFieldColors(),
-        value = state.lecturer,
-        onValueChange = {
-            onValueChange(it)
-        },
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = if(state.lecturer.isNotEmpty()) Green else Color.Red,
+                color = if (state.lecturer.isNotEmpty()) Green200 else Color.Red,
                 fontSize = 12.sp
             )
-        }
+        },
+        colors = getOutlinedTextFieldColors()
     )
 }

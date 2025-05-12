@@ -1,6 +1,5 @@
 package com.example.trackernew.data.entity
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.trackernew.domain.entity.SubTask

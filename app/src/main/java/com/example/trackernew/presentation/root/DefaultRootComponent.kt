@@ -13,11 +13,11 @@ import com.example.trackernew.presentation.add.lesson.lecturer.DefaultAddLecture
 import com.example.trackernew.presentation.add.lesson.lesson.DefaultAddLessonComponent
 import com.example.trackernew.presentation.add.lesson.name.DefaultAddLessonNameComponent
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
-import com.example.trackernew.presentation.add.week.AddWeekStoreFactory
 import com.example.trackernew.presentation.add.week.DefaultAddWeekComponent
-import com.example.trackernew.presentation.edit.DefaultEditTaskComponent
+import com.example.trackernew.presentation.edit.task.DefaultEditTaskComponent
 import com.example.trackernew.presentation.schedule.DefaultScheduleComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
+import com.example.trackernew.presentation.weeks.DefaultWeeksComponent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -35,6 +35,7 @@ class DefaultRootComponent @AssistedInject constructor(
     private val addAudienceStoreFactory: DefaultAddAudienceComponent.Factory,
     private val scheduleStoreFactory: DefaultScheduleComponent.Factory,
     private val addWeekStoreFactory: DefaultAddWeekComponent.Factory,
+    private val weeksStoreFactory: DefaultWeeksComponent.Factory,
     private val addLecturerStoreFactory: DefaultAddLecturerComponent.Factory
 ) : RootComponent, ComponentContext by componentContext {
 
@@ -57,7 +58,7 @@ class DefaultRootComponent @AssistedInject constructor(
             Config.AddTask -> {
                 val component = addTaskStoreFactory.create(
                     componentContext = componentContext,
-                    ifCategoriesAreEmpty = {
+                    onCategoriesListIsEmpty = {
                         navigation.push(Config.AddCategory)
                     },
                     onTaskSaved = {
@@ -70,16 +71,16 @@ class DefaultRootComponent @AssistedInject constructor(
             Config.Tasks -> {
                 val component = tasksStoreFactory.create(
                     componentContext = componentContext,
-                    onAddTaskClick = {
+                    onAddTaskClicked = {
                         navigation.push(Config.AddTask)
                     },
-                    onTaskLongClick = {
+                    onTaskLongClicked = {
                         navigation.push(Config.EditTask(it))
                     },
-                    onAddCategoryClick = {
+                    onAddCategoryClicked = {
                         navigation.push(Config.AddCategory)
                     },
-                    onScheduleClick = {
+                    onScheduleClicked = {
                         navigation.push(Config.Schedule)
                     }
                 )
@@ -113,13 +114,13 @@ class DefaultRootComponent @AssistedInject constructor(
                     weekId = config.weekId,
                     dayName = config.dayName,
                     futureLessonId = config.futureLessonId,
-                    ifLessonNamesAreEmpty = {
+                    onLessonNamesListIsEmpty = {
                         navigation.push(Config.AddLessonName)
                     },
-                    ifLecturersAreEmpty = {
+                    onLecturersListIsEmpty = {
                         navigation.push(Config.AddLecturer)
                     },
-                    ifAudiencesAreEmpty = {
+                    onAudiencesListIsEmpty = {
                         navigation.push(Config.AddAudience)
                     },
                     onLessonSaved = {
@@ -166,11 +167,14 @@ class DefaultRootComponent @AssistedInject constructor(
             Config.Schedule -> {
                 val component = scheduleStoreFactory.create(
                     componentContext = componentContext,
-                    onAddWeekClick = {
+                    onAddWeekClicked = {
                         navigation.push(Config.AddWeek)
                     },
-                    onAddLessonClick = { weekId, dayName, futureLessonId ->
+                    onAddLessonClicked = { weekId, dayName, futureLessonId ->
                         navigation.push(Config.AddLesson(weekId, dayName, futureLessonId))
+                    },
+                    onEditWeeksClicked = {
+                        navigation.push(Config.EditWeeks)
                     }
                 )
 
@@ -186,6 +190,17 @@ class DefaultRootComponent @AssistedInject constructor(
                 )
 
                 RootComponent.Child.AddWeek(component)
+            }
+
+            Config.EditWeeks -> {
+                val component = weeksStoreFactory.create(
+                    componentContext = componentContext,
+                    onConfirmEditButtonClicked = {
+                        navigation.pop()
+                    }
+                )
+
+                RootComponent.Child.EditWeeks(component)
             }
         }
     }
@@ -215,9 +230,9 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data class AddLesson(
-            val weekId: String,
+            val weekId: Int,
             val dayName: String,
-            val futureLessonId: String
+            val futureLessonId: Int
         ) : Config
 
         @Serializable
@@ -234,5 +249,8 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data object AddWeek : Config
+
+        @Serializable
+        data object EditWeeks : Config
     }
 }

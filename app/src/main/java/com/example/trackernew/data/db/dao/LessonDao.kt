@@ -3,16 +3,10 @@ package com.example.trackernew.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
 import com.example.trackernew.data.entity.AudienceDbModel
-import com.example.trackernew.data.entity.CategoryDbModel
 import com.example.trackernew.data.entity.LecturerDbModel
 import com.example.trackernew.data.entity.LessonDbModel
 import com.example.trackernew.data.entity.LessonNameDbModel
-import com.example.trackernew.data.entity.WeekDbModel
-import com.example.trackernew.data.mapper.toEntity
-import com.example.trackernew.domain.entity.Audience
-import com.example.trackernew.domain.entity.LessonName
 import kotlinx.coroutines.flow.Flow
 
 @Dao

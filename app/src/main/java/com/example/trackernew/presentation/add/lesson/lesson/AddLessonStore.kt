@@ -9,7 +9,6 @@ import com.example.trackernew.domain.entity.Audience
 import com.example.trackernew.domain.entity.Lecturer
 import com.example.trackernew.domain.entity.Lesson
 import com.example.trackernew.domain.entity.LessonName
-import com.example.trackernew.domain.entity.TypeOfLesson
 import com.example.trackernew.domain.usecase.GetAudiencesUseCase
 import com.example.trackernew.domain.usecase.GetLecturersUseCase
 import com.example.trackernew.domain.usecase.GetLessonNamesUseCase
@@ -26,42 +25,63 @@ interface AddLessonStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object SaveLessonClicked : Intent
+        data object SaveLesson : Intent
 
-        data object NameLessonsClickedAndTheyAreEmpty : Intent
+
+        data object NameLessonsListIsEmpty : Intent
+
+        data object LecturersListIsEmpty : Intent
+
+        data object AudiencesListIsEmpty : Intent
+
 
         data class ChangeLessonName(val name: String) : Intent
 
-        data object LecturersClickedAndTheyAreEmpty : Intent
-
         data class ChangeLecturer(val lecturer: String) : Intent
 
-        data object AudiencesClickedAndTheyAreEmpty : Intent
-
         data class ChangeAudience(val audience: String) : Intent
+
+        data class ChangeStart(val start: Long) : Intent
+
+        data class ChangeEnd(val end: Long) : Intent
+
+        data class ChangeTypeOfLesson(val typeOfLesson: String) : Intent
     }
 
     data class State(
-        val lessonName: String,
-        val lessonNames: List<LessonName>,
-        val lecturer: String,
-        val lecturers: List<Lecturer>,
-        val audience: String,
-        val audiences: List<Audience>,
-        val weekId: String,
+        val weekId: Int,
         val futureLessonId: Int,
-        val dayName: String
+        val dayName: String,
+
+        val lessonName: String,
+        val lecturer: String,
+        val audience: String,
+        val start: Long,
+        val end: Long,
+        val typeOfLesson: String,
+
+        val lessonNames: List<LessonName>,
+        val lecturers: List<Lecturer>,
+        val audiences: List<Audience>,
     )
 
     sealed interface Label {
 
-        data object LessonNamesClickedAndTheyAreEmpty : Label
-
-        data object LecturersClickedAndTheyAreEmpty : Label
-
-        data object AudiencesClickedAndTheyAreEmpty : Label
-
         data object LessonSaved : Label
+
+
+        data object NameLessonsListIsEmpty : Label
+
+        data object LecturersListIsEmpty : Label
+
+        data object AudiencesListIsEmpty : Label
+
+
+        data object AddLessonClickedAndLessonNameIsEmpty : Label
+
+        data object EndTimeSaveClickedAndItsLessThanStartTime : Label
+
+        data object StartTimeSaveClickedAndItsMoreThanEndTime : Label
     }
 }
 
@@ -73,19 +93,22 @@ class AddLessonFactory @Inject constructor(
     private val getAudiencesUseCase: GetAudiencesUseCase
 ) {
 
-    fun create(weekId: String, dayName: String, futureLessonId: String): AddLessonStore =
+    fun create(weekId: Int, dayName: String, futureLessonId: Int): AddLessonStore =
         object : AddLessonStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddLessonStore",
             initialState = State(
-                lessonName = "",
-                lessonNames = emptyList(),
-                lecturer = "",
-                lecturers = emptyList(),
-                audience = "",
-                audiences = emptyList(),
                 weekId = weekId,
-                futureLessonId = futureLessonId.toInt(),
-                dayName = dayName
+                futureLessonId = futureLessonId,
+                dayName = dayName,
+                lessonName = "",
+                lecturer = "",
+                audience = "",
+                start = 0L,
+                end = 0L,
+                typeOfLesson = "Another",
+                lessonNames = emptyList(),
+                lecturers = emptyList(),
+                audiences = emptyList()
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -96,7 +119,7 @@ class AddLessonFactory @Inject constructor(
 
         data class LessonNamesLoaded(val lessonNames: List<LessonName>) : Action
 
-        data class LecturersNamesLoaded(val lecturers: List<Lecturer>) : Action
+        data class LecturerNamesLoaded(val lecturers: List<Lecturer>) : Action
 
         data class AudiencesLoaded(val audiences: List<Audience>) : Action
     }
@@ -105,13 +128,20 @@ class AddLessonFactory @Inject constructor(
 
         data class ChangeLessonName(val lessonName: String) : Msg
 
-        data class LessonNamesLoaded(val lessonNames: List<LessonName>) : Msg
-
         data class ChangeLecturer(val lecturer: String) : Msg
 
-        data class LecturersLoaded(val lecturers: List<Lecturer>) : Msg
-
         data class ChangeAudience(val audience: String) : Msg
+
+        data class ChangeStart(val start: Long) : Msg
+
+        data class ChangeEnd(val end: Long) : Msg
+
+        data class ChangeTypeOfLesson(val typeOfLesson: String) : Msg
+
+
+        data class LessonNamesLoaded(val lessonNames: List<LessonName>) : Msg
+
+        data class LecturersLoaded(val lecturers: List<Lecturer>) : Msg
 
         data class AudiencesLoaded(val audiences: List<Audience>) : Msg
     }
@@ -123,7 +153,7 @@ class AddLessonFactory @Inject constructor(
             }.launchIn(scope)
 
             getLecturersUseCase().onEach {
-                dispatch(Action.LecturersNamesLoaded(it))
+                dispatch(Action.LecturerNamesLoaded(it))
             }.launchIn(scope)
 
             getAudiencesUseCase().onEach {
@@ -135,23 +165,33 @@ class AddLessonFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.SaveLessonClicked -> {
+                Intent.SaveLesson -> {
                     val state = getState()
-                    scope.launch {
-                        updateWeekUseCase(
-                            weekId = state.weekId,
-                            dayName = state.dayName,
-                            lesson =  Lesson(
-                                id = state.futureLessonId,
-                                name = state.lessonName,
-                                start = "",
-                                end = "",
-                                lecturer = state.lecturer,
-                                audience = state.audience,
-                                typeOfLesson = TypeOfLesson.Another
-                            )
-                        )
-                        publish(Label.LessonSaved)
+                    val lessonName = state.lessonName
+
+                    when(lessonName.isNotEmpty()){
+                        true -> {
+                            scope.launch {
+                                updateWeekUseCase(
+                                    weekId = state.weekId,
+                                    dayName = state.dayName,
+                                    lesson =  Lesson(
+                                        id = state.futureLessonId,
+                                        name = lessonName,
+                                        start = state.start,
+                                        end = state.end,
+                                        lecturer = state.lecturer,
+                                        audience = state.audience,
+                                        typeOfLesson = state.typeOfLesson
+                                    )
+                                )
+                                publish(Label.LessonSaved)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.AddLessonClickedAndLessonNameIsEmpty)
+                        }
                     }
                 }
 
@@ -159,24 +199,46 @@ class AddLessonFactory @Inject constructor(
                     dispatch(Msg.ChangeLessonName(intent.name))
                 }
 
-                Intent.NameLessonsClickedAndTheyAreEmpty -> {
-                    publish(Label.LessonNamesClickedAndTheyAreEmpty)
-                }
-
                 is Intent.ChangeLecturer -> {
                     dispatch(Msg.ChangeLecturer(intent.lecturer))
-                }
-
-                Intent.LecturersClickedAndTheyAreEmpty -> {
-                    publish(Label.LecturersClickedAndTheyAreEmpty)
                 }
 
                 is Intent.ChangeAudience -> {
                     dispatch(Msg.ChangeAudience(intent.audience))
                 }
 
-                Intent.AudiencesClickedAndTheyAreEmpty -> {
-                    publish(Label.AudiencesClickedAndTheyAreEmpty)
+                is Intent.ChangeStart -> {
+                    val state = getState()
+                    if(intent.start >= state.end && state.end != 0L) {
+                        publish(Label.StartTimeSaveClickedAndItsMoreThanEndTime)
+                    } else {
+                        dispatch(Msg.ChangeStart(intent.start))
+                    }
+                }
+
+                is Intent.ChangeEnd -> {
+                    val state = getState()
+                    if(intent.end <= state.start) {
+                        publish(Label.EndTimeSaveClickedAndItsLessThanStartTime)
+                    } else {
+                        dispatch(Msg.ChangeEnd(intent.end))
+                    }
+                }
+
+                is Intent.ChangeTypeOfLesson -> {
+                    dispatch(Msg.ChangeTypeOfLesson(intent.typeOfLesson))
+                }
+
+                Intent.NameLessonsListIsEmpty -> {
+                    publish(Label.NameLessonsListIsEmpty)
+                }
+
+                Intent.LecturersListIsEmpty -> {
+                    publish(Label.LecturersListIsEmpty)
+                }
+
+                Intent.AudiencesListIsEmpty -> {
+                    publish(Label.AudiencesListIsEmpty)
                 }
             }
         }
@@ -187,7 +249,7 @@ class AddLessonFactory @Inject constructor(
                     dispatch(Msg.LessonNamesLoaded(action.lessonNames))
                 }
 
-                is Action.LecturersNamesLoaded -> {
+                is Action.LecturerNamesLoaded -> {
                     dispatch(Msg.LecturersLoaded(action.lecturers))
                 }
 
@@ -222,6 +284,17 @@ class AddLessonFactory @Inject constructor(
 
             is Msg.AudiencesLoaded -> {
                 copy(audiences = msg.audiences)
+            }
+
+            is Msg.ChangeTypeOfLesson -> {
+                copy(typeOfLesson = msg.typeOfLesson)
+            }
+
+            is Msg.ChangeEnd -> {
+                copy(end = msg.end)
+            }
+            is Msg.ChangeStart -> {
+                copy(start = msg.start)
             }
         }
     }

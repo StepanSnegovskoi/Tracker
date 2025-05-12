@@ -15,25 +15,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class DefaultAddWeekComponent @AssistedInject constructor (
+    private val storeFactory: AddWeekStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onWeekSaved") onWeekSaved: () -> Unit,
-    private val storeFactory: AddWeekStoreFactory
+    @Assisted("onWeekSaved") onWeekSaved: () -> Unit
 ): AddWeekComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddWeekStore.Label.WeekSaved -> {
-                    onWeekSaved()
+            when(it){
+                AddWeekStore.Label.AddWeekClickedAndWeekIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                /**
-                 * Другие случаи обрабатываются не здесь
-                 */
-                else -> {
-
+                AddWeekStore.Label.WeekSaved -> {
+                    onWeekSaved()
                 }
             }
         }.launchIn(componentScope())
@@ -48,13 +45,12 @@ class DefaultAddWeekComponent @AssistedInject constructor (
         store.accept(AddWeekStore.Intent.ChangeWeek(week))
     }
 
-    override fun onAddClicked() {
-        store.accept(AddWeekStore.Intent.AddWeekClicked)
+    override fun onAddWeekClicked() {
+        store.accept(AddWeekStore.Intent.AddWeek)
     }
 
     @AssistedFactory
     interface Factory {
-
         fun create (
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onWeekSaved") onWeekSaved: () -> Unit

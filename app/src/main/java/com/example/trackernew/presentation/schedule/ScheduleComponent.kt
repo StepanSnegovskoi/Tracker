@@ -6,7 +6,11 @@ interface ScheduleComponent {
 
     val model: StateFlow<ScheduleStore.State>
 
-    fun onAddWeekButtonClick()
+    fun onAddWeekClicked()
 
-    fun onAddLessonButtonClick(weekId: String, dayName: String, futureLessonId: String)
+    fun onEditWeeksClicked()
+
+    fun onAddLessonClicked(weekId: Int, dayName: String, futureLessonId: Int)
+
+    fun onDeleteLessonClicked(weekId: Int, lessonId: Int)
 }

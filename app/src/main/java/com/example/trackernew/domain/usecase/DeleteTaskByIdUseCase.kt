@@ -1,11 +1,11 @@
 package com.example.trackernew.domain.usecase
 
-import com.example.trackernew.data.db.dao.TasksDao
+import com.example.trackernew.domain.repository.TasksRepository
 import javax.inject.Inject
 
 class DeleteTaskByIdUseCase @Inject constructor(
-    private val tasksDao: TasksDao
+    private val repository: TasksRepository
 ) {
 
-    suspend operator fun invoke(id: Int) = tasksDao.deleteTask(id)
+    suspend operator fun invoke(id: Int) = repository.deleteTask(id)
 }

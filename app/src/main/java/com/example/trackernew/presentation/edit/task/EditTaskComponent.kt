@@ -1,4 +1,4 @@
-package com.example.trackernew.presentation.edit
+package com.example.trackernew.presentation.edit.task
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -9,7 +9,17 @@ interface EditTaskComponent {
 
     val labels: Flow<EditTaskStore.Label>
 
+
     fun onEditTaskClicked()
+
+    fun onDeleteSubTaskClicked(id: Int)
+
+    fun onAddSubTaskClicked()
+
+    fun onSubTaskChangeStatusClicked(id: Int)
+
+    fun onChangeStatusClicked()
+
 
     fun onNameChanged(name: String)
 
@@ -19,13 +29,5 @@ interface EditTaskComponent {
 
     fun onDeadlineChanged(deadline: Long)
 
-    fun onChangeCompletedStatusClick()
-
     fun onSubTaskNameChanged(subTask: String)
-
-    fun onAddSubTaskClicked()
-
-    fun onDeleteSubTaskClicked(id: Int)
-
-    fun onSubTaskChangeStatusClicked(id: Int)
 }

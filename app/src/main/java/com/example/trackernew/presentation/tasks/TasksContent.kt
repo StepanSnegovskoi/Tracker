@@ -50,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,19 +59,15 @@ import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.presentation.extensions.toDateString
-import com.example.trackernew.presentation.tasks.TasksStore.Label
-import com.example.trackernew.presentation.utils.ADD
-import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
-import com.example.trackernew.presentation.utils.Sort
-import com.example.trackernew.presentation.utils.sortTypes
-import com.example.trackernew.ui.theme.Green
-import com.example.trackernew.ui.theme.Orange
-import com.example.trackernew.ui.theme.Red
+import com.example.trackernew.ui.theme.Green200
+import com.example.trackernew.ui.theme.Orange100
+import com.example.trackernew.ui.theme.Red300
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @Composable
 fun TasksContent(component: TasksComponent) {
     val state by component.model.collectAsState()
+
     val stateCategories = rememberSaveable() {
         mutableStateOf(false)
     }
@@ -96,7 +91,6 @@ fun TasksContent(component: TasksComponent) {
             Scaffold(
                 modifier = Modifier
                     .fillMaxSize(),
-                containerColor = TrackerNewTheme.colors.background,
                 topBar = {
                     ScaffoldTopAppBar(
                         state = state,
@@ -113,21 +107,27 @@ fun TasksContent(component: TasksComponent) {
                     )
                 }
             ) { paddingValues ->
-                Column(
+                Box(
                     modifier = Modifier
-                        .padding(paddingValues = paddingValues)
+                        .fillMaxSize()
+                        .background(brush = TrackerNewTheme.colors.linearGradientBackground)
                 ) {
-                    TasksLazyColumn(
+                    Column(
                         modifier = Modifier
-                            .padding(4.dp),
-                        state = state,
-                        onTaskLongClick = {
-                            component.onTaskLongClicked(it)
-                        },
-                        onDeleteIconClick = {
-                            component.onDeleteTaskClicked(it)
-                        }
-                    )
+                            .padding(paddingValues = paddingValues)
+                    ) {
+                        TasksLazyColumn(
+                            modifier = Modifier
+                                .padding(4.dp),
+                            state = state,
+                            onTaskLongClick = {
+                                component.onTaskLongClicked(it)
+                            },
+                            onDeleteIconClick = {
+                                component.onDeleteTaskClicked(it)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -191,11 +191,13 @@ private fun TaskItem(
             )
             .then(other = modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = TrackerNewTheme.colors.onBackground
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = TrackerNewTheme.colors.onBackground)
                 .padding(horizontal = 8.dp, vertical = 8.dp),
         ) {
             Row(
@@ -215,7 +217,7 @@ private fun TaskItem(
                         .size(32.dp)
                         .padding(horizontal = 4.dp),
                     painter = painterResource(
-                        when(task.status){
+                        when (task.status) {
                             TaskStatus.Completed -> R.drawable.question_24
                             TaskStatus.Executed -> R.drawable.done_24
                             TaskStatus.Failed -> R.drawable.not_completed_24
@@ -223,11 +225,11 @@ private fun TaskItem(
                         }
                     ),
                     contentDescription = null,
-                    tint = when(task.status){
+                    tint = when (task.status) {
                         TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
-                        TaskStatus.Executed -> Green
-                        TaskStatus.Failed -> Red
-                        TaskStatus.InTheProcess -> Orange
+                        TaskStatus.Executed -> Green200
+                        TaskStatus.Failed -> Red300
+                        TaskStatus.InTheProcess -> Orange100
                     }
                 )
 
@@ -306,7 +308,7 @@ fun SubTasks(
 
         task.subTasks.forEach {
             val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
-            val color = if (it.isCompleted) Green else Red
+            val color = if (it.isCompleted) Green200 else Red300
             Row {
                 Text(
                     text = it.name,
@@ -387,7 +389,10 @@ private fun CategoriesLazyColumn(
             Text(
                 modifier = Modifier
                     .fillParentMaxWidth()
-                    .clickable {
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
                         onCategoryClick(it)
                     },
                 fontSize = 16.sp,
@@ -399,10 +404,13 @@ private fun CategoriesLazyColumn(
             Text(
                 modifier = Modifier
                     .fillParentMaxWidth()
-                    .clickable {
-                        onCategoryClick(Category(INITIAL_CATEGORY_NAME))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onCategoryClick(Category("Всё вместе"))
                     },
-                text = INITIAL_CATEGORY_NAME,
+                text = "Всё вместе",
                 color = TrackerNewTheme.colors.textColor
             )
         }
@@ -413,7 +421,7 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onAddClick()
                     },
-                text = ADD,
+                text = "Добавить",
                 color = TrackerNewTheme.colors.textColor
             )
         }
@@ -495,13 +503,14 @@ fun ModalDrawer(
     onScheduleClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     ModalNavigationDrawer(
         modifier = modifier,
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = TrackerNewTheme.colors.background,
+                drawerContainerColor = TrackerNewTheme.colors.onBackground,
                 modifier = Modifier
                     .width(340.dp)
             ) {
@@ -527,7 +536,10 @@ fun ModalDrawer(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(4.dp)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     onCategoriesClick()
                                 },
                             text = "Категории",
@@ -550,7 +562,10 @@ fun ModalDrawer(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(4.dp)
-                                .clickable {
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
                                     onScheduleClick()
                                 },
                             text = "Расписание",
@@ -650,3 +665,21 @@ fun ScaffoldFloatingActionButton(
         Icon(imageVector = Icons.Default.Add, contentDescription = null)
     }
 }
+
+sealed class Sort(val value: String) {
+    abstract fun comparator(): Comparator<Task>
+
+    data object ByDateAdded : Sort("По дате добавления") {
+        override fun comparator() = compareBy<Task> { it.addingTime }
+    }
+
+    data object ByDeadline : Sort("По дедлайну") {
+        override fun comparator() = compareBy<Task> { it.deadline }
+    }
+
+    data object ByName : Sort("По названию") {
+        override fun comparator() = compareBy<Task> { it.name }
+    }
+}
+
+val sortTypes = listOf(Sort.ByDateAdded, Sort.ByDeadline, Sort.ByName)

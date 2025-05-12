@@ -15,22 +15,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class DefaultAddAudienceComponent @AssistedInject constructor (
+    private val storeFactory: AddAudienceStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onAudienceSaved") onAudienceSaved: () -> Unit,
-    private val storeFactory: AddAudienceStoreFactory
+    @Assisted("onAudienceSaved") onAudienceSaved: () -> Unit
 ): AddAudienceComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddAudienceStore.Label.AudienceSaved -> {
-                    onAudienceSaved()
+            when(it){
+                AddAudienceStore.Label.AddAudienceClickedAndAudienceIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                else -> {
-
+                AddAudienceStore.Label.AudienceSaved -> {
+                    onAudienceSaved()
                 }
             }
         }.launchIn(componentScope())
@@ -41,8 +41,8 @@ class DefaultAddAudienceComponent @AssistedInject constructor (
 
     override val labels: Flow<AddAudienceStore.Label> = store.labels
 
-    override fun onAddClicked() {
-        store.accept(AddAudienceStore.Intent.AddAudienceClicked)
+    override fun onAddAudienceClicked() {
+        store.accept(AddAudienceStore.Intent.AddAudience)
     }
 
     override fun onAudienceChanged(audience: String) {
@@ -51,7 +51,6 @@ class DefaultAddAudienceComponent @AssistedInject constructor (
 
     @AssistedFactory
     interface Factory {
-
         fun create (
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onAudienceSaved") onAudienceSaved: () -> Unit

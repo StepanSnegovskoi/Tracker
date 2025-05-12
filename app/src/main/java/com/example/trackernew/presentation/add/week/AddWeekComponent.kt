@@ -9,7 +9,7 @@ interface AddWeekComponent {
 
     val labels: Flow<AddWeekStore.Label>
 
-    fun onAddClicked()
+    fun onAddWeekClicked()
 
     fun onWeekChanged(week: String)
 }

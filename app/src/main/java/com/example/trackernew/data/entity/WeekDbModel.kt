@@ -9,7 +9,6 @@ data class WeekDbModel(
     @PrimaryKey(autoGenerate = true)
     val id: Int,
     val name: String,
-    val position: Int,
     val isActive: Boolean,
     val days: List<Day> = listOf(
         Day(
@@ -40,5 +39,8 @@ data class WeekDbModel(
             name = "Sunday",
             lessons = emptyList()
         ),
-    )
+    ),
+    val selectedAsCurrent: Boolean,
+    val weekOfYear: Int = -1,
+    val position: Int
 )

@@ -17,7 +17,7 @@ interface AddWeekStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddWeekClicked : Intent
+        data object AddWeek : Intent
 
         data class ChangeWeek(val week: String) : Intent
     }
@@ -30,7 +30,7 @@ interface AddWeekStore : Store<Intent, State, Label> {
 
         data object WeekSaved : Label
 
-        data object AddWeekClickedAndNameIsEmpty : Label
+        data object AddWeekClickedAndWeekIsEmpty : Label
     }
 }
 
@@ -43,7 +43,7 @@ class AddWeekStoreFactory @Inject constructor(
         object : AddWeekStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddWeekStore",
             initialState = State(
-                ""
+                week = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -66,22 +66,29 @@ class AddWeekStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddWeekClicked -> {
+                Intent.AddWeek -> {
                     val state = getState()
-                    if (state.week.trim().isEmpty()) {
-                        publish(Label.AddWeekClickedAndNameIsEmpty)
-                        return
-                    }
-                    scope.launch {
-                        addWeekUseCase(
-                            Week(
-                                id = 0,
-                                name = state.week.trim(),
-                                position = 0,
-                                isActive = false,
-                            )
-                        )
-                        publish(Label.WeekSaved)
+                    val week = state.week.trim()
+
+                    when(week.isNotEmpty()){
+                        true -> {
+                            scope.launch {
+                                addWeekUseCase(
+                                    Week(
+                                        id = 0,
+                                        name = week,
+                                        isActive = false,
+                                        selectedAsCurrent = false,
+                                        position = 0
+                                    )
+                                )
+                                publish(Label.WeekSaved)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.AddWeekClickedAndWeekIsEmpty)
+                        }
                     }
                 }
 

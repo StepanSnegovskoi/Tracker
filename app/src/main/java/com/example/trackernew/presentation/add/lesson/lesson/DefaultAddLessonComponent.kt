@@ -17,42 +17,51 @@ import kotlinx.coroutines.flow.onEach
 class DefaultAddLessonComponent @AssistedInject constructor(
     private val storeFactory: AddLessonFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("weekId") weekId: String,
+    @Assisted("weekId") weekId: Int,
     @Assisted("dayName") dayName: String,
-    @Assisted("futureLessonId") futureLessonId: String,
-    @Assisted("ifLessonNamesAreEmpty") ifLessonNamesAreEmpty: () -> Unit,
-    @Assisted("ifLecturersAreEmpty") ifLecturersAreEmpty: () -> Unit,
-    @Assisted("ifAudiencesAreEmpty") ifAudiencesAreEmpty: () -> Unit,
+    @Assisted("futureLessonId") futureLessonId: Int,
+    @Assisted("onLessonNamesListIsEmpty") onLessonNamesListIsEmpty: () -> Unit,
+    @Assisted("onLecturersListIsEmpty") onLecturersListIsEmpty: () -> Unit,
+    @Assisted("onAudiencesListIsEmpty") onAudiencesListIsEmpty: () -> Unit,
     @Assisted("onLessonSaved") onLessonSaved: () -> Unit,
 ) : AddLessonComponent, ComponentContext by componentContext {
 
-    private val store = instanceKeeper.getStore { storeFactory.create(weekId, dayName, futureLessonId) }
+    private val store = instanceKeeper.getStore {
+        storeFactory.create(weekId, dayName, futureLessonId)
+    }
 
     override val labels: Flow<AddLessonStore.Label>
         get() = store.labels
 
     init {
         store.labels.onEach {
-            when (val label = it) {
-                AddLessonStore.Label.LessonNamesClickedAndTheyAreEmpty -> {
-                    ifLessonNamesAreEmpty()
+            when (it) {
+                AddLessonStore.Label.AddLessonClickedAndLessonNameIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                AddLessonStore.Label.LecturersClickedAndTheyAreEmpty -> {
-                    ifLecturersAreEmpty()
+                AddLessonStore.Label.EndTimeSaveClickedAndItsLessThanStartTime -> {
+                    /** Nothing **/
                 }
 
-                AddLessonStore.Label.AudiencesClickedAndTheyAreEmpty -> {
-                    ifAudiencesAreEmpty()
+                AddLessonStore.Label.StartTimeSaveClickedAndItsMoreThanEndTime -> {
+                    /** Nothing **/
+                }
+
+                AddLessonStore.Label.NameLessonsListIsEmpty -> {
+                    onLessonNamesListIsEmpty()
+                }
+
+                AddLessonStore.Label.LecturersListIsEmpty -> {
+                    onLecturersListIsEmpty()
+                }
+
+                AddLessonStore.Label.AudiencesListIsEmpty -> {
+                    onAudiencesListIsEmpty()
                 }
 
                 AddLessonStore.Label.LessonSaved -> {
                     onLessonSaved()
-                }
-                /**
-                 * Другие случаи обрабатываются не здесь
-                 */
-                else -> {
                 }
             }
         }.launchIn(componentScope())
@@ -61,45 +70,56 @@ class DefaultAddLessonComponent @AssistedInject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<AddLessonStore.State> = store.stateFlow
 
-    override fun onSaveLessonClicked() {
-        store.accept(AddLessonStore.Intent.SaveLessonClicked)
+    override fun onAddLessonClicked() {
+        store.accept(AddLessonStore.Intent.SaveLesson)
     }
 
     override fun onNameChanged(name: String) {
         store.accept(AddLessonStore.Intent.ChangeLessonName(name))
     }
 
-    override fun goToAddNameLessonContent() {
-        store.accept(AddLessonStore.Intent.NameLessonsClickedAndTheyAreEmpty)
-    }
-
-    override fun goToAddLecturerContent() {
-        store.accept(AddLessonStore.Intent.LecturersClickedAndTheyAreEmpty)
-    }
-
     override fun onLecturerChanged(lecturer: String) {
         store.accept(AddLessonStore.Intent.ChangeLecturer(lecturer))
-    }
-
-    override fun goToAddAudienceContent() {
-        store.accept(AddLessonStore.Intent.AudiencesClickedAndTheyAreEmpty)
     }
 
     override fun onAudienceChanged(audience: String) {
         store.accept(AddLessonStore.Intent.ChangeAudience(audience))
     }
 
+    override fun onStartChanged(start: Long) {
+        store.accept(AddLessonStore.Intent.ChangeStart(start))
+    }
+
+    override fun onEndChanged(end: Long) {
+        store.accept(AddLessonStore.Intent.ChangeEnd(end))
+    }
+
+    override fun onTypeOfLessonChanged(typeOfLesson: String) {
+        store.accept(AddLessonStore.Intent.ChangeTypeOfLesson(typeOfLesson))
+    }
+
+    override fun onLessonNameClickedAndLessonNamesListIsEmpty() {
+        store.accept(AddLessonStore.Intent.NameLessonsListIsEmpty)
+    }
+
+    override fun onLecturerClickedAndLecturersListIsEmpty() {
+        store.accept(AddLessonStore.Intent.LecturersListIsEmpty)
+    }
+
+    override fun onAudienceClickedAndAudiencesListIsEmpty() {
+        store.accept(AddLessonStore.Intent.AudiencesListIsEmpty)
+    }
+
     @AssistedFactory
     interface Factory {
-
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
-            @Assisted("weekId") weekId: String,
+            @Assisted("weekId") weekId: Int,
             @Assisted("dayName") dayName: String,
-            @Assisted("futureLessonId") futureLessonId: String,
-            @Assisted("ifLessonNamesAreEmpty") ifLessonNamesAreEmpty: () -> Unit,
-            @Assisted("ifLecturersAreEmpty") ifLecturersAreEmpty: () -> Unit,
-            @Assisted("ifAudiencesAreEmpty") ifAudiencesAreEmpty: () -> Unit,
+            @Assisted("futureLessonId") futureLessonId: Int,
+            @Assisted("onLessonNamesListIsEmpty") onLessonNamesListIsEmpty: () -> Unit,
+            @Assisted("onLecturersListIsEmpty") onLecturersListIsEmpty: () -> Unit,
+            @Assisted("onAudiencesListIsEmpty") onAudiencesListIsEmpty: () -> Unit,
             @Assisted("onLessonSaved") onLessonSaved: () -> Unit,
         ): DefaultAddLessonComponent
     }

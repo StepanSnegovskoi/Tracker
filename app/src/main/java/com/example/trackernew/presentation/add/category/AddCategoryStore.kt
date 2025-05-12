@@ -17,7 +17,7 @@ interface AddCategoryStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddCategoryClicked : Intent
+        data object AddCategory : Intent
 
         data class ChangeCategory(val category: String) : Intent
     }
@@ -30,7 +30,7 @@ interface AddCategoryStore : Store<Intent, State, Label> {
 
         data object CategorySaved : Label
 
-        data object AddCategoryClickedAndNameIsEmpty : Label
+        data object AddCategoryClickedAndCategoryIsEmpty : Label
     }
 }
 
@@ -43,7 +43,7 @@ class AddCategoryStoreFactory @Inject constructor(
         object : AddCategoryStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddWeekStore",
             initialState = State(
-                ""
+                category = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -66,19 +66,25 @@ class AddCategoryStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddCategoryClicked -> {
+                Intent.AddCategory -> {
                     val state = getState()
-                    if (state.category.trim().isEmpty()) {
-                        publish(Label.AddCategoryClickedAndNameIsEmpty)
-                        return
-                    }
-                    scope.launch {
-                        addCategoryUseCase(
-                            Category(
-                                name = state.category.trim()
-                            )
-                        )
-                        publish(Label.CategorySaved)
+                    val category = state.category.trim()
+
+                    when (category.isNotEmpty()) {
+                        true -> {
+                            scope.launch {
+                                addCategoryUseCase(
+                                    Category(
+                                        name = category
+                                    )
+                                )
+                                publish(Label.CategorySaved)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.AddCategoryClickedAndCategoryIsEmpty)
+                        }
                     }
                 }
 

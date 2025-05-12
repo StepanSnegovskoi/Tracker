@@ -12,18 +12,22 @@ import com.example.trackernew.data.repository.AddLecturerRepositoryImpl
 import com.example.trackernew.data.repository.AddLessonNameRepositoryImpl
 import com.example.trackernew.data.repository.AddLessonRepositoryImpl
 import com.example.trackernew.data.repository.AddTaskRepositoryImpl
+import com.example.trackernew.data.repository.AddWeekRepositoryImpl
 import com.example.trackernew.data.repository.EditTaskRepositoryImpl
+import com.example.trackernew.data.repository.ScheduleRepositoryImpl
 import com.example.trackernew.data.repository.TasksRepositoryImpl
-import com.example.trackernew.data.repository.WeekRepositoryImpl
+import com.example.trackernew.data.repository.WeeksRepositoryImpl
 import com.example.trackernew.domain.repository.AddAudienceRepository
 import com.example.trackernew.domain.repository.AddCategoryRepository
 import com.example.trackernew.domain.repository.AddLecturerRepository
 import com.example.trackernew.domain.repository.AddLessonNameRepository
 import com.example.trackernew.domain.repository.AddLessonRepository
 import com.example.trackernew.domain.repository.AddTaskRepository
+import com.example.trackernew.domain.repository.AddWeekRepository
 import com.example.trackernew.domain.repository.EditTaskRepository
+import com.example.trackernew.domain.repository.ScheduleRepository
 import com.example.trackernew.domain.repository.TasksRepository
-import com.example.trackernew.domain.repository.WeekRepository
+import com.example.trackernew.domain.repository.WeeksRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -65,7 +69,15 @@ interface DataModule {
 
     @ApplicationScope
     @Binds
-    fun bindWeekRepository(weekRepositoryImpl: WeekRepositoryImpl): WeekRepository
+    fun bindWeekRepository(weekRepositoryImpl: WeeksRepositoryImpl): WeeksRepository
+
+    @ApplicationScope
+    @Binds
+    fun bindScheduleRepository(scheduleRepositoryImpl: ScheduleRepositoryImpl): ScheduleRepository
+
+    @ApplicationScope
+    @Binds
+    fun bindAddWeekRepository(addWeekRepositoryImpl: AddWeekRepositoryImpl): AddWeekRepository
 
     companion object {
 

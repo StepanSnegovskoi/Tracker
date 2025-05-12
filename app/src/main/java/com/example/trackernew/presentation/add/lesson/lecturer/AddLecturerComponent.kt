@@ -9,7 +9,7 @@ interface AddLecturerComponent {
 
     val labels: Flow<AddLecturerStore.Label>
 
-    fun onAddClicked()
+    fun onAddLecturerClicked()
 
     fun onLecturerChanged(lecturer: String)
 }

@@ -1,12 +1,15 @@
 package com.example.trackernew.presentation.root
 
-import android.util.Log
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -17,16 +20,16 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.example.trackernew.presentation.add.category.AddCategoryContent
-import com.example.trackernew.presentation.add.lesson.audience.AddAudienceComponent
 import com.example.trackernew.presentation.add.lesson.audience.AddAudienceContent
 import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerContent
 import com.example.trackernew.presentation.add.lesson.lesson.AddLessonContent
 import com.example.trackernew.presentation.add.lesson.name.AddLessonNameContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
 import com.example.trackernew.presentation.add.week.AddWeekContent
-import com.example.trackernew.presentation.edit.EditTaskContent
+import com.example.trackernew.presentation.edit.task.EditTaskContent
 import com.example.trackernew.presentation.schedule.ScheduleContent
 import com.example.trackernew.presentation.tasks.TasksContent
+import com.example.trackernew.presentation.weeks.WeeksContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -103,6 +106,10 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                     is RootComponent.Child.AddWeek -> {
                         AddWeekContent(instance.component, snackbarManager)
                     }
+
+                    is RootComponent.Child.EditWeeks -> {
+                        WeeksContent(instance.component)
+                    }
                 }
             }
             SnackbarHost(
@@ -112,7 +119,20 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                     .padding(
                         bottom = (
                                 FAB_BOTTOM_PADDING_INT + ENABLE_EDGE_TO_EDGE_BOTTOM_PADDING).dp
+                    ),
+                snackbar = { snackbarData ->
+                    Snackbar(
+                        modifier = Modifier
+                            .padding(8.dp),
+                        containerColor = TrackerNewTheme.colors.onBackground,
+                        content = {
+                            Text(
+                                text = snackbarData.visuals.message,
+                                color = TrackerNewTheme.colors.textColor
+                            )
+                        }
                     )
+                }
             )
         }
     }

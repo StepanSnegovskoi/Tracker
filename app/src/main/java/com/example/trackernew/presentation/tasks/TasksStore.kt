@@ -7,6 +7,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
+import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.domain.usecase.DeleteTaskByIdUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.GetTasksUseCase
@@ -14,8 +15,6 @@ import com.example.trackernew.presentation.extensions.filterBySortTypeAndCategor
 import com.example.trackernew.presentation.tasks.TasksStore.Intent
 import com.example.trackernew.presentation.tasks.TasksStore.Label
 import com.example.trackernew.presentation.tasks.TasksStore.State
-import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
-import com.example.trackernew.presentation.utils.Sort
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -34,6 +33,7 @@ interface TasksStore : Store<Intent, State, Label> {
         data class ClickDeleteTask(val task: Task) : Intent
 
         data class LongClickTask(val task: Task) : Intent
+
 
         data class ChangeSort(val sort: Sort) : Intent
 
@@ -78,7 +78,7 @@ class TasksStoreFactory @Inject constructor(
             initialState = State(
                 tasks = TasksStore.Tasks(listOf(), listOf()),
                 sort = Sort.ByName,
-                category = Category(INITIAL_CATEGORY_NAME),
+                category = Category("Всё вместе"),
                 categories = listOf()
             ),
             bootstrapper = BootstrapperImpl(),
@@ -99,6 +99,7 @@ class TasksStoreFactory @Inject constructor(
 
         data class CategoriesLoaded(val categories: List<Category>) : Msg
 
+
         data class ChangeSort(val sort: Sort) : Msg
 
         data class ChangeCategory(val category: Category) : Msg
@@ -106,15 +107,44 @@ class TasksStoreFactory @Inject constructor(
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
         override fun invoke() {
-            getTasksUseCase()
-                .onEach {
-                    dispatch(Action.TasksLoaded(it))
-                }.launchIn(scope)
+            dispatch(Action.TasksLoaded(listOf(
+                Task(
+                    0,
+                    "name",
+                    "description",
+                    "category",
+                    TaskStatus.Failed,
+                    0L,
+                    0L,
+                    emptyList()
+                ),
+                Task(
+                    1,
+                    "name",
+                    "description",
+                    "category",
+                    TaskStatus.Failed,
+                    0L,
+                    0L,
+                    emptyList()
+                ),
+                Task(
+                    2,
+                    "name",
+                    "description",
+                    "category",
+                    TaskStatus.Failed,
+                    0L,
+                    0L,
+                    emptyList()
+                ))))
+            getTasksUseCase().onEach {
+                dispatch(Action.TasksLoaded(it))
+            }.launchIn(scope)
 
-            getCategoriesUseCase()
-                .onEach {
-                    dispatch(Action.CategoriesLoaded(it))
-                }.launchIn(scope)
+            getCategoriesUseCase().onEach {
+                dispatch(Action.CategoriesLoaded(it))
+            }.launchIn(scope)
         }
     }
 

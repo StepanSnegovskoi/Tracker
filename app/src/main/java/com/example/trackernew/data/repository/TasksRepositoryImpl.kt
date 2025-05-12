@@ -20,4 +20,8 @@ class TasksRepositoryImpl @Inject constructor(
 
     override val tasks: Flow<List<Task>> = tasksDao.getTasks()
         .map { it.toEntities() }
+
+    override suspend fun deleteTask(taskId: Int) {
+        tasksDao.deleteTask(taskId)
+    }
 }

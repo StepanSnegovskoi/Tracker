@@ -9,7 +9,7 @@ interface AddCategoryComponent {
 
     val labels: Flow<AddCategoryStore.Label>
 
-    fun onAddClicked()
+    fun onAddCategoryClicked()
 
     fun onCategoryChanged(category: String)
 }

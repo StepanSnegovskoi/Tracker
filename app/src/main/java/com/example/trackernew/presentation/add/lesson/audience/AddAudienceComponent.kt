@@ -9,7 +9,7 @@ interface AddAudienceComponent {
 
     val labels: Flow<AddAudienceStore.Label>
 
-    fun onAddClicked()
+    fun onAddAudienceClicked()
 
     fun onAudienceChanged(audience: String)
 }

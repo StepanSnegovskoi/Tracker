@@ -9,7 +9,7 @@ interface AddLessonNameComponent {
 
     val labels: Flow<AddLessonNameStore.Label>
 
-    fun onAddClicked()
+    fun onAddLessonNameClicked()
 
     fun onLessonNameChanged(lessonName: String)
 }

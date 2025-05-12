@@ -17,7 +17,7 @@ interface AddLecturerStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddLecturerClicked : Intent
+        data object AddLecturer : Intent
 
         data class ChangeLecturer(val lecturer: String) : Intent
     }
@@ -30,7 +30,7 @@ interface AddLecturerStore : Store<Intent, State, Label> {
 
         data object LecturerSaved : Label
 
-        data object AddLecturerClickedAndNameIsEmpty : Label
+        data object AddLecturerClickedAndLecturerIsEmpty : Label
     }
 }
 
@@ -43,7 +43,7 @@ class AddLecturerStoreFactory @Inject constructor(
         object : AddLecturerStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddLecturerStore",
             initialState = State(
-                ""
+                lecturer = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -66,19 +66,25 @@ class AddLecturerStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddLecturerClicked -> {
+                Intent.AddLecturer -> {
                     val state = getState()
-                    if (state.lecturer.trim().isEmpty()) {
-                        publish(Label.AddLecturerClickedAndNameIsEmpty)
-                        return
-                    }
-                    scope.launch {
-                        addLecturerUseCase(
-                            Lecturer(
-                                name = state.lecturer.trim()
-                            )
-                        )
-                        publish(Label.LecturerSaved)
+                    val lecturer = state.lecturer.trim()
+
+                    when (lecturer.isNotEmpty()) {
+                        true -> {
+                            scope.launch {
+                                addLecturerUseCase(
+                                    Lecturer(
+                                        name = lecturer
+                                    )
+                                )
+                                publish(Label.LecturerSaved)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.AddLecturerClickedAndLecturerIsEmpty)
+                        }
                     }
                 }
 

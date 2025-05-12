@@ -1,17 +1,25 @@
 package com.example.trackernew.presentation.weeks
 
-import androidx.compose.animation.AnimatedVisibility
+import android.icu.util.Calendar
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,76 +27,228 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.trackernew.R
+import androidx.compose.ui.unit.sp
 import com.example.trackernew.domain.entity.Week
-import com.example.trackernew.presentation.schedule.Lesson
-import com.example.trackernew.ui.theme.Green
-import com.example.trackernew.ui.theme.Red
+import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WeeksContent() {
+fun WeeksContent(component: WeeksComponent) {
+    val state = component.model.collectAsState()
+
+    val calendar = Calendar.getInstance()
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = TrackerNewTheme.colors.background
+                ),
                 title = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Недели",
+                            color = TrackerNewTheme.colors.textColor
+                        )
+                        Text(
+                            modifier = Modifier
+                                .padding(end = 24.dp),
+                            text = "Текущая неделя года ${calendar.get(Calendar.WEEK_OF_YEAR)}",
+                            fontSize = 14.sp,
+                            color = TrackerNewTheme.colors.textColor
+                        )
+                    }
                 }
             )
-        }
+        },
+        floatingActionButton = {
+            Button(
+                onClick = {
+                    component.onConfirmEditClicked()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = TrackerNewTheme.colors.onBackground
+                )
+            ) {
+                Text(
+                    text = "Подтвердить",
+                    color = TrackerNewTheme.colors.textColor
+                )
+            }
+        },
+        containerColor = TrackerNewTheme.colors.background
     ) { paddingValues ->
-        LazyColumn(
+        Box(
             modifier = Modifier
-                .padding(paddingValues)
+                .fillMaxSize()
+                .background(brush = TrackerNewTheme.colors.linearGradientBackground)
         ) {
-//            items(
-//                items = weeks,
-//                key = { it.id }
-//            ) {
-//                Week(
-//                    week = it,
-//                    onClick = {
-//
-//                    }
-//                )
-//            }
+            LazyColumn(
+                modifier = Modifier
+                    .padding(paddingValues)
+            ) {
+                itemsIndexed(
+                    items = state.value.weeks,
+                    key = { _, item -> item.id }
+                ) { index, week ->
+                    Week(
+                        week = week,
+                        weekIndex = index,
+                        weeksSize = state.value.weeks.size,
+                        onLongClick = {
+                            component.onWeekStatusChanged(week)
+                        },
+                        onDeleteIconClick = {
+                            component.onDeleteWeekClicked(week.id)
+                        },
+                        onMoveUpIconClick = {
+                            component.onMoveUpWeekClicked(week)
+                        },
+                        onMoveDownIconClick = {
+                            component.onMoveDownWeekClicked(week)
+                        },
+                        onClick = {
+                            component.onSelectWeekAsCurrentClicked(week)
+                        }
+                    )
+                }
+            }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Week(
     week: Week,
+    weekIndex: Int,
+    weeksSize: Int,
+    onLongClick: () -> Unit,
+    onDeleteIconClick: () -> Unit,
+    onMoveUpIconClick: () -> Unit,
+    onMoveDownIconClick: () -> Unit,
     onClick: () -> Unit
 ) {
-    val color = (if (week.isActive) Green else Red).copy(alpha = 0.3f)
+
+    val color = if (week.selectedAsCurrent) {
+        TrackerNewTheme.colors.lightGreen
+    } else if (week.isActive) {
+        TrackerNewTheme.colors.darkGreen
+    } else {
+        TrackerNewTheme.colors.red
+    }
+
     val elevation = if (week.isActive) 4.dp else 1.dp
+
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation)
+            .combinedClickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    onClick()
+                },
+                onLongClick = {
+                    onLongClick()
+                }
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        colors = CardDefaults.cardColors(
+            containerColor = color
+        )
     ) {
         Row(
             modifier = Modifier
-                .background(color)
-                .padding(8.dp)
-                .fillMaxWidth()
-                .clickable {
-                    onClick()
-                },
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = week.name, fontWeight = FontWeight.Bold)
-            if(week.isActive){
-                Text(text = week.position.toString(), fontWeight = FontWeight.Bold)
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = week.name,
+                fontWeight = FontWeight.Bold,
+                color = TrackerNewTheme.colors.textColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            if (week.selectedAsCurrent) {
+                Text(
+                    text = "${week.weekOfYear} неделя года",
+                    fontSize = 12.sp,
+                    color = TrackerNewTheme.colors.textColor
+                )
             }
+            if (weeksSize > 1) {
+                if (weekIndex != 0 && weekIndex != weeksSize - 1) {
+                    Column {
+                        Icon(
+                            modifier = Modifier
+                                .clickable {
+                                    onMoveUpIconClick()
+                                },
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = null,
+                            tint = TrackerNewTheme.colors.tintColor
+                        )
+                        Icon(
+                            modifier = Modifier
+                                .clickable {
+                                    onMoveDownIconClick()
+                                },
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = TrackerNewTheme.colors.tintColor
+                        )
+                    }
+                } else if (weekIndex == weeksSize - 1) {
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                onMoveUpIconClick()
+                            },
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = null,
+                        tint = TrackerNewTheme.colors.tintColor
+                    )
+                } else {
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                onMoveDownIconClick()
+                            },
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = TrackerNewTheme.colors.tintColor
+                    )
+                }
+            }
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onDeleteIconClick()
+                    },
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
+            )
         }
     }
 }

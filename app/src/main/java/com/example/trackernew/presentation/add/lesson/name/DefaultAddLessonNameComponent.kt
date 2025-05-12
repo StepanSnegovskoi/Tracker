@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
-import com.example.trackernew.presentation.add.category.AddCategoryStore
 import com.example.trackernew.presentation.extensions.componentScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -16,22 +15,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class DefaultAddLessonNameComponent @AssistedInject constructor (
+    private val storeFactory: AddLessonNameStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
     @Assisted("onLessonNameSaved") onLessonNameSaved: () -> Unit,
-    private val storeFactory: AddLessonNameStoreFactory
 ): AddLessonNameComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddLessonNameStore.Label.LessonSaved -> {
-                    onLessonNameSaved()
+            when(it){
+                AddLessonNameStore.Label.AddLessonNameClickedAndNameIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                else -> {
-
+                AddLessonNameStore.Label.LessonNameSaved -> {
+                    onLessonNameSaved()
                 }
             }
         }.launchIn(componentScope())
@@ -42,8 +41,8 @@ class DefaultAddLessonNameComponent @AssistedInject constructor (
 
     override val labels: Flow<AddLessonNameStore.Label> = store.labels
 
-    override fun onAddClicked() {
-        store.accept(AddLessonNameStore.Intent.AddLessonNameClicked)
+    override fun onAddLessonNameClicked() {
+        store.accept(AddLessonNameStore.Intent.AddLessonName)
     }
 
     override fun onLessonNameChanged(lessonName: String) {

@@ -4,14 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.example.trackernew.data.entity.AudienceDbModel
-import com.example.trackernew.data.entity.CategoryDbModel
-import com.example.trackernew.data.entity.LecturerDbModel
 import com.example.trackernew.data.entity.LessonDbModel
 import com.example.trackernew.data.entity.WeekDbModel
 import com.example.trackernew.data.mapper.toEntity
-import com.example.trackernew.domain.entity.Audience
-import com.example.trackernew.domain.entity.Week
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -26,10 +21,13 @@ interface WeekDao {
     @Update
     suspend fun updateWeek(week: WeekDbModel)
 
-    @Query("SELECT * FROM weeks WHERE id = :weekId")
-    suspend fun getWeekById(weekId: String): WeekDbModel?
+    @Query("DELETE FROM weeks WHERE id =:id")
+    suspend fun deleteWeek(id: Int)
 
-    suspend fun addLessonByWeekIdAndDayName(weekId: String, dayName: String, lessonDbModel: LessonDbModel) {
+    @Query("SELECT * FROM weeks WHERE id = :weekId")
+    suspend fun getWeekById(weekId: Int): WeekDbModel?
+
+    suspend fun addLessonByWeekIdAndDayName(weekId: Int, dayName: String, lessonDbModel: LessonDbModel) {
         val week = getWeekById(weekId) ?: throw Exception("Week not found")
         val updatedDays = week.days.map { day ->
             if (day.name.equals(dayName, ignoreCase = true)) {
@@ -38,6 +36,19 @@ interface WeekDao {
                 day
             }
         }
+        val updatedWeek = week.copy(days = updatedDays)
+        updateWeek(updatedWeek)
+    }
+
+    suspend fun deleteLessonByLessonId(weekId: Int, lessonId: Int) {
+        val week = getWeekById(weekId) ?: throw Exception("Week not found")
+
+        val updatedDays = week.days.map { day ->
+
+            val updatedLessons = day.lessons.filter { it.id != lessonId }
+            day.copy(lessons = updatedLessons)
+        }
+
         val updatedWeek = week.copy(days = updatedDays)
         updateWeek(updatedWeek)
     }

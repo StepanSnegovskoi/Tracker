@@ -8,8 +8,8 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Audience
 import com.example.trackernew.domain.usecase.AddAudienceUseCase
 import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.Intent
-import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.State
 import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.Label
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceStore.State
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,7 +17,7 @@ interface AddAudienceStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddAudienceClicked : Intent
+        data object AddAudience : Intent
 
         data class ChangeAudience(val audience: String) : Intent
     }
@@ -30,7 +30,7 @@ interface AddAudienceStore : Store<Intent, State, Label> {
 
         data object AudienceSaved : Label
 
-        data object AddAudienceClickedAndNameIsEmpty : Label
+        data object AddAudienceClickedAndAudienceIsEmpty : Label
     }
 }
 
@@ -43,7 +43,7 @@ class AddAudienceStoreFactory @Inject constructor(
         object : AddAudienceStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddAudienceStore",
             initialState = State(
-                ""
+                audience = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -66,19 +66,25 @@ class AddAudienceStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddAudienceClicked -> {
+                Intent.AddAudience -> {
                     val state = getState()
-                    if (state.audience.trim().isEmpty()) {
-                        publish(Label.AddAudienceClickedAndNameIsEmpty)
-                        return
-                    }
-                    scope.launch {
-                        addAudienceUseCase(
-                            Audience(
-                                name = state.audience.trim()
-                            )
-                        )
-                        publish(Label.AudienceSaved)
+                    val audience = state.audience.trim()
+
+                    when (audience.isNotEmpty()) {
+                        true -> {
+                            scope.launch {
+                                addAudienceUseCase(
+                                    Audience(
+                                        name = audience
+                                    )
+                                )
+                                publish(Label.AudienceSaved)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.AddAudienceClickedAndAudienceIsEmpty)
+                        }
                     }
                 }
 

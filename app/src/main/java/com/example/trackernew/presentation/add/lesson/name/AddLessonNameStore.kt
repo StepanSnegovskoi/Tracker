@@ -17,7 +17,7 @@ interface AddLessonNameStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object AddLessonNameClicked : Intent
+        data object AddLessonName : Intent
 
         data class ChangeLessonName(val lessonName: String) : Intent
     }
@@ -28,7 +28,7 @@ interface AddLessonNameStore : Store<Intent, State, Label> {
 
     sealed interface Label {
 
-        data object LessonSaved : Label
+        data object LessonNameSaved : Label
 
         data object AddLessonNameClickedAndNameIsEmpty : Label
     }
@@ -43,7 +43,7 @@ class AddLessonNameStoreFactory @Inject constructor(
         object : AddLessonNameStore, Store<Intent, State, Label> by storeFactory.create(
             name = "AddLecturerStore",
             initialState = State(
-                ""
+                lessonName = ""
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -66,19 +66,24 @@ class AddLessonNameStoreFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.AddLessonNameClicked -> {
+                Intent.AddLessonName -> {
                     val state = getState()
-                    if (state.lessonName.trim().isEmpty()) {
-                        publish(Label.AddLessonNameClickedAndNameIsEmpty)
-                        return
-                    }
-                    scope.launch {
-                        addLessonNameUseCase(
-                            LessonName(
-                                name = state.lessonName.trim()
-                            )
-                        )
-                        publish(Label.LessonSaved)
+                    val lessonName = state.lessonName.trim()
+
+                    when(lessonName.isNotEmpty()){
+                        true -> {
+                            scope.launch {
+                                addLessonNameUseCase(
+                                    LessonName(
+                                        name = lessonName
+                                    )
+                                )
+                                publish(Label.LessonNameSaved)
+                            }
+                        }
+                        false -> {
+                            publish(Label.AddLessonNameClickedAndNameIsEmpty)
+                        }
                     }
                 }
 

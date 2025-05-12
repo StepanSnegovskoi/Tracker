@@ -24,9 +24,12 @@ interface AddTaskStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object SaveTaskClicked : Intent
+        data object AddTask : Intent
 
-        data object CategoriesClickedAndTheyAreEmpty : Intent
+        data object AddSubTask : Intent
+
+        data class DeleteSubTask(val id: Int) : Intent
+
 
         data class ChangeName(val name: String) : Intent
 
@@ -38,9 +41,7 @@ interface AddTaskStore : Store<Intent, State, Label> {
 
         data class ChangeSubTask(val subTask: String) : Intent
 
-        data object AddSubTask : Intent
-
-        data class DeleteSubTask(val id: Int) : Intent
+        data object CategoriesClickedAndTheyAreEmpty : Intent
     }
 
     data class State(
@@ -48,22 +49,24 @@ interface AddTaskStore : Store<Intent, State, Label> {
         val description: String,
         val category: String,
         val deadline: Long,
-        val categories: List<Category>,
         val subTasks: List<SubTask>,
+        val categories: List<Category>,
         val subTask: String
     )
 
     sealed interface Label {
 
-        data object CategoriesClickedAndTheyAreEmpty : Label
-
         data object TaskSaved : Label
 
-        data object SaveTaskClickedAndNameIsEmpty : Label
+        data object SubTaskSaved : Label
+
+
+        data object CategoriesListIsEmpty : Label
+
+
+        data object AddTaskClickedAndNameIsEmpty : Label
 
         data object AddSubTaskClickedAndNameIsEmpty : Label
-
-        data object SubTaskSaved : Label
     }
 }
 
@@ -81,8 +84,8 @@ class AddTaskStoreFactory @Inject constructor(
                 description = "",
                 category = "",
                 deadline = 0,
-                categories = listOf(),
                 subTasks = listOf(),
+                categories = listOf(),
                 subTask = ""
             ),
             bootstrapper = BootstrapperImpl(),
@@ -97,6 +100,11 @@ class AddTaskStoreFactory @Inject constructor(
 
     private sealed interface Msg {
 
+        data object AddSubTask : Msg
+
+        data class DeleteSubTask(val id: Int) : Msg
+
+
         data class ChangeName(val name: String) : Msg
 
         data class ChangeDescription(val description: String) : Msg
@@ -105,13 +113,10 @@ class AddTaskStoreFactory @Inject constructor(
 
         data class ChangeDeadline(val deadline: Long) : Msg
 
-        data class CategoriesLoaded(val categories: List<Category>) : Msg
-
         data class ChangeSubTask(val subTask: String) : Msg
 
-        data object AddSubTask : Msg
 
-        data class DeleteSubTask(val id: Int) : Msg
+        data class CategoriesLoaded(val categories: List<Category>) : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -141,10 +146,10 @@ class AddTaskStoreFactory @Inject constructor(
                     dispatch(Msg.ChangeName(intent.name))
                 }
 
-                Intent.SaveTaskClicked -> {
+                Intent.AddTask -> {
                     val state = getState()
                     if (state.name.trim().isEmpty()) {
-                        publish(Label.SaveTaskClickedAndNameIsEmpty)
+                        publish(Label.AddTaskClickedAndNameIsEmpty)
                         return
                     }
                     scope.launch {
@@ -165,7 +170,7 @@ class AddTaskStoreFactory @Inject constructor(
                 }
 
                 Intent.CategoriesClickedAndTheyAreEmpty -> {
-                    publish(Label.CategoriesClickedAndTheyAreEmpty)
+                    publish(Label.CategoriesListIsEmpty)
                 }
 
                 is Intent.ChangeSubTask -> {
@@ -174,12 +179,16 @@ class AddTaskStoreFactory @Inject constructor(
 
                 Intent.AddSubTask -> {
                     val state = getState()
-                    if (state.subTask.trim().isEmpty()) {
-                        publish(Label.AddSubTaskClickedAndNameIsEmpty)
-                        return
+                    when (state.subTask.trim().isNotEmpty()) {
+                        true -> {
+                            dispatch(Msg.AddSubTask)
+                            publish(Label.SubTaskSaved)
+                        }
+
+                        false -> {
+                            publish(Label.AddSubTaskClickedAndNameIsEmpty)
+                        }
                     }
-                    dispatch(Msg.AddSubTask)
-                    publish(Label.SubTaskSaved)
                 }
 
                 is Intent.DeleteSubTask -> {
@@ -224,17 +233,21 @@ class AddTaskStoreFactory @Inject constructor(
             }
 
             is Msg.AddSubTask -> {
-                copy(subTasks = buildList {
-                    subTasks.forEach { add(it) }
-                    val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
-                    add(
-                        SubTask(
-                            id = id,
-                            name = subTask.trim(),
-                            isCompleted = false
+                copy(
+                    subTasks = buildList {
+                        subTasks.forEach { add(it) }
+
+                        val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
+
+                        add(
+                            SubTask(
+                                id = id,
+                                name = subTask.trim(),
+                                isCompleted = false
+                            )
                         )
-                    )
-                })
+                    }
+                )
             }
 
             is Msg.DeleteSubTask -> {

@@ -1,4 +1,4 @@
-package com.example.trackernew.presentation.edit
+package com.example.trackernew.presentation.edit.task
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
@@ -11,9 +11,9 @@ import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.domain.usecase.EditTaskUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
-import com.example.trackernew.presentation.edit.EditTaskStore.Intent
-import com.example.trackernew.presentation.edit.EditTaskStore.Label
-import com.example.trackernew.presentation.edit.EditTaskStore.State
+import com.example.trackernew.presentation.edit.task.EditTaskStore.Intent
+import com.example.trackernew.presentation.edit.task.EditTaskStore.Label
+import com.example.trackernew.presentation.edit.task.EditTaskStore.State
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -23,7 +23,12 @@ interface EditTaskStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object EditTaskClicked : Intent
+        data object EditTask : Intent
+
+        data object AddSubTask : Intent
+
+        data class DeleteSubTask(val id: Int) : Intent
+
 
         data class ChangeName(val name: String) : Intent
 
@@ -33,15 +38,11 @@ interface EditTaskStore : Store<Intent, State, Label> {
 
         data class ChangeDeadline(val deadline: Long) : Intent
 
-        data object ChangeCompletedStatusClicked : Intent
-
         data class ChangeSubTask(val subTask: String) : Intent
 
-        data object AddSubTask : Intent
+        data class ChangeSubTaskStatus(val id: Int) : Intent
 
-        data class DeleteSubTaskClicked(val id: Int) : Intent
-
-        data class ChangeSubTaskStatusClicked(val id: Int) : Intent
+        data object ChangeTaskStatus : Intent
     }
 
     data class State(
@@ -50,10 +51,10 @@ interface EditTaskStore : Store<Intent, State, Label> {
         val description: String,
         val category: String,
         val status: TaskStatus,
-        val addingTime: Long,
         val deadline: Long,
-        val categories: List<Category>,
         val subTasks: List<SubTask>,
+        val categories: List<Category>,
+        val addingTime: Long,
         val subTask: String
     )
 
@@ -62,6 +63,7 @@ interface EditTaskStore : Store<Intent, State, Label> {
         data object TaskEdited : Label
 
         data object SubTaskSaved : Label
+
 
         data object EditTaskClickedAndNameIsEmpty : Label
 
@@ -84,10 +86,10 @@ class EditTaskStoreFactory @Inject constructor(
                 description = task.description,
                 category = task.category,
                 status = task.status,
-                addingTime = task.addingTime,
                 deadline = task.deadline,
-                categories = listOf(),
                 subTasks = task.subTasks,
+                categories = listOf(),
+                addingTime = task.addingTime,
                 subTask = ""
             ),
             bootstrapper = BootstrapperImpl(),
@@ -102,6 +104,11 @@ class EditTaskStoreFactory @Inject constructor(
 
     private sealed interface Msg {
 
+        data object AddSubTask : Msg
+
+        data class DeleteSubTask(val id: Int) : Msg
+
+
         data class ChangeName(val name: String) : Msg
 
         data class ChangeDescription(val description: String) : Msg
@@ -110,17 +117,14 @@ class EditTaskStoreFactory @Inject constructor(
 
         data class ChangeDeadline(val deadline: Long) : Msg
 
-        data class CategoriesLoaded(val categories: List<Category>) : Msg
-
-        data object ChangeCompletedStatusClicked : Msg
-
         data class ChangeSubTask(val subTask: String) : Msg
 
-        data object AddSubTask : Msg
+        data object ChangeTaskStatus : Msg
 
-        data class DeleteSubTask(val id: Int) : Msg
+        data class ChangeSubTaskStatus(val id: Int) : Msg
 
-        data class ChangeSubTaskStatusClicked(val id: Int) : Msg
+
+        data class CategoriesLoaded(val categories: List<Category>) : Msg
     }
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -150,32 +154,37 @@ class EditTaskStoreFactory @Inject constructor(
                     dispatch(Msg.ChangeName(intent.name))
                 }
 
-                Intent.EditTaskClicked -> {
+                Intent.EditTask -> {
                     val state = getState()
-                    if (state.name.trim().isEmpty()) {
-                        publish(Label.EditTaskClickedAndNameIsEmpty)
-                        return
-                    }
+                    val name = state.name.trim()
 
-                    scope.launch {
-                        editTaskUseCase(
-                            Task(
-                                id = state.id,
-                                name = state.name.trim(),
-                                description = state.description.trim(),
-                                category = state.category,
-                                status = state.status,
-                                addingTime = state.addingTime,
-                                deadline = state.deadline,
-                                subTasks = state.subTasks
-                            )
-                        )
-                        publish(Label.TaskEdited)
+                    when (name.isNotEmpty()) {
+                        true -> {
+                            scope.launch {
+                                editTaskUseCase(
+                                    Task(
+                                        id = state.id,
+                                        name = state.name.trim(),
+                                        description = state.description.trim(),
+                                        category = state.category,
+                                        status = state.status,
+                                        addingTime = state.addingTime,
+                                        deadline = state.deadline,
+                                        subTasks = state.subTasks
+                                    )
+                                )
+                                publish(Label.TaskEdited)
+                            }
+                        }
+
+                        false -> {
+                            publish(Label.EditTaskClickedAndNameIsEmpty)
+                        }
                     }
                 }
 
-                Intent.ChangeCompletedStatusClicked -> {
-                    dispatch(Msg.ChangeCompletedStatusClicked)
+                Intent.ChangeTaskStatus -> {
+                    dispatch(Msg.ChangeTaskStatus)
                 }
 
                 is Intent.ChangeSubTask -> {
@@ -184,22 +193,24 @@ class EditTaskStoreFactory @Inject constructor(
 
                 Intent.AddSubTask -> {
                     val state = getState()
-                    if (state.subTask.trim().isEmpty()) {
-                        publish(Label.AddSubTaskClickedAndNameIsEmpty)
-                        return
+                    when (state.subTask.trim().isNotEmpty()) {
+                        true -> {
+                            dispatch(Msg.AddSubTask)
+                            publish(Label.SubTaskSaved)
+                        }
+
+                        false -> {
+                            publish(Label.AddSubTaskClickedAndNameIsEmpty)
+                        }
                     }
-                    dispatch(Msg.AddSubTask)
-                    publish(Label.SubTaskSaved)
                 }
 
-                is Intent.DeleteSubTaskClicked -> {
-                    dispatch(
-                        Msg.DeleteSubTask(intent.id)
-                    )
+                is Intent.DeleteSubTask -> {
+                    dispatch(Msg.DeleteSubTask(intent.id))
                 }
 
-                is Intent.ChangeSubTaskStatusClicked -> {
-                    dispatch(Msg.ChangeSubTaskStatusClicked(intent.id))
+                is Intent.ChangeSubTaskStatus -> {
+                    dispatch(Msg.ChangeSubTaskStatus(intent.id))
                 }
             }
         }
@@ -236,17 +247,20 @@ class EditTaskStoreFactory @Inject constructor(
                     copy(categories = msg.categories)
                 }
 
-                Msg.ChangeCompletedStatusClicked -> {
-                    val status = when(status){
+                Msg.ChangeTaskStatus -> {
+                    val status = when (status) {
                         TaskStatus.Completed -> {
                             TaskStatus.InTheProcess
                         }
+
                         TaskStatus.Executed -> {
                             TaskStatus.Failed
                         }
+
                         TaskStatus.Failed -> {
                             TaskStatus.Completed
                         }
+
                         TaskStatus.InTheProcess -> {
                             TaskStatus.Executed
                         }
@@ -259,17 +273,21 @@ class EditTaskStoreFactory @Inject constructor(
                 }
 
                 is Msg.AddSubTask -> {
-                    copy(subTasks = buildList {
-                        subTasks.forEach { add(it) }
-                        val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
-                        add(
-                            SubTask(
-                                id = id,
-                                name = subTask.trim(),
-                                isCompleted = false
+                    copy(
+                        subTasks = buildList {
+                            subTasks.forEach { add(it) }
+
+                            val id = subTasks.maxOfOrNull { it.id }?.plus(1) ?: 0
+
+                            add(
+                                SubTask(
+                                    id = id,
+                                    name = subTask.trim(),
+                                    isCompleted = false
+                                )
                             )
-                        )
-                    })
+                        }
+                    )
                 }
 
                 is Msg.DeleteSubTask -> {
@@ -282,13 +300,16 @@ class EditTaskStoreFactory @Inject constructor(
                     })
                 }
 
-                is Msg.ChangeSubTaskStatusClicked -> {
+                is Msg.ChangeSubTaskStatus -> {
                     copy(subTasks = buildList {
                         subTasks.forEach { subTask ->
-                            if (subTask.id == msg.id) {
-                                add(subTask.copy(isCompleted = !subTask.isCompleted))
-                            } else {
-                                add(subTask)
+                            when(subTask.id == msg.id) {
+                                true -> {
+                                    add(subTask.copy(isCompleted = !subTask.isCompleted))
+                                }
+                                false -> {
+                                    add(subTask)
+                                }
                             }
                         }
                     })

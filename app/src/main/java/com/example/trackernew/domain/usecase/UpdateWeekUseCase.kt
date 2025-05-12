@@ -1,14 +1,13 @@
 package com.example.trackernew.domain.usecase
 
 import com.example.trackernew.domain.entity.Lesson
-import com.example.trackernew.domain.entity.Week
-import com.example.trackernew.domain.repository.WeekRepository
+import com.example.trackernew.domain.repository.WeeksRepository
 import javax.inject.Inject
 
 class UpdateWeekUseCase @Inject constructor(
-    private val weekRepository: WeekRepository
+    private val weeksRepository: WeeksRepository
 ) {
 
-    suspend operator fun invoke(weekId: String, dayName: String, lesson: Lesson) =
-        weekRepository.updateWeek(weekId, dayName, lesson)
+    suspend operator fun invoke(weekId: Int, dayName: String, lesson: Lesson) =
+        weeksRepository.updateWeek(weekId, dayName, lesson)
 }

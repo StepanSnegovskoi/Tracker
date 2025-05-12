@@ -14,10 +14,11 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class DefaultScheduleComponent @AssistedInject constructor (
+    private val storeFactory: ScheduleStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onAddWeekClick") onAddWeekClick: () -> Unit,
-    @Assisted("onAddLessonClick") onAddLessonClick: (String, String, String) -> Unit,
-    private val storeFactory: ScheduleStoreFactory
+    @Assisted("onAddWeekClicked") onAddWeekClicked: () -> Unit,
+    @Assisted("onEditWeeksClicked") onEditWeeksClicked: () -> Unit,
+    @Assisted("onAddLessonClicked") onAddLessonClicked: (Int, String, Int) -> Unit
 ): ScheduleComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
@@ -26,11 +27,15 @@ class DefaultScheduleComponent @AssistedInject constructor (
         store.labels.onEach {
             when(it){
                 ScheduleStore.Label.ClickAddWeek -> {
-                    onAddWeekClick()
+                    onAddWeekClicked()
                 }
 
                 is ScheduleStore.Label.ClickAddLesson -> {
-                    onAddLessonClick(it.weekId, it.dayName, it.futureLessonId)
+                    onAddLessonClicked(it.weekId, it.dayName, it.futureLessonId)
+                }
+
+                ScheduleStore.Label.ClickEditWeeks -> {
+                    onEditWeeksClicked()
                 }
             }
         }.launchIn(componentScope())
@@ -39,21 +44,29 @@ class DefaultScheduleComponent @AssistedInject constructor (
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<ScheduleStore.State> = store.stateFlow
 
-    override fun onAddWeekButtonClick() {
+    override fun onAddWeekClicked() {
         store.accept(ScheduleStore.Intent.ClickAddWeek)
     }
 
-    override fun onAddLessonButtonClick(weekId: String, dayName: String, futureLessonId: String) {
+    override fun onAddLessonClicked(weekId: Int, dayName: String, futureLessonId: Int) {
         store.accept(ScheduleStore.Intent.ClickAddLesson(weekId, dayName, futureLessonId))
+    }
+
+    override fun onEditWeeksClicked() {
+        store.accept(ScheduleStore.Intent.ClickEditWeeks)
+    }
+
+    override fun onDeleteLessonClicked(weekId: Int, lessonId: Int) {
+        store.accept(ScheduleStore.Intent.ClickDeleteLesson(weekId, lessonId))
     }
 
     @AssistedFactory
     interface Factory {
-
         fun create (
             @Assisted("componentContext") componentContext: ComponentContext,
-            @Assisted("onAddWeekClick") onAddWeekClick: () -> Unit,
-            @Assisted("onAddLessonClick") onAddLessonClick: (String, String, String) -> Unit,
+            @Assisted("onAddWeekClicked") onAddWeekClicked: () -> Unit,
+            @Assisted("onEditWeeksClicked") onEditWeeksClicked: () -> Unit,
+            @Assisted("onAddLessonClicked") onAddLessonClicked: (Int, String, Int) -> Unit
         ): DefaultScheduleComponent
     }
 }

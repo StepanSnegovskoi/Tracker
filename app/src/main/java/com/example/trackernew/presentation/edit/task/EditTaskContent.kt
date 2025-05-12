@@ -1,4 +1,4 @@
-package com.example.trackernew.presentation.edit
+package com.example.trackernew.presentation.edit.task
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,10 +57,10 @@ import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.presentation.extensions.toLocalDateTime
 import com.example.trackernew.presentation.root.SnackbarManager
-import com.example.trackernew.presentation.utils.ADD
-import com.example.trackernew.ui.theme.Green
-import com.example.trackernew.ui.theme.Orange
-import com.example.trackernew.ui.theme.Red
+import com.example.trackernew.ui.theme.Black300
+import com.example.trackernew.ui.theme.Green200
+import com.example.trackernew.ui.theme.Orange100
+import com.example.trackernew.ui.theme.Red300
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getDatePickerColors
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
@@ -112,100 +112,104 @@ fun EditTaskContent(component: EditTaskComponent, snackbarManager: SnackbarManag
                     color = TrackerNewTheme.colors.textColor
                 )
             }
-        },
-        containerColor = TrackerNewTheme.colors.background
+        }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
-                .padding(paddingValues)
+                .fillMaxSize()
+                .background(brush = TrackerNewTheme.colors.linearGradientBackground)
         ) {
-            OutlinedTextFieldName(
-                state = state,
-                onValueChange = {
-                    component.onNameChanged(it)
-                }
-            )
-            OutlinedTextFieldDescription(
-                state = state,
-                onValueChange = {
-                    component.onDescriptionChanged(it)
-                }
-            )
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+            ) {
+                OutlinedTextFieldName(
+                    state = state,
+                    onValueChange = {
+                        component.onNameChanged(it)
+                    }
+                )
 
-            OutlinedTextFieldCategoryWithMenu(
-                state = state,
-                component = component,
-                onValueChange = {
-                    component.onCategoryChanged(it)
-                }
-            )
+                OutlinedTextFieldDescription(
+                    state = state,
+                    onValueChange = {
+                        component.onDescriptionChanged(it)
+                    }
+                )
 
-            val stateDateAndTimePicker = remember {
-                mutableStateOf(false)
+                OutlinedTextFieldCategoryWithMenu(
+                    state = state,
+                    component = component,
+                    onValueChange = {
+                        component.onCategoryChanged(it)
+                    }
+                )
+
+                val stateDateAndTimePicker = remember {
+                    mutableStateOf(false)
+                }
+                OutlinedTextFieldDeadline(
+                    state = state,
+                    onValueChange = {
+                        component.onDeadlineChanged(it.toLong())
+                    },
+                    onClick = {
+                        stateDateAndTimePicker.value = true
+                    }
+                )
+
+                val stateSubTaskDialog = remember {
+                    mutableStateOf(false)
+                }
+                SubTasks(
+                    state = state,
+                    onAddSubTaskClick = {
+                        stateSubTaskDialog.value = true
+                    },
+                    onDeleteSubTaskClick = {
+                        component.onDeleteSubTaskClicked(it)
+                    },
+                    onSubTaskClick = {
+                        component.onSubTaskChangeStatusClicked(it)
+                    }
+                )
+
+                AddSubTaskDialog(
+                    stateDialog = stateSubTaskDialog,
+                    state = state,
+                    onDismiss = {
+                        stateSubTaskDialog.value = false
+                    },
+                    onCancelClick = {
+                        stateSubTaskDialog.value = false
+                    },
+                    onAddClick = {
+                        component.onAddSubTaskClicked()
+                    },
+                    onValueChange = {
+                        component.onSubTaskNameChanged(it)
+                    }
+                )
+
+                TaskCompletedStatus(
+                    state = state,
+                    onClick = {
+                        component.onChangeStatusClicked()
+                    }
+                )
+
+                DateAndTimePickerDialogEditScreen(
+                    state = stateDateAndTimePicker,
+                    initialDateMillis = state.deadline,
+                    onDateTimeSelected = {
+                        component.onDeadlineChanged(it)
+                        stateDateAndTimePicker.value = false
+                    },
+                    onDismiss = {
+                        stateDateAndTimePicker.value = false
+                    }
+                )
             }
-
-            OutlinedTextFieldDeadline(
-                state = state,
-                onValueChange = {
-                    component.onDeadlineChanged(it.toLong())
-                },
-                onClick = {
-                    stateDateAndTimePicker.value = true
-                }
-            )
-
-            val stateSubTaskDialog = remember {
-                mutableStateOf(false)
-            }
-
-            SubTasks(
-                state = state,
-                onAddSubTaskClick = {
-                    stateSubTaskDialog.value = true
-                },
-                onDeleteSubTaskClick = {
-                    component.onDeleteSubTaskClicked(it)
-                },
-                onSubTaskClick = {
-                    component.onSubTaskChangeStatusClicked(it)
-                }
-            )
-
-            AddSubTaskDialog(
-                stateDialog = stateSubTaskDialog,
-                state = state,
-                onDismiss = {
-                    stateSubTaskDialog.value = false
-                },
-                onCancelClick = {
-                    stateSubTaskDialog.value = false
-                },
-                onAddClick = {
-                    component.onAddSubTaskClicked()
-                },
-                onValueChange = {
-                    component.onSubTaskNameChanged(it)
-                }
-            )
-
-            TaskCompletedStatus(
-                state = state,
-                onClick = {
-                    component.onChangeCompletedStatusClick()
-                }
-            )
-
-            DateAndTimePickerDialogEditScreen(
-                state = stateDateAndTimePicker,
-                initialDateMillis = state.deadline,
-                onDateTimeSelected = {
-                    component.onDeadlineChanged(it)
-                    stateDateAndTimePicker.value = false
-                },
-                onDismiss = {
-                    stateDateAndTimePicker.value = false
-                }
-            )
         }
     }
 }
@@ -218,24 +222,24 @@ fun OutlinedTextFieldName(
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(),
+        value = state.name,
+        onValueChange = {
+            onValueChange(it)
+        },
         label = {
             Text(
                 text = "Название",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        colors = getOutlinedTextFieldColors(),
-        value = state.name,
-        onValueChange = {
-            onValueChange(it)
-        },
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = if (state.name.isNotEmpty()) Green else Color.Red,
+                color = if (state.name.isNotEmpty()) Green200 else Color.Red,
                 fontSize = 12.sp
             )
-        }
+        },
+        colors = getOutlinedTextFieldColors()
     )
 }
 
@@ -246,32 +250,31 @@ fun OutlinedTextFieldCategory(
     onClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
-                interactionSource = interactionSource,
+                interactionSource = remember {
+                    MutableInteractionSource()
+                },
                 indication = null
             ) {
                 onClick()
             }
             .then(modifier),
-        readOnly = true,
+        value = state.category,
+        onValueChange = {
+            onValueChange(it)
+        },
         enabled = false,
+        readOnly = true,
         label = {
             Text(
                 text = "Категория",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        colors = getOutlinedTextFieldColors(),
-        value = state.category,
-        onValueChange = {
-            onValueChange(it)
-        }
+        colors = getOutlinedTextFieldColors()
     )
 }
 
@@ -284,6 +287,7 @@ fun OutlinedTextFieldCategoryWithMenu(
     val expanded = remember {
         mutableStateOf(false)
     }
+
     Menu(
         expanded = expanded,
         items = state.categories.map { it.name },
@@ -332,9 +336,8 @@ fun Menu(
             expanded = expanded.value,
             onDismissRequest = {
                 onDismissRequest()
-            },
-
-            ) {
+            }
+        ) {
             items.forEach {
                 DropdownMenuItem(
                     text = {
@@ -360,17 +363,17 @@ fun OutlinedTextFieldDescription(
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth(),
+        value = state.description,
+        onValueChange = {
+            onValueChange(it)
+        },
         label = {
             Text(
                 text = "Описание",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        colors = getOutlinedTextFieldColors(),
-        value = state.description,
-        onValueChange = {
-            onValueChange(it)
-        }
+        colors = getOutlinedTextFieldColors()
     )
 }
 
@@ -380,31 +383,30 @@ fun OutlinedTextFieldDeadline(
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(
-                interactionSource = interactionSource,
+                interactionSource = remember {
+                    MutableInteractionSource()
+                },
                 indication = null
             ) {
                 onClick()
             },
-        readOnly = true,
+        value = state.deadline.toDateString(),
+        onValueChange = {
+            onValueChange(it)
+        },
         enabled = false,
-        colors = getOutlinedTextFieldColors(),
+        readOnly = true,
         label = {
             Text(
                 text = "Дедлайн",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        value = state.deadline.toDateString(),
-        onValueChange = {
-            onValueChange(it)
-        }
+        colors = getOutlinedTextFieldColors()
     )
 }
 
@@ -417,6 +419,7 @@ fun DateAndTimePickerDialogEditScreen(
     onDismiss: () -> Unit
 ) {
     if (!state.value) return
+
     var showDatePicker by remember { mutableStateOf(true) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -495,6 +498,7 @@ fun DateAndTimePickerDialogEditScreen(
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                             .toEpochMilli()
+
                         onDateTimeSelected(finalDateTime)
                         showTimePicker = false
                     }
@@ -506,10 +510,12 @@ fun DateAndTimePickerDialogEditScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showTimePicker = false
-                    showDatePicker = true
-                }) {
+                TextButton(
+                    onClick = {
+                        showTimePicker = false
+                        showDatePicker = true
+                    }
+                ) {
                     Text(
                         "Назад",
                         color = TrackerNewTheme.colors.textColor
@@ -548,7 +554,7 @@ fun SubTasks(
                 .fillMaxWidth()
                 .drawBehind {
                     drawLine(
-                        color = Color.Black,
+                        color = Black300,
                         start = Offset(0f, size.height),
                         end = Offset(size.width, size.height)
                     )
@@ -573,7 +579,7 @@ fun SubTasks(
                         }
                 ) {
                     Text(
-                        color = if (subTask.isCompleted) Green else Red,
+                        color = if (subTask.isCompleted) Green200 else Red300,
                         text = subTask.name
                     )
                     Spacer(modifier = Modifier.weight(1f))
@@ -588,8 +594,6 @@ fun SubTasks(
                     )
                 }
             }
-
-
         }
         Row(
             modifier = Modifier
@@ -600,7 +604,7 @@ fun SubTasks(
                 }
         ) {
             Text(
-                text = ADD,
+                text = "Добавить",
                 fontFamily = FontFamily.Serif,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -625,6 +629,7 @@ fun AddSubTaskDialog(
     onValueChange: (String) -> Unit,
 ) {
     if (!stateDialog.value) return
+
     DatePickerDialog(
         colors = DatePickerDefaults.colors().copy(
             containerColor = TrackerNewTheme.colors.background
@@ -682,17 +687,16 @@ fun AddSubTaskDialog(
                     label = {
                         Text(text = "Название")
                     },
-                    colors = getOutlinedTextFieldColors(),
                     supportingText = {
                         Text(
                             text = "*Обязательно",
-                            color = if (state.subTask.isNotEmpty()) Green else Color.Red,
+                            color = if (state.subTask.isNotEmpty()) Green200 else Color.Red,
                             fontSize = 12.sp
                         )
-                    }
+                    },
+                    colors = getOutlinedTextFieldColors()
                 )
             }
-
         }
     }
 }
@@ -710,20 +714,23 @@ fun TaskCompletedStatus(
     }
     val color = when (state.status) {
         TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
-        TaskStatus.Executed -> Green
-        TaskStatus.Failed -> Red
-        TaskStatus.InTheProcess -> Orange
+        TaskStatus.Executed -> Green200
+        TaskStatus.Failed -> Red300
+        TaskStatus.InTheProcess -> Orange100
     }
     val icon = when (state.status) {
         TaskStatus.Completed -> {
             R.drawable.question_24
         }
+
         TaskStatus.Executed -> {
             R.drawable.done_24
         }
+
         TaskStatus.Failed -> {
             R.drawable.not_completed_24
         }
+
         TaskStatus.InTheProcess -> {
             R.drawable.dots_24
         }

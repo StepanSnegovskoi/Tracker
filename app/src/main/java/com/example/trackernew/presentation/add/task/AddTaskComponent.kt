@@ -9,9 +9,15 @@ interface AddTaskComponent {
 
     val labels: Flow<AddTaskStore.Label>
 
-    fun onSaveTaskClicked()
+    fun onAddTaskClicked()
 
-    fun ifCategoriesAreEmpty()
+    fun onAddSubTaskClicked()
+
+    fun onDeleteSubTaskClicked(id: Int)
+
+
+    fun onCategoryClickedAndCategoriesListIsEmpty()
+
 
     fun onNameChanged(name: String)
 
@@ -22,8 +28,4 @@ interface AddTaskComponent {
     fun onDeadlineChanged(deadline: Long)
 
     fun onSubTaskNameChanged(subTask: String)
-
-    fun onAddSubTaskClicked()
-
-    fun onDeleteSubTaskClicked(id: Int)
 }

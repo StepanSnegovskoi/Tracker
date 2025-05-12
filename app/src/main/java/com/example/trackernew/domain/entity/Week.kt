@@ -3,7 +3,6 @@ package com.example.trackernew.domain.entity
 data class Week(
     val id: Int,
     val name: String,
-    val position: Int,
     val isActive: Boolean,
     val days: List<Day> = listOf(
         Day(
@@ -15,7 +14,7 @@ data class Week(
             lessons = emptyList()
         ),
         Day(
-            name = "WednesDay",
+            name = "Wednesday",
             lessons = emptyList()
         ),
         Day(
@@ -34,5 +33,8 @@ data class Week(
             name = "Sunday",
             lessons = emptyList()
         ),
-    )
+    ),
+    val selectedAsCurrent: Boolean,
+    val weekOfYear: Int = -1,
+    val position: Int
 )

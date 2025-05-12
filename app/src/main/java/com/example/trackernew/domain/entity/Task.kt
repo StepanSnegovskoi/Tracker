@@ -1,6 +1,5 @@
 package com.example.trackernew.domain.entity
 
-import androidx.room.Embedded
 import kotlinx.serialization.Serializable
 
 @Serializable

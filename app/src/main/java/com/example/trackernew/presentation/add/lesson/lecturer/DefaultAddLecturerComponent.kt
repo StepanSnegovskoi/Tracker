@@ -15,22 +15,22 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class DefaultAddLecturerComponent @AssistedInject constructor (
+    private val storeFactory: AddLecturerStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onLecturerSaved") onLecturerSaved: () -> Unit,
-    private val storeFactory: AddLecturerStoreFactory
+    @Assisted("onLecturerSaved") onLecturerSaved: () -> Unit
 ): AddLecturerComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { storeFactory.create() }
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddLecturerStore.Label.LecturerSaved -> {
-                    onLecturerSaved()
+            when(it){
+                AddLecturerStore.Label.AddLecturerClickedAndLecturerIsEmpty -> {
+                    /** Nothing **/
                 }
 
-                else -> {
-
+                AddLecturerStore.Label.LecturerSaved -> {
+                    onLecturerSaved()
                 }
             }
         }.launchIn(componentScope())
@@ -41,8 +41,8 @@ class DefaultAddLecturerComponent @AssistedInject constructor (
 
     override val labels: Flow<AddLecturerStore.Label> = store.labels
 
-    override fun onAddClicked() {
-        store.accept(AddLecturerStore.Intent.AddLecturerClicked)
+    override fun onAddLecturerClicked() {
+        store.accept(AddLecturerStore.Intent.AddLecturer)
     }
 
     override fun onLecturerChanged(lecturer: String) {
@@ -51,7 +51,6 @@ class DefaultAddLecturerComponent @AssistedInject constructor (
 
     @AssistedFactory
     interface Factory {
-
         fun create (
             @Assisted("componentContext") componentContext: ComponentContext,
             @Assisted("onLecturerSaved") onLecturerSaved: () -> Unit

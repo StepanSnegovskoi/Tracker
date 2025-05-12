@@ -9,17 +9,25 @@ interface AddLessonComponent {
 
     val labels: Flow<AddLessonStore.Label>
 
-    fun onSaveLessonClicked()
+    fun onAddLessonClicked()
 
-    fun goToAddNameLessonContent()
+
+    fun onLessonNameClickedAndLessonNamesListIsEmpty()
+
+    fun onLecturerClickedAndLecturersListIsEmpty()
+
+    fun onAudienceClickedAndAudiencesListIsEmpty()
+
 
     fun onNameChanged(name: String)
 
-    fun goToAddLecturerContent()
-
     fun onLecturerChanged(lecturer: String)
 
-    fun goToAddAudienceContent()
-
     fun onAudienceChanged(audience: String)
+
+    fun onStartChanged(start: Long)
+
+    fun onEndChanged(end: Long)
+
+    fun onTypeOfLessonChanged(typeOfLesson: String)
 }
