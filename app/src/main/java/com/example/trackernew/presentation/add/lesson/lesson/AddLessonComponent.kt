@@ -11,6 +11,16 @@ interface AddLessonComponent {
 
     fun onAddLessonClicked()
 
+    fun onClearLessonNameClicked()
+
+    fun onClearLecturerClicked()
+
+    fun onClearAudienceClicked()
+
+    fun onClearStartClicked()
+
+    fun onClearEndClicked()
+
 
     fun onLessonNameClickedAndLessonNamesListIsEmpty()
 
@@ -19,7 +29,7 @@ interface AddLessonComponent {
     fun onAudienceClickedAndAudiencesListIsEmpty()
 
 
-    fun onNameChanged(name: String)
+    fun onLessonNameChanged(name: String)
 
     fun onLecturerChanged(lecturer: String)
 

@@ -49,6 +49,10 @@ class DefaultAddWeekComponent @AssistedInject constructor (
         store.accept(AddWeekStore.Intent.AddWeek)
     }
 
+    override fun onClearWeekClicked() {
+        store.accept(AddWeekStore.Intent.ChangeWeek(""))
+    }
+
     @AssistedFactory
     interface Factory {
         fun create (

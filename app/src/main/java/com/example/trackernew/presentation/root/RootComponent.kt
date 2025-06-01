@@ -9,6 +9,7 @@ import com.example.trackernew.presentation.add.lesson.lesson.AddLessonComponent
 import com.example.trackernew.presentation.add.lesson.name.AddLessonNameComponent
 import com.example.trackernew.presentation.add.task.AddTaskComponent
 import com.example.trackernew.presentation.add.week.AddWeekComponent
+import com.example.trackernew.presentation.settings.ScheduleSettingsComponent
 import com.example.trackernew.presentation.edit.task.EditTaskComponent
 import com.example.trackernew.presentation.schedule.ScheduleComponent
 import com.example.trackernew.presentation.tasks.TasksComponent
@@ -41,5 +42,7 @@ interface RootComponent {
         data class AddWeek(val component: AddWeekComponent) : Child
 
         data class EditWeeks(val component: WeeksComponent) : Child
+
+        data class ScheduleSettings(val component: ScheduleSettingsComponent) : Child
     }
 }

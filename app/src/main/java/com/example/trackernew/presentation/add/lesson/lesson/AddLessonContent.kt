@@ -1,15 +1,21 @@
 package com.example.trackernew.presentation.add.lesson.lesson
 
+import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,14 +52,15 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 
 
 @Composable
-fun AddLessonContent(component: AddLessonComponent, snackbarManager: SnackbarManager) {
+fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
 
     LaunchedEffect(
         key1 = component
@@ -73,19 +80,15 @@ fun AddLessonContent(component: AddLessonComponent, snackbarManager: SnackbarMan
                 }
 
                 AddLessonStore.Label.LessonSaved -> {
-                    snackbarManager.showMessage("Занятие сохранено")
+                    snackBarManager.showMessage("Занятие сохранено")
                 }
 
                 AddLessonStore.Label.AddLessonClickedAndLessonNameIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage("Название не должно быть пустым")
                 }
 
-                AddLessonStore.Label.EndTimeSaveClickedAndItsLessThanStartTime -> {
-                    snackbarManager.showMessage("Конец не может наступить раньше начала")
-                }
-
-                AddLessonStore.Label.StartTimeSaveClickedAndItsMoreThanEndTime -> {
-                    snackbarManager.showMessage("Старт не может быть позже конца")
+                AddLessonStore.Label.AddLessonClickedAndTimeIsIncorrect -> {
+                    snackBarManager.showMessage("Старт не может быть позже конца")
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -119,70 +122,103 @@ fun AddLessonContent(component: AddLessonComponent, snackbarManager: SnackbarMan
                 modifier = Modifier
                     .padding(paddingValues)
             ) {
-                OutlinedTextFieldLessonNameWithMenu(
-                    state = state,
-                    component = component,
-                    onValueChange = {
-                        component.onNameChanged(it)
-                    },
-                    onTrailingIconClick = {
-                        component.onLessonNameClickedAndLessonNamesListIsEmpty()
-                    }
-                )
-
-                OutlinedTextFieldLecturerWithMenu(
-                    state = state,
-                    component = component,
-                    onValueChange = {
-                        component.onLecturerChanged(it)
-                    },
-                    onTrailingIconClick = {
-                        component.onLecturerClickedAndLecturersListIsEmpty()
-                    }
-                )
-
-                OutlinedTextFieldAudienceWithMenu(
-                    state = state,
-                    component = component,
-                    onValueChange = {
-                        component.onAudienceChanged(it)
-                    },
-                    onTrailingIconClick = {
-                        component.onAudienceClickedAndAudiencesListIsEmpty()
-                    }
-                )
-
                 val stateStartTimePicker = remember {
                     mutableStateOf(false)
                 }
-                OutlinedTextFieldStart(
-                    state = state,
-                    onValueChange = {
-                    },
-                    onClick = {
-                        stateStartTimePicker.value = true
-                    }
-                )
 
                 val stateEndTimePicker = remember {
                     mutableStateOf(false)
                 }
-                OutlinedTextFieldEnd(
-                    state = state,
-                    onValueChange = {
-                    },
-                    onClick = {
-                        stateEndTimePicker.value = true
-                    }
-                )
+                LazyColumn {
 
-                OutlinedTextFieldTypeOfLessonWithMenu(
-                    state = state,
-                    component = component,
-                    onValueChange = {
-                        component.onTypeOfLessonChanged(it)
+                    item {
+                        OutlinedTextFieldLessonNameWithMenu(
+                            state = state,
+                            component = component,
+                            onValueChange = {
+                                component.onLessonNameChanged(it)
+                            },
+                            onTrailingIconClick = {
+                                component.onLessonNameClickedAndLessonNamesListIsEmpty()
+                            },
+                            onClearIconClick = {
+                                component.onClearLessonNameClicked()
+                            }
+                        )
                     }
-                )
+                    item {
+                        OutlinedTextFieldLecturerWithMenu(
+                            state = state,
+                            component = component,
+                            onValueChange = {
+                                component.onLecturerChanged(it)
+                            },
+                            onTrailingIconClick = {
+                                component.onLecturerClickedAndLecturersListIsEmpty()
+                            },
+                            onClearIconClick = {
+                                component.onClearLecturerClicked()
+                            }
+                        )
+                    }
+                    item {
+                        OutlinedTextFieldAudienceWithMenu(
+                            state = state,
+                            component = component,
+                            onValueChange = {
+                                component.onAudienceChanged(it)
+                            },
+                            onTrailingIconClick = {
+                                component.onAudienceClickedAndAudiencesListIsEmpty()
+                            },
+                            onClearIconClick = {
+                                component.onClearAudienceClicked()
+                            }
+                        )
+                    }
+                    item {
+                        OutlinedTextFieldStart(
+                            state = state,
+                            onValueChange = {
+                            },
+                            onClick = {
+                                stateStartTimePicker.value = true
+                            },
+                            onClearIconClick = {
+                                component.onClearStartClicked()
+                            }
+                        )
+
+                    }
+                    item {
+                        OutlinedTextFieldEnd(
+                            state = state,
+                            onValueChange = {
+                            },
+                            onClick = {
+                                stateEndTimePicker.value = true
+                            },
+                            onClearIconClick = {
+                                component.onClearEndClicked()
+                            }
+                        )
+                    }
+                    item {
+                        OutlinedTextFieldTypeOfLessonWithMenu(
+                            state = state,
+                            component = component,
+                            onValueChange = {
+                                component.onTypeOfLessonChanged(it)
+                            }
+                        )
+                    }
+                    item {
+                        Spacer(
+                            modifier = Modifier
+                                .height(72.dp)
+                        )
+                    }
+                }
 
                 TimePickerDialog(
                     state = stateStartTimePicker,
@@ -220,6 +256,7 @@ fun AddLessonContent(component: AddLessonComponent, snackbarManager: SnackbarMan
 fun OutlinedTextFieldLessonNameWithMenu(
     component: AddLessonComponent,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onTrailingIconClick: () -> Unit
 ) {
@@ -233,7 +270,7 @@ fun OutlinedTextFieldLessonNameWithMenu(
             expanded.value = false
         },
         onItemClick = {
-            component.onNameChanged(it)
+            component.onLessonNameChanged(it)
             expanded.value = false
         },
         content = { modifier ->
@@ -256,6 +293,9 @@ fun OutlinedTextFieldLessonNameWithMenu(
                 },
                 onTrailingIconClick = {
                     onTrailingIconClick()
+                },
+                onClearIconClick = {
+                    onClearIconClick()
                 }
             )
         }
@@ -266,6 +306,7 @@ fun OutlinedTextFieldLessonNameWithMenu(
 fun OutlinedTextFieldLessonName(
     modifier: Modifier = Modifier,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit,
     onTrailingIconClick: () -> Unit
@@ -295,15 +336,29 @@ fun OutlinedTextFieldLessonName(
             )
         },
         trailingIcon = {
-            Icon(
+            Row(
                 modifier = Modifier
-                    .clickable {
-                        onTrailingIconClick()
-                    },
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = TrackerNewTheme.colors.oppositeColor
-            )
+                    .padding(end = 12.dp)
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onTrailingIconClick()
+                        },
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.oppositeColor
+                )
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onClearIconClick()
+                        },
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.tintColor
+                )
+            }
         },
         supportingText = {
             Text(
@@ -390,6 +445,7 @@ fun OutlinedTextFieldTypeOfLesson(
 fun OutlinedTextFieldLecturerWithMenu(
     component: AddLessonComponent,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onTrailingIconClick: () -> Unit
 ) {
@@ -429,6 +485,9 @@ fun OutlinedTextFieldLecturerWithMenu(
                 },
                 onTrailingIconClick = {
                     onTrailingIconClick()
+                },
+                onClearIconClick = {
+                    onClearIconClick()
                 }
             )
         }
@@ -439,6 +498,7 @@ fun OutlinedTextFieldLecturerWithMenu(
 fun OutlinedTextFieldLecturer(
     modifier: Modifier = Modifier,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit,
     onTrailingIconClick: () -> Unit
@@ -468,15 +528,29 @@ fun OutlinedTextFieldLecturer(
             )
         },
         trailingIcon = {
-            Icon(
+            Row(
                 modifier = Modifier
-                    .clickable {
-                        onTrailingIconClick()
-                    },
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = TrackerNewTheme.colors.oppositeColor
-            )
+                    .padding(end = 12.dp)
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onTrailingIconClick()
+                        },
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.oppositeColor
+                )
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onClearIconClick()
+                        },
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.tintColor
+                )
+            }
         },
         colors = getOutlinedTextFieldColors()
     )
@@ -487,6 +561,7 @@ fun OutlinedTextFieldLecturer(
 fun OutlinedTextFieldAudienceWithMenu(
     component: AddLessonComponent,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onTrailingIconClick: () -> Unit
 ) {
@@ -524,6 +599,9 @@ fun OutlinedTextFieldAudienceWithMenu(
                 },
                 onTrailingIconClick = {
                     onTrailingIconClick()
+                },
+                onClearIconClick = {
+                    onClearIconClick()
                 }
             )
         }
@@ -534,6 +612,7 @@ fun OutlinedTextFieldAudienceWithMenu(
 fun OutlinedTextFieldAudience(
     modifier: Modifier = Modifier,
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit,
     onTrailingIconClick: () -> Unit
@@ -563,15 +642,29 @@ fun OutlinedTextFieldAudience(
             )
         },
         trailingIcon = {
-            Icon(
+            Row(
                 modifier = Modifier
-                    .clickable {
-                        onTrailingIconClick()
-                    },
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = TrackerNewTheme.colors.oppositeColor
-            )
+                    .padding(end = 12.dp)
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onTrailingIconClick()
+                        },
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.oppositeColor
+                )
+                Icon(
+                    modifier = Modifier
+                        .clickable {
+                            onClearIconClick()
+                        },
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.tintColor
+                )
+            }
         },
         colors = getOutlinedTextFieldColors()
     )
@@ -580,6 +673,7 @@ fun OutlinedTextFieldAudience(
 @Composable
 fun OutlinedTextFieldStart(
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
@@ -606,6 +700,18 @@ fun OutlinedTextFieldStart(
                 color = TrackerNewTheme.colors.textColor
             )
         },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onClearIconClick()
+                    },
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
+            )
+
+        },
         colors = getOutlinedTextFieldColors()
     )
 }
@@ -613,6 +719,7 @@ fun OutlinedTextFieldStart(
 @Composable
 fun OutlinedTextFieldEnd(
     state: AddLessonStore.State,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
 ) {
@@ -638,6 +745,18 @@ fun OutlinedTextFieldEnd(
                 text = "Конец",
                 color = TrackerNewTheme.colors.textColor
             )
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onClearIconClick()
+                    },
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
+            )
+
         },
         colors = getOutlinedTextFieldColors()
     )
@@ -674,9 +793,14 @@ fun TimePickerDialog(
                 TextButton(
                     onClick = {
                         showTimePicker = false
-                        val time =
-                            timePickerState.hour * 60 * 60 * 1000L + timePickerState.minute * 60 * 1000L
-                        onDateTimeSelected(time)
+
+                        val selectedDateTime = LocalDate.now()
+                            .atTime(timePickerState.hour, timePickerState.minute)
+                            .atZone(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli()
+
+                        onDateTimeSelected(selectedDateTime)
                         onClose()
                     }
                 ) {

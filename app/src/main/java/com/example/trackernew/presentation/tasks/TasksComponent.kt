@@ -19,6 +19,8 @@ interface TasksComponent {
 
     fun onScheduleClicked()
 
+    fun onDeleteCategoryClicked(category: Category)
+
 
     fun onSortChanged(sort: Sort)
 

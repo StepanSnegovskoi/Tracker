@@ -15,5 +15,8 @@ data class TaskDbModel(
     val status: TaskStatus,
     val addingTime: Long,
     val deadline: Long,
-    val subTasks: List<SubTask>
+    val subTasks: List<SubTask>,
+    val alarmEnable: Boolean,
+    val timeUnit: String,
+    val timesCount: Int
 )

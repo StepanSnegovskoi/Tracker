@@ -16,8 +16,8 @@ class AddTaskRepositoryImpl @Inject constructor(
     private val categoryDao: CategoryDao
 ) : AddTaskRepository {
 
-    override suspend fun saveTask(task: Task) {
-        tasksDao.saveTask(task.toDbModel())
+    override suspend fun addTask(task: Task): Long {
+        return tasksDao.saveTask(task.toDbModel())
     }
 
     override val categories: Flow<List<Category>> = categoryDao.getCategories()

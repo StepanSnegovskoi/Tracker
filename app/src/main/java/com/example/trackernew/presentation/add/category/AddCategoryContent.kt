@@ -1,12 +1,14 @@
 package com.example.trackernew.presentation.add.category
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +34,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: SnackbarManager) {
+fun AddCategoryContent(component: AddCategoryComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
 
@@ -42,11 +44,11 @@ fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: Snackba
         component.labels.onEach {
             when (it) {
                 AddCategoryStore.Label.AddCategoryClickedAndCategoryIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage("Название не должно быть пустым")
                 }
 
                 AddCategoryStore.Label.CategorySaved -> {
-                    snackbarManager.showMessage("Категория сохранена")
+                    snackBarManager.showMessage("Категория сохранена")
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -84,6 +86,9 @@ fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: Snackba
                 onValueChange = {
                     component.onCategoryChanged(it)
                 },
+                onClearIconClick = {
+                    component.onClearCategoryClicked()
+                }
             )
         }
     }
@@ -93,6 +98,7 @@ fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: Snackba
 fun OutlinedTextFieldCategory(
     state: AddCategoryStore.State,
     modifier: Modifier = Modifier,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
     val focusRequester = remember {
@@ -117,6 +123,17 @@ fun OutlinedTextFieldCategory(
             Text(
                 text = "Категория",
                 color = TrackerNewTheme.colors.textColor
+            )
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onClearIconClick()
+                    },
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
             )
         },
         supportingText = {

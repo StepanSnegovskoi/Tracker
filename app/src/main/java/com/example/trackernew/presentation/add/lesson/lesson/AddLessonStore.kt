@@ -25,7 +25,7 @@ interface AddLessonStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
 
-        data object SaveLesson : Intent
+        data object AddLesson : Intent
 
 
         data object NameLessonsListIsEmpty : Intent
@@ -62,7 +62,7 @@ interface AddLessonStore : Store<Intent, State, Label> {
 
         val lessonNames: List<LessonName>,
         val lecturers: List<Lecturer>,
-        val audiences: List<Audience>,
+        val audiences: List<Audience>
     )
 
     sealed interface Label {
@@ -79,9 +79,7 @@ interface AddLessonStore : Store<Intent, State, Label> {
 
         data object AddLessonClickedAndLessonNameIsEmpty : Label
 
-        data object EndTimeSaveClickedAndItsLessThanStartTime : Label
-
-        data object StartTimeSaveClickedAndItsMoreThanEndTime : Label
+        data object AddLessonClickedAndTimeIsIncorrect : Label
     }
 }
 
@@ -165,17 +163,22 @@ class AddLessonFactory @Inject constructor(
     private inner class ExecutorImpl : CoroutineExecutor<Intent, Action, State, Msg, Label>() {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
-                Intent.SaveLesson -> {
+                Intent.AddLesson -> {
                     val state = getState()
                     val lessonName = state.lessonName
 
-                    when(lessonName.isNotEmpty()){
+                    when (lessonName.isNotEmpty()) {
                         true -> {
+                            if(state.start > state.end) {
+                                publish(Label.AddLessonClickedAndTimeIsIncorrect)
+                                return
+                            }
+
                             scope.launch {
                                 updateWeekUseCase(
                                     weekId = state.weekId,
                                     dayName = state.dayName,
-                                    lesson =  Lesson(
+                                    lesson = Lesson(
                                         id = state.futureLessonId,
                                         name = lessonName,
                                         start = state.start,
@@ -208,21 +211,11 @@ class AddLessonFactory @Inject constructor(
                 }
 
                 is Intent.ChangeStart -> {
-                    val state = getState()
-                    if(intent.start >= state.end && state.end != 0L) {
-                        publish(Label.StartTimeSaveClickedAndItsMoreThanEndTime)
-                    } else {
-                        dispatch(Msg.ChangeStart(intent.start))
-                    }
+                    dispatch(Msg.ChangeStart(intent.start))
                 }
 
                 is Intent.ChangeEnd -> {
-                    val state = getState()
-                    if(intent.end <= state.start) {
-                        publish(Label.EndTimeSaveClickedAndItsLessThanStartTime)
-                    } else {
-                        dispatch(Msg.ChangeEnd(intent.end))
-                    }
+                    dispatch(Msg.ChangeEnd(intent.end))
                 }
 
                 is Intent.ChangeTypeOfLesson -> {
@@ -293,6 +286,7 @@ class AddLessonFactory @Inject constructor(
             is Msg.ChangeEnd -> {
                 copy(end = msg.end)
             }
+
             is Msg.ChangeStart -> {
                 copy(start = msg.start)
             }

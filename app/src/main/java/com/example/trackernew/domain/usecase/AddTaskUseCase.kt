@@ -4,9 +4,9 @@ import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.repository.AddTaskRepository
 import javax.inject.Inject
 
-class SaveTaskUseCase @Inject constructor(
+class AddTaskUseCase @Inject constructor(
     private val addTaskRepository: AddTaskRepository
 ) {
 
-    suspend operator fun invoke(task: Task) = addTaskRepository.saveTask(task)
+    suspend operator fun invoke(task: Task): Long = addTaskRepository.addTask(task)
 }

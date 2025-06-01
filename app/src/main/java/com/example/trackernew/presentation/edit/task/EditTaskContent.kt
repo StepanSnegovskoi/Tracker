@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.edit.task
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -67,10 +69,11 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.time.LocalDate
 import java.time.ZoneId
 
 @Composable
-fun EditTaskContent(component: EditTaskComponent, snackbarManager: SnackbarManager) {
+fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
 
@@ -80,19 +83,27 @@ fun EditTaskContent(component: EditTaskComponent, snackbarManager: SnackbarManag
         component.labels.onEach {
             when (it) {
                 EditTaskStore.Label.TaskEdited -> {
-                    snackbarManager.showMessage("Задача изменена")
-                }
-
-                EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
-                }
-
-                EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage("Задача изменена")
                 }
 
                 EditTaskStore.Label.SubTaskSaved -> {
-                    snackbarManager.showMessage("Подзадача сохранена")
+                    snackBarManager.showMessage("Подзадача сохранена")
+                }
+
+                EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
+                    snackBarManager.showMessage("Название не должно быть пустым")
+                }
+
+                EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
+                    snackBarManager.showMessage("Название не должно быть пустым")
+                }
+
+                EditTaskStore.Label.EditDeadlineClickedAndDeadlineIsIncorrect -> {
+                    snackBarManager.showMessage("Дедлайн не может быть раньше, чем текущее время")
+                }
+
+                EditTaskStore.Label.EditDeadlineClickedAndReminderIsIncorrect -> {
+                    snackBarManager.showMessage("Время напоминания некорректно")
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -156,6 +167,21 @@ fun EditTaskContent(component: EditTaskComponent, snackbarManager: SnackbarManag
                     onClick = {
                         stateDateAndTimePicker.value = true
                     }
+                )
+
+                AlarmEnable(
+                    state = state,
+                    modifier = Modifier
+                        .padding(start = 16.dp),
+                    onCheckedChange = {
+                        component.onChangeAlarmEnableClicked()
+                    },
+                    onTimesCountMenuItemClick = {
+                        component.onChangeTimesCountClicked(it)
+                    },
+                    onTimeForDeadlineMenuItemClick = {
+                        component.onChangeTimeForDeadlineClicked(it)
+                    },
                 )
 
                 val stateSubTaskDialog = remember {
@@ -316,6 +342,7 @@ fun OutlinedTextFieldCategoryWithMenu(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Menu(
+    modifier: Modifier = Modifier,
     expanded: State<Boolean>,
     items: List<String>,
     onDismissRequest: () -> Unit,
@@ -323,6 +350,7 @@ fun Menu(
     content: @Composable (Modifier) -> Unit
 ) {
     ExposedDropdownMenuBox(
+        modifier = modifier,
         expanded = expanded.value,
         onExpandedChange = {
         }
@@ -332,7 +360,8 @@ fun Menu(
         DropdownMenu(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = TrackerNewTheme.colors.onBackground),
+                .background(color = TrackerNewTheme.colors.onBackground)
+                .heightIn(0.dp, (LocalConfiguration.current.screenHeightDp / 3).dp),
             expanded = expanded.value,
             onDismissRequest = {
                 onDismissRequest()
@@ -489,17 +518,13 @@ fun DateAndTimePickerDialogEditScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val selectedLocalDateTime = (datePickerState.selectedDateMillis ?: 0)
-                            .toLocalDateTime()
-
-                        val finalDateTime = selectedLocalDateTime
-                            .withHour(timePickerState.hour)
-                            .withMinute(timePickerState.minute)
+                        val selectedDateTime = LocalDate.now()
+                            .atTime(timePickerState.hour, timePickerState.minute)
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
                             .toEpochMilli()
 
-                        onDateTimeSelected(finalDateTime)
+                        onDateTimeSelected(selectedDateTime)
                         showTimePicker = false
                     }
                 ) {
@@ -532,6 +557,110 @@ fun DateAndTimePickerDialogEditScreen(
                 TimePicker(
                     state = timePickerState,
                     colors = getTimePickerColors()
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun AlarmEnable(
+    state: EditTaskStore.State,
+    modifier: Modifier = Modifier,
+    onCheckedChange: () -> Unit,
+    onTimesCountMenuItemClick: (Int) -> Unit,
+    onTimeForDeadlineMenuItemClick: (String) -> Unit
+) {
+    val expandedTime = remember {
+        mutableStateOf(false)
+    }
+    val expandedTimesCount = remember {
+        mutableStateOf(false)
+    }
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(modifier),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f),
+                text = "Напоминание",
+                color = TrackerNewTheme.colors.textColor,
+                fontSize = 16.sp
+            )
+            Switch(
+                checked = state.alarmEnable,
+                onCheckedChange = {
+                    onCheckedChange()
+                }
+            )
+        }
+        AnimatedVisibility(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(modifier),
+            visible = state.alarmEnable,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Напомнить за",
+                    color = TrackerNewTheme.colors.textColor,
+                    fontSize = 16.sp
+                )
+                Menu(
+                    expanded = expandedTimesCount,
+                    items = listOneToOneHundred,
+                    onDismissRequest = {
+                        expandedTimesCount.value = false
+                    },
+                    onItemClick = {
+                        onTimesCountMenuItemClick(it.toInt())
+                        expandedTimesCount.value = false
+                    },
+                    content = {
+                        Text(
+                            modifier = Modifier
+                                .clickable {
+                                    expandedTimesCount.value = !expandedTimesCount.value
+                                }
+                                .then(it),
+                            text = state.timeUnitCount.toString(),
+                            color = TrackerNewTheme.colors.textColor,
+                            fontSize = 16.sp
+                        )
+                    }
+                )
+                Menu(
+                    expanded = expandedTime,
+                    items = listOfTimes,
+                    onDismissRequest = {
+                        expandedTime.value = false
+                    },
+                    onItemClick = {
+                        onTimeForDeadlineMenuItemClick(it)
+                        expandedTime.value = false
+                    },
+                    content = {
+                        Text(
+                            modifier = Modifier
+                                .clickable {
+                                    expandedTime.value = !expandedTime.value
+                                }
+                                .then(it),
+                            text = state.timeUnit,
+                            color = TrackerNewTheme.colors.textColor,
+                            fontSize = 16.sp
+                        )
+                    }
                 )
             }
         }

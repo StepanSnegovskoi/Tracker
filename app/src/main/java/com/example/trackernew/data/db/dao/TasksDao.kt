@@ -11,13 +11,16 @@ import kotlinx.coroutines.flow.Flow
 interface TasksDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun saveTask(taskDbModel: TaskDbModel)
+    suspend fun saveTask(taskDbModel: TaskDbModel): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun editTask(taskDbModel: TaskDbModel)
 
     @Query("DELETE FROM tasks WHERE id =:id")
-    suspend fun deleteTask(id: Int)
+    suspend fun deleteTaskById(id: Int)
+
+    @Query("DELETE FROM tasks WHERE category =:category")
+    suspend fun deleteTaskByCategory(category: String)
 
     @Query("SELECT * FROM tasks")
     fun getTasks(): Flow<List<TaskDbModel>>

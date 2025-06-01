@@ -1,5 +1,6 @@
 package com.example.trackernew.di
 
+import android.app.AlarmManager
 import android.content.Context
 import com.example.trackernew.data.db.AppDatabase
 import com.example.trackernew.data.db.dao.CategoryDao
@@ -13,6 +14,8 @@ import com.example.trackernew.data.repository.AddLessonNameRepositoryImpl
 import com.example.trackernew.data.repository.AddLessonRepositoryImpl
 import com.example.trackernew.data.repository.AddTaskRepositoryImpl
 import com.example.trackernew.data.repository.AddWeekRepositoryImpl
+import com.example.trackernew.data.repository.AlarmManagerRepositoryImpl
+import com.example.trackernew.data.repository.DetailsRepositoryImpl
 import com.example.trackernew.data.repository.EditTaskRepositoryImpl
 import com.example.trackernew.data.repository.ScheduleRepositoryImpl
 import com.example.trackernew.data.repository.TasksRepositoryImpl
@@ -24,6 +27,8 @@ import com.example.trackernew.domain.repository.AddLessonNameRepository
 import com.example.trackernew.domain.repository.AddLessonRepository
 import com.example.trackernew.domain.repository.AddTaskRepository
 import com.example.trackernew.domain.repository.AddWeekRepository
+import com.example.trackernew.domain.repository.AlarmManagerRepository
+import com.example.trackernew.domain.repository.DetailsRepository
 import com.example.trackernew.domain.repository.EditTaskRepository
 import com.example.trackernew.domain.repository.ScheduleRepository
 import com.example.trackernew.domain.repository.TasksRepository
@@ -78,6 +83,14 @@ interface DataModule {
     @ApplicationScope
     @Binds
     fun bindAddWeekRepository(addWeekRepositoryImpl: AddWeekRepositoryImpl): AddWeekRepository
+
+    @ApplicationScope
+    @Binds
+    fun bindDetailsRepository(detailsRepositoryImpl: DetailsRepositoryImpl): DetailsRepository
+
+    @ApplicationScope
+    @Binds
+    fun bindAlarmManager(alarmManagerRepositoryImpl: AlarmManagerRepositoryImpl): AlarmManagerRepository
 
     companion object {
 

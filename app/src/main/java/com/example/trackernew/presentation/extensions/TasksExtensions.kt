@@ -1,6 +1,7 @@
 package com.example.trackernew.presentation.extensions
 
 import com.example.trackernew.domain.entity.Category
+import com.example.trackernew.domain.entity.Lesson
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.tasks.Sort
 import java.text.SimpleDateFormat
@@ -26,7 +27,7 @@ fun Long.toTimeString(): String {
 }
 
 fun String.toTimeString(): String {
-    return if(this == "") "00:00" else toLong().toTimeString()
+    return if (this == "") "00:00" else toLong().toTimeString()
 }
 
 fun Long.toLocalDateTime(): LocalDateTime {
@@ -42,4 +43,9 @@ fun List<Task>.filterBySortTypeAndCategory(sort: Sort, category: Category): List
     }
     return sortedTasks
         .filter { it.category == category.name }
+}
+
+fun List<Lesson>.getMinAndMaxTimeString(): String {
+
+    return "${minOf { it.start }.toTimeString()} - ${maxOf { it.end }.toTimeString()}"
 }

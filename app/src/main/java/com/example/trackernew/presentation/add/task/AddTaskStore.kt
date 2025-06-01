@@ -10,10 +10,12 @@ import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
-import com.example.trackernew.domain.usecase.SaveTaskUseCase
+import com.example.trackernew.domain.usecase.AddTaskUseCase
+import com.example.trackernew.domain.usecase.SetAlarmUseCase
 import com.example.trackernew.presentation.add.task.AddTaskStore.Intent
 import com.example.trackernew.presentation.add.task.AddTaskStore.Label
 import com.example.trackernew.presentation.add.task.AddTaskStore.State
+import com.example.trackernew.presentation.edit.task.listOneToOneHundred
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -41,6 +43,8 @@ interface AddTaskStore : Store<Intent, State, Label> {
 
         data class ChangeSubTask(val subTask: String) : Intent
 
+        data object ChangeAlarmEnable : Intent
+
         data object CategoriesClickedAndTheyAreEmpty : Intent
     }
 
@@ -51,7 +55,8 @@ interface AddTaskStore : Store<Intent, State, Label> {
         val deadline: Long,
         val subTasks: List<SubTask>,
         val categories: List<Category>,
-        val subTask: String
+        val subTask: String,
+        val alarmEnable: Boolean
     )
 
     sealed interface Label {
@@ -66,14 +71,19 @@ interface AddTaskStore : Store<Intent, State, Label> {
 
         data object AddTaskClickedAndNameIsEmpty : Label
 
+        data object AddTaskClickedAndDeadlineIsIncorrect : Label
+
         data object AddSubTaskClickedAndNameIsEmpty : Label
+
+        data object AddDeadlineClickedAndDeadlineIsIncorrect : Label
     }
 }
 
 class AddTaskStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
-    private val saveTaskUseCase: SaveTaskUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val addTaskUseCase: AddTaskUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val setAlarmUseCase: SetAlarmUseCase
 ) {
 
     fun create(): AddTaskStore =
@@ -86,7 +96,8 @@ class AddTaskStoreFactory @Inject constructor(
                 deadline = 0,
                 subTasks = listOf(),
                 categories = listOf(),
-                subTask = ""
+                subTask = "",
+                alarmEnable = false
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -115,6 +126,8 @@ class AddTaskStoreFactory @Inject constructor(
 
         data class ChangeSubTask(val subTask: String) : Msg
 
+        data object ChangeAlarmEnable : Msg
+
 
         data class CategoriesLoaded(val categories: List<Category>) : Msg
     }
@@ -135,7 +148,15 @@ class AddTaskStoreFactory @Inject constructor(
                 }
 
                 is Intent.ChangeDeadline -> {
-                    dispatch(Msg.ChangeDeadline(intent.deadline))
+                    when (intent.deadline < System.currentTimeMillis() && intent.deadline != 0L) {
+                        true -> {
+                            publish(Label.AddDeadlineClickedAndDeadlineIsIncorrect)
+                        }
+
+                        false -> {
+                            dispatch(Msg.ChangeDeadline(intent.deadline))
+                        }
+                    }
                 }
 
                 is Intent.ChangeDescription -> {
@@ -152,19 +173,33 @@ class AddTaskStoreFactory @Inject constructor(
                         publish(Label.AddTaskClickedAndNameIsEmpty)
                         return
                     }
+                    if (state.deadline < Calendar.getInstance().timeInMillis) {
+                        publish(Label.AddDeadlineClickedAndDeadlineIsIncorrect)
+                        return
+                    }
                     scope.launch {
-                        saveTaskUseCase(
-                            Task(
-                                id = 0,
-                                name = state.name.trim(),
-                                description = state.description.trim(),
-                                category = state.category,
-                                status = TaskStatus.InTheProcess,
-                                addingTime = Calendar.getInstance().timeInMillis,
-                                deadline = state.deadline,
-                                subTasks = state.subTasks
-                            )
+                        val task = Task(
+                            id = 0,
+                            name = state.name.trim(),
+                            description = state.description.trim(),
+                            category = state.category,
+                            status = TaskStatus.InTheProcess,
+                            addingTime = Calendar.getInstance().timeInMillis,
+                            deadline = state.deadline,
+                            subTasks = state.subTasks,
+                            alarmEnable = state.alarmEnable,
+                            timeUnit = "Секунда",
+                            timeUnitCount = listOneToOneHundred[0].toInt(),
                         )
+
+                        addTaskUseCase(
+                            task
+                        ).also {
+                            if (state.alarmEnable) {
+                                setAlarmUseCase(task, state.deadline, it.toInt())
+                            }
+                        }
+
                         publish(Label.TaskSaved)
                     }
                 }
@@ -193,6 +228,13 @@ class AddTaskStoreFactory @Inject constructor(
 
                 is Intent.DeleteSubTask -> {
                     dispatch(Msg.DeleteSubTask(intent.id))
+                }
+
+                is Intent.ChangeAlarmEnable -> {
+                    val state = getState()
+                    if (state.deadline != 0L) {
+                        dispatch(Msg.ChangeAlarmEnable)
+                    }
                 }
             }
         }
@@ -258,6 +300,10 @@ class AddTaskStoreFactory @Inject constructor(
                         }
                     }
                 })
+            }
+
+            is Msg.ChangeAlarmEnable -> {
+                copy(alarmEnable = !alarmEnable)
             }
         }
     }

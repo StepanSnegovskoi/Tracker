@@ -49,6 +49,10 @@ class DefaultAddLessonNameComponent @AssistedInject constructor (
         store.accept(AddLessonNameStore.Intent.ChangeLessonName(lessonName))
     }
 
+    override fun onClearLessonNameClicked() {
+        store.accept(AddLessonNameStore.Intent.ChangeLessonName(""))
+    }
+
     @AssistedFactory
     interface Factory {
 

@@ -8,6 +8,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
+import com.example.trackernew.domain.usecase.DeleteCategoryUseCase
 import com.example.trackernew.domain.usecase.DeleteTaskByIdUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.GetTasksUseCase
@@ -15,6 +16,7 @@ import com.example.trackernew.presentation.extensions.filterBySortTypeAndCategor
 import com.example.trackernew.presentation.tasks.TasksStore.Intent
 import com.example.trackernew.presentation.tasks.TasksStore.Label
 import com.example.trackernew.presentation.tasks.TasksStore.State
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -27,6 +29,8 @@ interface TasksStore : Store<Intent, State, Label> {
         data object ClickAddTask : Intent
 
         data object ClickAddCategory : Intent
+
+        data class ClickDeleteCategory(val category: Category) : Intent
 
         data object ClickSchedule : Intent
 
@@ -41,11 +45,16 @@ interface TasksStore : Store<Intent, State, Label> {
     }
 
     data class State(
-        val tasks: Tasks,
+        val tasksState: TasksState, // Заменяем tasks на tasksState
         val categories: List<Category>,
         val sort: Sort,
         val category: Category
     )
+
+    sealed class TasksState {
+        data object Loading : TasksState()
+        data class Loaded(val tasks: Tasks) : TasksState()
+    }
 
     data class Tasks(
         val currentTasks: List<Task>,
@@ -69,17 +78,18 @@ class TasksStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
     private val getTasksUseCase: GetTasksUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val deleteTaskByIdUseCase: DeleteTaskByIdUseCase
+    private val deleteTaskByIdUseCase: DeleteTaskByIdUseCase,
+    private val deleteCategoryUseCase: DeleteCategoryUseCase
 ) {
 
     fun create(): TasksStore =
         object : TasksStore, Store<Intent, State, Label> by storeFactory.create(
             name = "TasksStore",
             initialState = State(
-                tasks = TasksStore.Tasks(listOf(), listOf()),
+                tasksState = TasksStore.TasksState.Loading,
                 sort = Sort.ByName,
                 category = Category("Всё вместе"),
-                categories = listOf()
+                categories = emptyList()
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -107,37 +117,6 @@ class TasksStoreFactory @Inject constructor(
 
     private inner class BootstrapperImpl : CoroutineBootstrapper<Action>() {
         override fun invoke() {
-            dispatch(Action.TasksLoaded(listOf(
-                Task(
-                    0,
-                    "name",
-                    "description",
-                    "category",
-                    TaskStatus.Failed,
-                    0L,
-                    0L,
-                    emptyList()
-                ),
-                Task(
-                    1,
-                    "name",
-                    "description",
-                    "category",
-                    TaskStatus.Failed,
-                    0L,
-                    0L,
-                    emptyList()
-                ),
-                Task(
-                    2,
-                    "name",
-                    "description",
-                    "category",
-                    TaskStatus.Failed,
-                    0L,
-                    0L,
-                    emptyList()
-                ))))
             getTasksUseCase().onEach {
                 dispatch(Action.TasksLoaded(it))
             }.launchIn(scope)
@@ -181,6 +160,17 @@ class TasksStoreFactory @Inject constructor(
                 Intent.ClickSchedule -> {
                     publish(Label.ClickSchedule)
                 }
+
+                is Intent.ClickDeleteCategory -> {
+                    val state = getState()
+                    scope.launch {
+                        deleteCategoryUseCase(intent.category)
+                    }
+
+                    if (state.category == intent.category) {
+                        dispatch(Msg.ChangeCategory(Category("Всё вместе")))
+                    }
+                }
             }
         }
 
@@ -202,34 +192,50 @@ class TasksStoreFactory @Inject constructor(
             when (msg) {
                 is Msg.TasksLoaded -> {
                     copy(
-                        tasks = TasksStore.Tasks(
-                            currentTasks = msg.tasks,
-                            filteredTasks = msg.tasks
-                                .filterBySortTypeAndCategory(sort, category)
+                        tasksState = TasksStore.TasksState.Loaded( // Устанавливаем Loaded состояние
+                            TasksStore.Tasks(
+                                currentTasks = msg.tasks,
+                                filteredTasks = msg.tasks
+                                    .filterBySortTypeAndCategory(sort, category)
+                            )
                         )
                     )
                 }
 
                 is Msg.ChangeSort -> {
-                    copy(
-                        sort = msg.sort,
-                        tasks = TasksStore.Tasks(
-                            currentTasks = tasks.currentTasks,
-                            filteredTasks = tasks.currentTasks
-                                .filterBySortTypeAndCategory(msg.sort, category)
-                        )
-                    )
+                    when (tasksState) {
+                        is TasksStore.TasksState.Loaded -> {
+                            copy(
+                                sort = msg.sort,
+                                tasksState = TasksStore.TasksState.Loaded(
+                                    TasksStore.Tasks(
+                                        currentTasks = tasksState.tasks.currentTasks,
+                                        filteredTasks = tasksState.tasks.currentTasks
+                                            .filterBySortTypeAndCategory(msg.sort, category)
+                                    )
+                                )
+                            )
+                        }
+                        TasksStore.TasksState.Loading -> this
+                    }
                 }
 
                 is Msg.ChangeCategory -> {
-                    copy(
-                        category = msg.category,
-                        tasks = TasksStore.Tasks(
-                            currentTasks = tasks.currentTasks,
-                            filteredTasks = tasks.currentTasks
-                                .filterBySortTypeAndCategory(sort, msg.category)
-                        )
-                    )
+                    when (tasksState) {
+                        is TasksStore.TasksState.Loaded -> {
+                            copy(
+                                category = msg.category,
+                                tasksState = TasksStore.TasksState.Loaded(
+                                    TasksStore.Tasks(
+                                        currentTasks = tasksState.tasks.currentTasks,
+                                        filteredTasks = tasksState.tasks.currentTasks
+                                            .filterBySortTypeAndCategory(sort, msg.category)
+                                    )
+                                )
+                            )
+                        }
+                        TasksStore.TasksState.Loading -> this
+                    }
                 }
 
                 is Msg.CategoriesLoaded -> {

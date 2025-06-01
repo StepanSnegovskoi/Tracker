@@ -14,6 +14,7 @@ import com.example.trackernew.presentation.add.lesson.lesson.DefaultAddLessonCom
 import com.example.trackernew.presentation.add.lesson.name.DefaultAddLessonNameComponent
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
 import com.example.trackernew.presentation.add.week.DefaultAddWeekComponent
+import com.example.trackernew.presentation.settings.DefaultScheduleSettingsComponent
 import com.example.trackernew.presentation.edit.task.DefaultEditTaskComponent
 import com.example.trackernew.presentation.schedule.DefaultScheduleComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
@@ -36,6 +37,7 @@ class DefaultRootComponent @AssistedInject constructor(
     private val scheduleStoreFactory: DefaultScheduleComponent.Factory,
     private val addWeekStoreFactory: DefaultAddWeekComponent.Factory,
     private val weeksStoreFactory: DefaultWeeksComponent.Factory,
+    private val scheduleSettingsFactory: DefaultScheduleSettingsComponent.Factory,
     private val addLecturerStoreFactory: DefaultAddLecturerComponent.Factory
 ) : RootComponent, ComponentContext by componentContext {
 
@@ -175,6 +177,9 @@ class DefaultRootComponent @AssistedInject constructor(
                     },
                     onEditWeeksClicked = {
                         navigation.push(Config.EditWeeks)
+                    },
+                    onSettingsClicked = {
+                        navigation.push(Config.ScheduleSettings)
                     }
                 )
 
@@ -201,6 +206,14 @@ class DefaultRootComponent @AssistedInject constructor(
                 )
 
                 RootComponent.Child.EditWeeks(component)
+            }
+
+            Config.ScheduleSettings -> {
+                val component = scheduleSettingsFactory.create(
+                    componentContext = componentContext
+                )
+
+                RootComponent.Child.ScheduleSettings(component)
             }
         }
     }
@@ -252,5 +265,8 @@ class DefaultRootComponent @AssistedInject constructor(
 
         @Serializable
         data object EditWeeks : Config
+
+        @Serializable
+        data object ScheduleSettings : Config
     }
 }

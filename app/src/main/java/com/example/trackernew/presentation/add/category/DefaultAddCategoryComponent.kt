@@ -49,6 +49,10 @@ class DefaultAddCategoryComponent @AssistedInject constructor(
         store.accept(AddCategoryStore.Intent.AddCategory)
     }
 
+    override fun onClearCategoryClicked() {
+        store.accept(AddCategoryStore.Intent.ChangeCategory(""))
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(

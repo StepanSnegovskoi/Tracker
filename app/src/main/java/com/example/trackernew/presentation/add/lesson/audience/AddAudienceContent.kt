@@ -1,12 +1,14 @@
 package com.example.trackernew.presentation.add.lesson.audience
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +34,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun AddAudienceContent(component: AddAudienceComponent, snackbarManager: SnackbarManager) {
+fun AddAudienceContent(component: AddAudienceComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
 
@@ -42,11 +44,11 @@ fun AddAudienceContent(component: AddAudienceComponent, snackbarManager: Snackba
         component.labels.onEach {
             when (it) {
                 AddAudienceStore.Label.AudienceSaved -> {
-                    snackbarManager.showMessage("Название сохранено")
+                    snackBarManager.showMessage("Аудитория сохранена")
                 }
 
                 AddAudienceStore.Label.AddAudienceClickedAndAudienceIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage("Название не должно быть пустым")
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -83,6 +85,9 @@ fun AddAudienceContent(component: AddAudienceComponent, snackbarManager: Snackba
                     .padding(paddingValues),
                 onValueChange = {
                     component.onAudienceChanged(it)
+                },
+                onClearIconClick = {
+                    component.onClearAudienceClicked()
                 }
             )
         }
@@ -93,6 +98,7 @@ fun AddAudienceContent(component: AddAudienceComponent, snackbarManager: Snackba
 fun OutlinedTextFieldAudience(
     state: AddAudienceStore.State,
     modifier: Modifier = Modifier,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
     val focusRequester = remember {
@@ -117,6 +123,17 @@ fun OutlinedTextFieldAudience(
             Text(
                 text = "Аудитория",
                 color = TrackerNewTheme.colors.textColor
+            )
+        },
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onClearIconClick()
+                    },
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
             )
         },
         supportingText = {

@@ -8,5 +8,5 @@ interface AddTaskRepository {
 
     val categories: Flow<List<Category>>
 
-    suspend fun saveTask(task: Task)
+    suspend fun addTask(task: Task): Long
 }

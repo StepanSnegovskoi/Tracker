@@ -40,11 +40,7 @@ class DefaultAddLessonComponent @AssistedInject constructor(
                     /** Nothing **/
                 }
 
-                AddLessonStore.Label.EndTimeSaveClickedAndItsLessThanStartTime -> {
-                    /** Nothing **/
-                }
-
-                AddLessonStore.Label.StartTimeSaveClickedAndItsMoreThanEndTime -> {
+                AddLessonStore.Label.AddLessonClickedAndTimeIsIncorrect -> {
                     /** Nothing **/
                 }
 
@@ -71,10 +67,10 @@ class DefaultAddLessonComponent @AssistedInject constructor(
     override val model: StateFlow<AddLessonStore.State> = store.stateFlow
 
     override fun onAddLessonClicked() {
-        store.accept(AddLessonStore.Intent.SaveLesson)
+        store.accept(AddLessonStore.Intent.AddLesson)
     }
 
-    override fun onNameChanged(name: String) {
+    override fun onLessonNameChanged(name: String) {
         store.accept(AddLessonStore.Intent.ChangeLessonName(name))
     }
 
@@ -108,6 +104,26 @@ class DefaultAddLessonComponent @AssistedInject constructor(
 
     override fun onAudienceClickedAndAudiencesListIsEmpty() {
         store.accept(AddLessonStore.Intent.AudiencesListIsEmpty)
+    }
+
+    override fun onClearLessonNameClicked() {
+        store.accept(AddLessonStore.Intent.ChangeLessonName(""))
+    }
+
+    override fun onClearLecturerClicked() {
+        store.accept(AddLessonStore.Intent.ChangeLecturer(""))
+    }
+
+    override fun onClearAudienceClicked() {
+        store.accept(AddLessonStore.Intent.ChangeAudience(""))
+    }
+
+    override fun onClearStartClicked() {
+        store.accept(AddLessonStore.Intent.ChangeStart(0L))
+    }
+
+    override fun onClearEndClicked() {
+        store.accept(AddLessonStore.Intent.ChangeEnd(0L))
     }
 
     @AssistedFactory

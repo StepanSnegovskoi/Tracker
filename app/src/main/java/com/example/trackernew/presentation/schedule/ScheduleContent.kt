@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -22,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,10 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,18 +48,66 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.trackernew.domain.entity.Lesson
+import com.example.trackernew.presentation.extensions.getMinAndMaxTimeString
 import com.example.trackernew.presentation.extensions.toTimeString
+import com.example.trackernew.presentation.root.SnackbarManager
+import com.example.trackernew.ui.theme.Green300
 import com.example.trackernew.ui.theme.TrackerNewTheme
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleContent(component: ScheduleComponent) {
+fun ScheduleContent(component: ScheduleComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(
+        key1 = component
+    ) {
+        component.labels.onEach {
+            when (it) {
+                is ScheduleStore.Label.ClickAddLesson -> {
+                    /** Nothing **/
+                }
+
+                ScheduleStore.Label.ClickAddWeek -> {
+                    /** Nothing **/
+                }
+
+                ScheduleStore.Label.ClickEditWeeks -> {
+                    /** Nothing **/
+                }
+
+                ScheduleStore.Label.ClickSettings -> {
+                    /** Nothing **/
+                }
+
+                ScheduleStore.Label.DaysListIsEmpty -> {
+                    snackBarManager.showMessage("Текущий список дней пуст")
+                }
+
+                ScheduleStore.Label.AddLessonClickedAndWeeksAreEmpty -> {
+                    snackBarManager.showMessage("День недели не выбран")
+                }
+            }
+        }.launchIn(scope)
+    }
 
     val pagerState = rememberPagerState(
         pageCount = { state.weeks.size * DAYS_IN_WEEK },
         initialPage = ZERO
     )
+
+    LaunchedEffect(state.weeks.size) {
+        val newPageCount = state.weeks.size * DAYS_IN_WEEK
+        if (newPageCount == 0) return@LaunchedEffect
+        if (pagerState.currentPage >= newPageCount) {
+            pagerState.scrollToPage(newPageCount - 1)
+        }
+    }
 
     val days = state.weeks.flatMap { it.days }
 
@@ -76,7 +127,7 @@ fun ScheduleContent(component: ScheduleComponent) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        when (state.weeks.isNotEmpty()) {
+                        when (state.weeks.isNotEmpty() && pagerState.currentPage / DAYS_IN_WEEK < state.weeks.size) {
                             true -> {
                                 Text(
                                     modifier = Modifier
@@ -98,19 +149,35 @@ fun ScheduleContent(component: ScheduleComponent) {
                                 )
                             }
                         }
-                        Icon(
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    component.onEditWeeksClicked()
-                                },
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = null,
-                            tint = TrackerNewTheme.colors.tintColor
-                        )
+                        Row {
+                            Icon(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        component.onEditWeeksClicked()
+                                    },
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = TrackerNewTheme.colors.tintColor
+                            )
+
+                            Icon(
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        component.onSettingsClicked()
+                                    },
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                tint = TrackerNewTheme.colors.tintColor
+                            )
+                        }
                     }
                 }
             )
@@ -126,20 +193,55 @@ fun ScheduleContent(component: ScheduleComponent) {
                 state = pagerState,
                 key = { page -> page }
             ) { page ->
+                if (days.isEmpty()) return@HorizontalPager
+
+                val color =
+                    if (pagerState.currentPage == state.weeks.size / 2 * DAYS_IN_WEEK + Calendar.getInstance()
+                            .get(Calendar.DAY_OF_WEEK) - 1 - 1
+                    ) Green300 else TrackerNewTheme.colors.textColor
+
                 Column(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         text = days[page].name,
-                        color = TrackerNewTheme.colors.textColor,
+                        color = color,
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+
+                    when (days.isNotEmpty() && days[page].lessons.isNotEmpty()) {
+                        true -> {
+                            val lessons = days[page].lessons.sortedBy { it.start }
+                            Text(
+                                modifier = Modifier
+                                    .padding(4.dp),
+                                text = lessons.getMinAndMaxTimeString(),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = color
+                            )
+                        }
+
+                        false -> {
+                            Text(
+                                modifier = Modifier
+                                    .padding(16.dp),
+                                text = "Нет занятий",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = color
+                            )
+                        }
+                    }
 
                     LazyColumn(
                         modifier = Modifier
@@ -151,6 +253,8 @@ fun ScheduleContent(component: ScheduleComponent) {
                             key = { it.id }
                         ) {
                             Lesson(
+                                modifier = Modifier
+                                    .animateItem(),
                                 lesson = it,
                                 onDeleteIconClick = {
                                     component.onDeleteLessonClicked(
@@ -169,15 +273,16 @@ fun ScheduleContent(component: ScheduleComponent) {
 
             Row(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
                     .padding(16.dp)
                     .background(
                         color = TrackerNewTheme.colors.onBackground,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     modifier = Modifier
@@ -192,8 +297,36 @@ fun ScheduleContent(component: ScheduleComponent) {
                     color = TrackerNewTheme.colors.textColor,
                     fontSize = 16.sp
                 )
+                val coroutineScope = rememberCoroutineScope()
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Icon(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            when (state.weeks.isNotEmpty()) {
+                                true -> {
+                                    coroutineScope.launch {
+                                        val currentDayIndex =
+                                            state.weeks.size / 2 * DAYS_IN_WEEK + Calendar.getInstance()
+                                                .get(Calendar.DAY_OF_WEEK) - 1
+
+                                        pagerState.animateScrollToPage(currentDayIndex - 1)
+                                    }
+                                }
+
+                                false -> {
+                                    component.onNavigateToCurrentDayClickedAndDaysListIsEmpty()
+                                }
+                            }
+                        },
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = if (pagerState.currentPage == state.weeks.size / 2 * DAYS_IN_WEEK + Calendar.getInstance()
+                            .get(Calendar.DAY_OF_WEEK) - 1 - 1 && days.isNotEmpty()
+                    ) Green300 else TrackerNewTheme.colors.tintColor
+                )
 
                 Text(
                     modifier = Modifier
@@ -201,17 +334,23 @@ fun ScheduleContent(component: ScheduleComponent) {
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            if (state.weeks.isNotEmpty()) {
-                                val lessons = days[pagerState.currentPage].lessons
-                                var futureLessonId = 0
-                                if (lessons.isNotEmpty()) {
-                                    futureLessonId = lessons.maxOf { it.id } + 1
+                            when (state.weeks.isNotEmpty()) {
+                                true -> {
+                                    val lessons = days[pagerState.currentPage].lessons
+                                    var futureLessonId = 0
+                                    if (lessons.isNotEmpty()) {
+                                        futureLessonId = lessons.maxOf { it.id } + 1
+                                    }
+                                    component.onAddLessonClicked(
+                                        state.weeks[pagerState.currentPage / DAYS_IN_WEEK].id,
+                                        days[pagerState.currentPage].name,
+                                        futureLessonId
+                                    )
                                 }
-                                component.onAddLessonClicked(
-                                    state.weeks[pagerState.currentPage / DAYS_IN_WEEK].id,
-                                    days[pagerState.currentPage].name,
-                                    futureLessonId
-                                )
+
+                                false -> {
+                                    component.onAddLessonClickedAndWeeksAreEmpty()
+                                }
                             }
                         }
                         .padding(8.dp),
@@ -222,11 +361,11 @@ fun ScheduleContent(component: ScheduleComponent) {
             }
         }
     }
-
 }
 
 @Composable
 fun Lesson(
+    modifier: Modifier = Modifier,
     lesson: Lesson,
     onDeleteIconClick: () -> Unit
 ) {
@@ -236,12 +375,14 @@ fun Lesson(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(4.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ) {
                 visible = !visible
-            },
+            }
+            .then(modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = TrackerNewTheme.colors.onBackground

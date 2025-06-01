@@ -1,7 +1,13 @@
 package com.example.trackernew.presentation.tasks
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +29,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerValue
@@ -50,7 +57,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,17 +68,19 @@ import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
+import com.example.trackernew.domain.repository.AlarmManagerRepository
 import com.example.trackernew.presentation.extensions.toDateString
-import com.example.trackernew.ui.theme.Green200
+import com.example.trackernew.ui.theme.Green300
 import com.example.trackernew.ui.theme.Orange100
 import com.example.trackernew.ui.theme.Red300
 import com.example.trackernew.ui.theme.TrackerNewTheme
+
 
 @Composable
 fun TasksContent(component: TasksComponent) {
     val state by component.model.collectAsState()
 
-    val stateCategories = rememberSaveable() {
+    val stateCategories = rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -83,6 +95,9 @@ fun TasksContent(component: TasksComponent) {
         },
         onAddCategoryClick = {
             component.onAddCategoryClicked()
+        },
+        onDeleteIconCategoryClick = {
+            component.onDeleteCategoryClicked(it)
         },
         onScheduleClick = {
             component.onScheduleClicked()
@@ -141,28 +156,50 @@ private fun TasksLazyColumn(
     onTaskLongClick: (Task) -> Unit,
     onDeleteIconClick: (Task) -> Unit
 ) {
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        items(
-            items = state.tasks.filteredTasks,
-            key = { it.id }
-        ) {
-            TaskItem(
-                task = it,
-                onTaskLongClick = {
-                    onTaskLongClick(it)
-                },
-                onDeleteIconClick = {
-                    onDeleteIconClick(it)
+    when (val taskState = state.tasksState) {
+        TasksStore.TasksState.Loading -> {
+            LazyColumn(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                items(
+                    count = 5
+                ) {
+                    TaskItemLoading(Modifier.animateItem())
                 }
-            )
+                item {
+                    Spacer(modifier = Modifier.height(72.dp))
+                }
+            }
         }
-        item {
-            Spacer(modifier = Modifier.height(72.dp))
+
+        is TasksStore.TasksState.Loaded -> {
+            LazyColumn(
+                modifier = modifier,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                items(
+                    items = taskState.tasks.filteredTasks,
+                    key = { it.id }
+                ) {
+                    TaskItem(
+                        modifier = Modifier.animateItem(),
+                        task = it,
+                        onTaskLongClick = {
+                            onTaskLongClick(it)
+                        },
+                        onDeleteIconClick = {
+                            onDeleteIconClick(it)
+                        }
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(72.dp))
+                }
+            }
         }
     }
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -211,7 +248,6 @@ private fun TaskItem(
                     fontSize = 18.sp
                 )
                 Spacer(modifier = Modifier.weight(1f))
-
                 Icon(
                     modifier = Modifier
                         .size(32.dp)
@@ -227,7 +263,7 @@ private fun TaskItem(
                     contentDescription = null,
                     tint = when (task.status) {
                         TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
-                        TaskStatus.Executed -> Green200
+                        TaskStatus.Executed -> Green300
                         TaskStatus.Failed -> Red300
                         TaskStatus.InTheProcess -> Orange100
                     }
@@ -236,19 +272,95 @@ private fun TaskItem(
                 Icon(
                     modifier = Modifier
                         .size(32.dp)
-                        .padding(horizontal = 4.dp)
-                        .clickable {
-                            onDeleteIconClick(task)
-                        },
-                    painter = painterResource(R.drawable.delete_outline_24),
-                    tint = TrackerNewTheme.colors.tintColor,
-                    contentDescription = null
+                        .padding(horizontal = 4.dp),
+                    painter = painterResource(
+                        R.drawable.hourglass
+                    ),
+                    contentDescription = null,
+                    tint = if (task.deadline == 0L) TrackerNewTheme.colors.tintColor else {
+                        val totalTime = task.deadline - task.addingTime
+                        val progress = (System.currentTimeMillis() - task.addingTime).toFloat() / totalTime
+
+                        when {
+                            progress < 0.0f -> TrackerNewTheme.colors.tintColor  // Ещё не началось
+                            progress < 0.33f -> Green300    // Первая треть времени
+                            progress < 0.66f -> Color.Yellow// Вторая треть времени
+                            progress < 1.0f  -> Orange100   // Последняя треть времени
+                            else             -> Red300      // Дедлайн просрочен
+                        }
+                    }
                 )
             }
             AnimatedDescriptionAndDeadline(
                 task = task,
-                state = stateDescription
+                state = stateDescription,
+                onDeleteIconClick = onDeleteIconClick
             )
+        }
+    }
+}
+
+@Composable
+private fun TaskItemLoading(
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "loadingAnimation")
+    val animatedColor by infiniteTransition.animateColor(
+        initialValue = TrackerNewTheme.colors.background,
+        targetValue = TrackerNewTheme.colors.onBackground,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1000,
+                easing = FastOutSlowInEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "loadingColor"
+    )
+
+    Card(
+        modifier = Modifier
+            .then(other = modifier),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = animatedColor
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 4.dp),
+                    text = "",
+                    color = Color.Transparent,
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+
+                Icon(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp),
+                    painter = painterResource(R.drawable.question_24),
+                    contentDescription = null,
+                    tint = Color.Transparent
+                )
+
+                Icon(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp),
+                    painter = painterResource(R.drawable.delete_outline_24),
+                    tint = Color.Transparent,
+                    contentDescription = null
+                )
+            }
         }
     }
 }
@@ -257,7 +369,8 @@ private fun TaskItem(
 fun ColumnScope.AnimatedDescriptionAndDeadline(
     modifier: Modifier = Modifier,
     task: Task,
-    state: State<Boolean>
+    state: State<Boolean>,
+    onDeleteIconClick: (Task) -> Unit
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -271,12 +384,32 @@ fun ColumnScope.AnimatedDescriptionAndDeadline(
                 task = task
             )
             SubTasks(task = task)
-            Deadline(
+            Row(
                 modifier = Modifier
-                    .padding(end = 4.dp, top = 8.dp)
-                    .fillMaxWidth(),
-                task = task
-            )
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                Deadline(
+                    modifier = Modifier
+                        .padding(end = 4.dp, top = 8.dp)
+                        .weight(1f),
+                    task = task
+                )
+                Icon(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(horizontal = 4.dp)
+                        .clickable {
+                            onDeleteIconClick(task)
+                        },
+                    painter = painterResource(R.drawable.delete_outline_24),
+                    tint = TrackerNewTheme.colors.tintColor,
+                    contentDescription = null
+                )
+            }
+
             val lineColor = TrackerNewTheme.colors.oppositeColor
             Spacer(
                 modifier = Modifier
@@ -308,7 +441,7 @@ fun SubTasks(
 
         task.subTasks.forEach {
             val icon = if (it.isCompleted) R.drawable.done_24 else R.drawable.not_completed_24
-            val color = if (it.isCompleted) Green200 else Red300
+            val color = if (it.isCompleted) Green300 else Red300
             Row {
                 Text(
                     text = it.name,
@@ -348,7 +481,6 @@ fun Deadline(
     modifier: Modifier = Modifier,
     task: Task
 ) {
-    if (task.deadline == 0L) return
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -358,16 +490,18 @@ fun Deadline(
             fontSize = 12.sp,
             color = TrackerNewTheme.colors.textColor
         )
-        Text(
-            text = "-",
-            fontSize = 12.sp,
-            color = TrackerNewTheme.colors.textColor
-        )
-        Text(
-            text = task.deadline.toDateString(),
-            fontSize = 12.sp,
-            color = TrackerNewTheme.colors.textColor
-        )
+        if (task.deadline != 0L) {
+            Text(
+                text = "-",
+                fontSize = 12.sp,
+                color = TrackerNewTheme.colors.textColor
+            )
+            Text(
+                text = task.deadline.toDateString(),
+                fontSize = 12.sp,
+                color = TrackerNewTheme.colors.textColor
+            )
+        }
     }
 }
 
@@ -376,6 +510,7 @@ private fun CategoriesLazyColumn(
     modifier: Modifier = Modifier,
     state: TasksStore.State,
     onCategoryClick: (Category) -> Unit,
+    onDeleteIconClick: (Category) -> Unit,
     onAddClick: () -> Unit,
 ) {
     LazyColumn(
@@ -386,19 +521,38 @@ private fun CategoriesLazyColumn(
             items = state.categories,
             key = { it.name }
         ) {
-            Text(
+            Row(
                 modifier = Modifier
-                    .fillParentMaxWidth()
+                    .fillMaxWidth()
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
                         onCategoryClick(it)
                     },
-                fontSize = 16.sp,
-                text = it.name,
-                color = TrackerNewTheme.colors.textColor
-            )
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier,
+                    text = it.name,
+                    fontSize = 18.sp,
+                    color = TrackerNewTheme.colors.textColor
+                )
+                Icon(
+                    modifier = Modifier
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                onDeleteIconClick(it)
+                            }
+                        ),
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = TrackerNewTheme.colors.tintColor
+                )
+            }
         }
         item {
             Text(
@@ -411,6 +565,7 @@ private fun CategoriesLazyColumn(
                         onCategoryClick(Category("Всё вместе"))
                     },
                 text = "Всё вместе",
+                fontSize = 18.sp,
                 color = TrackerNewTheme.colors.textColor
             )
         }
@@ -422,6 +577,7 @@ private fun CategoriesLazyColumn(
                         onAddClick()
                     },
                 text = "Добавить",
+                fontSize = 18.sp,
                 color = TrackerNewTheme.colors.textColor
             )
         }
@@ -434,6 +590,7 @@ private fun ColumnScope.AnimatedCategoriesLazyColumn(
     state: TasksStore.State,
     visibleState: State<Boolean>,
     onCategoryClick: (Category) -> Unit,
+    onDeleteIconClick: (Category) -> Unit,
     onAddClick: () -> Unit,
 ) {
     val transitionState = remember { MutableTransitionState(false) }
@@ -444,6 +601,9 @@ private fun ColumnScope.AnimatedCategoriesLazyColumn(
             modifier = modifier,
             state = state,
             onCategoryClick = onCategoryClick,
+            onDeleteIconClick = {
+                onDeleteIconClick(it)
+            },
             onAddClick = onAddClick
         )
     }
@@ -499,6 +659,7 @@ fun ModalDrawer(
     stateCategories: State<Boolean>,
     onCategoriesClick: () -> Unit,
     onCategoryClick: (Category) -> Unit,
+    onDeleteIconCategoryClick: (Category) -> Unit,
     onAddCategoryClick: () -> Unit,
     onScheduleClick: () -> Unit,
     content: @Composable () -> Unit
@@ -543,8 +704,9 @@ fun ModalDrawer(
                                     onCategoriesClick()
                                 },
                             text = "Категории",
-                            color = TrackerNewTheme.colors.textColor,
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TrackerNewTheme.colors.textColor
                         )
                         AnimatedCategoriesLazyColumn(
                             modifier = Modifier
@@ -553,6 +715,9 @@ fun ModalDrawer(
                             visibleState = stateCategories,
                             onCategoryClick = {
                                 onCategoryClick(it)
+                            },
+                            onDeleteIconClick = {
+                                onDeleteIconCategoryClick(it)
                             },
                             onAddClick = {
                                 onAddCategoryClick()
@@ -569,8 +734,9 @@ fun ModalDrawer(
                                     onScheduleClick()
                                 },
                             text = "Расписание",
-                            color = TrackerNewTheme.colors.textColor,
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TrackerNewTheme.colors.textColor
                         )
                     }
                 }

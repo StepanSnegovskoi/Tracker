@@ -9,15 +9,27 @@ import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
+import com.example.trackernew.domain.usecase.DeleteAlarmUseCase
 import com.example.trackernew.domain.usecase.EditTaskUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
+import com.example.trackernew.domain.usecase.SetAlarmUseCase
 import com.example.trackernew.presentation.edit.task.EditTaskStore.Intent
 import com.example.trackernew.presentation.edit.task.EditTaskStore.Label
 import com.example.trackernew.presentation.edit.task.EditTaskStore.State
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
+
+val listOfTimes = listOf("Секунда", "Минута", "Час", "День")
+
+val listOneToOneHundred = (1..100).toList().map { it.toString() }
+
+private const val MILLIS_IN_SECOND = 1_000
+private const val MILLIS_IN_MINUTE = MILLIS_IN_SECOND * 60
+private const val MILLIS_IN_HOUR = MILLIS_IN_MINUTE * 60
+private const val MILLIS_IN_DAY = MILLIS_IN_HOUR * 24
 
 interface EditTaskStore : Store<Intent, State, Label> {
 
@@ -42,7 +54,13 @@ interface EditTaskStore : Store<Intent, State, Label> {
 
         data class ChangeSubTaskStatus(val id: Int) : Intent
 
+        data class ChangeTimesCount(val timesCount: Int) : Intent
+
+        data class ChangeTimeForDeadline(val timeForDeadline: String) : Intent
+
         data object ChangeTaskStatus : Intent
+
+        data object ChangeAlarmEnable : Intent
     }
 
     data class State(
@@ -55,7 +73,10 @@ interface EditTaskStore : Store<Intent, State, Label> {
         val subTasks: List<SubTask>,
         val categories: List<Category>,
         val addingTime: Long,
-        val subTask: String
+        val subTask: String,
+        val alarmEnable: Boolean,
+        val timeUnitCount: Int,
+        val timeUnit: String
     )
 
     sealed interface Label {
@@ -68,13 +89,19 @@ interface EditTaskStore : Store<Intent, State, Label> {
         data object EditTaskClickedAndNameIsEmpty : Label
 
         data object AddSubTaskClickedAndNameIsEmpty : Label
+
+        data object EditDeadlineClickedAndDeadlineIsIncorrect : Label
+
+        data object EditDeadlineClickedAndReminderIsIncorrect : Label
     }
 }
 
 class EditTaskStoreFactory @Inject constructor(
     private val storeFactory: StoreFactory,
     private val editTaskUseCase: EditTaskUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val setAlarmUseCase: SetAlarmUseCase,
+    private val deleteAlarmUseCase: DeleteAlarmUseCase
 ) {
 
     fun create(task: Task): EditTaskStore =
@@ -90,7 +117,10 @@ class EditTaskStoreFactory @Inject constructor(
                 subTasks = task.subTasks,
                 categories = listOf(),
                 addingTime = task.addingTime,
-                subTask = ""
+                subTask = "",
+                alarmEnable = task.alarmEnable,
+                timeUnitCount = task.timeUnitCount,
+                timeUnit = task.timeUnit
             ),
             bootstrapper = BootstrapperImpl(),
             executorFactory = ::ExecutorImpl,
@@ -123,6 +153,12 @@ class EditTaskStoreFactory @Inject constructor(
 
         data class ChangeSubTaskStatus(val id: Int) : Msg
 
+        data object ChangeAlarmEnable : Msg
+
+        data class ChangeTimesCount(val timesCount: Int) : Msg
+
+        data class ChangeTimeForDeadline(val timeForDeadline: String) : Msg
+
 
         data class CategoriesLoaded(val categories: List<Category>) : Msg
     }
@@ -143,7 +179,15 @@ class EditTaskStoreFactory @Inject constructor(
                 }
 
                 is Intent.ChangeDeadline -> {
-                    dispatch(Msg.ChangeDeadline(intent.deadline))
+                    when (intent.deadline < System.currentTimeMillis() && intent.deadline != 0L) {
+                        true -> {
+                            publish(Label.EditDeadlineClickedAndDeadlineIsIncorrect)
+                        }
+
+                        false -> {
+                            dispatch(Msg.ChangeDeadline(intent.deadline))
+                        }
+                    }
                 }
 
                 is Intent.ChangeDescription -> {
@@ -161,18 +205,63 @@ class EditTaskStoreFactory @Inject constructor(
                     when (name.isNotEmpty()) {
                         true -> {
                             scope.launch {
-                                editTaskUseCase(
-                                    Task(
-                                        id = state.id,
-                                        name = state.name.trim(),
-                                        description = state.description.trim(),
-                                        category = state.category,
-                                        status = state.status,
-                                        addingTime = state.addingTime,
-                                        deadline = state.deadline,
-                                        subTasks = state.subTasks
-                                    )
+                                val task = Task(
+                                    id = state.id,
+                                    name = state.name.trim(),
+                                    description = state.description.trim(),
+                                    category = state.category,
+                                    status = state.status,
+                                    addingTime = state.addingTime,
+                                    deadline = state.deadline,
+                                    subTasks = state.subTasks,
+                                    alarmEnable = state.alarmEnable,
+                                    timeUnit = state.timeUnit,
+                                    timeUnitCount = state.timeUnitCount
                                 )
+
+                                val timeUnit = when (state.timeUnit) {
+                                    "Секунда" -> {
+                                        MILLIS_IN_SECOND
+                                    }
+
+                                    "Минута" -> {
+                                        MILLIS_IN_MINUTE
+                                    }
+
+                                    "Час" -> {
+                                        MILLIS_IN_HOUR
+                                    }
+
+                                    "День" -> {
+                                        MILLIS_IN_DAY
+                                    }
+
+                                    else -> {
+                                        error("Undefine time")
+                                    }
+                                }
+
+                                val timeForDeadline = task.deadline - state.timeUnitCount * timeUnit
+
+                                when (task.alarmEnable) {
+                                    true -> {
+                                        if (timeForDeadline < Calendar.getInstance().timeInMillis) {
+                                            publish(Label.EditDeadlineClickedAndReminderIsIncorrect)
+                                            return@launch
+                                        } else {
+                                            setAlarmUseCase(task, timeForDeadline, task.id)
+                                        }
+                                    }
+
+                                    false -> {
+                                        deleteAlarmUseCase(task.id)
+                                    }
+                                }
+
+                                editTaskUseCase(
+                                    task
+                                )
+
                                 publish(Label.TaskEdited)
                             }
                         }
@@ -211,6 +300,18 @@ class EditTaskStoreFactory @Inject constructor(
 
                 is Intent.ChangeSubTaskStatus -> {
                     dispatch(Msg.ChangeSubTaskStatus(intent.id))
+                }
+
+                Intent.ChangeAlarmEnable -> {
+                    dispatch(Msg.ChangeAlarmEnable)
+                }
+
+                is Intent.ChangeTimeForDeadline -> {
+                    dispatch(Msg.ChangeTimeForDeadline(intent.timeForDeadline))
+                }
+
+                is Intent.ChangeTimesCount -> {
+                    dispatch(Msg.ChangeTimesCount(intent.timesCount))
                 }
             }
         }
@@ -303,10 +404,11 @@ class EditTaskStoreFactory @Inject constructor(
                 is Msg.ChangeSubTaskStatus -> {
                     copy(subTasks = buildList {
                         subTasks.forEach { subTask ->
-                            when(subTask.id == msg.id) {
+                            when (subTask.id == msg.id) {
                                 true -> {
                                     add(subTask.copy(isCompleted = !subTask.isCompleted))
                                 }
+
                                 false -> {
                                     add(subTask)
                                 }
@@ -314,6 +416,19 @@ class EditTaskStoreFactory @Inject constructor(
                         }
                     })
                 }
+
+                Msg.ChangeAlarmEnable -> {
+                    copy(alarmEnable = !alarmEnable)
+                }
+
+                is Msg.ChangeTimeForDeadline -> {
+                    copy(timeUnit = msg.timeForDeadline)
+                }
+
+                is Msg.ChangeTimesCount -> {
+                    copy(timeUnitCount = msg.timesCount)
+                }
             }
     }
 }
+

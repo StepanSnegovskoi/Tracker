@@ -39,6 +39,14 @@ class DefaultAddTaskComponent @AssistedInject constructor(
                     /** Nothing **/
                 }
 
+                AddTaskStore.Label.AddDeadlineClickedAndDeadlineIsIncorrect -> {
+                    /** Nothing **/
+                }
+
+                AddTaskStore.Label.AddTaskClickedAndDeadlineIsIncorrect -> {
+                    /** Nothing **/
+                }
+
                 AddTaskStore.Label.CategoriesListIsEmpty -> {
                     onCategoriesListIsEmpty()
                 }
@@ -87,6 +95,26 @@ class DefaultAddTaskComponent @AssistedInject constructor(
 
     override fun onCategoryClickedAndCategoriesListIsEmpty() {
         store.accept(AddTaskStore.Intent.CategoriesClickedAndTheyAreEmpty)
+    }
+
+    override fun onClearNameClicked() {
+        store.accept(AddTaskStore.Intent.ChangeName(""))
+    }
+
+    override fun onClearDescriptionClicked() {
+        store.accept(AddTaskStore.Intent.ChangeDescription(""))
+    }
+
+    override fun onClearCategoryClicked() {
+        store.accept(AddTaskStore.Intent.ChangeCategory(""))
+    }
+
+    override fun onClearDeadlineClicked() {
+        store.accept(AddTaskStore.Intent.ChangeDeadline(0L))
+    }
+
+    override fun onChangeAlarmEnableClicked() {
+        store.accept(AddTaskStore.Intent.ChangeAlarmEnable)
     }
 
     @AssistedFactory

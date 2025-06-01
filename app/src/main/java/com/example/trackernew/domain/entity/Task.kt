@@ -11,7 +11,10 @@ data class Task(
     val status: TaskStatus,
     val addingTime: Long,
     val deadline: Long,
-    val subTasks: List<SubTask>
+    val subTasks: List<SubTask>,
+    val alarmEnable: Boolean,
+    val timeUnit: String,
+    val timeUnitCount: Int
 )
 
 sealed interface TaskStatus {

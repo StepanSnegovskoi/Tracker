@@ -78,6 +78,10 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ClickSchedule)
     }
 
+    override fun onDeleteCategoryClicked(category: Category) {
+        store.accept(TasksStore.Intent.ClickDeleteCategory(category))
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(

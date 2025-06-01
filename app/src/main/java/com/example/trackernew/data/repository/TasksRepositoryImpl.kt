@@ -22,6 +22,11 @@ class TasksRepositoryImpl @Inject constructor(
         .map { it.toEntities() }
 
     override suspend fun deleteTask(taskId: Int) {
-        tasksDao.deleteTask(taskId)
+        tasksDao.deleteTaskById(taskId)
+    }
+
+    override suspend fun deleteCategory(name: String) {
+        categoryDao.deleteCategory(name)
+        tasksDao.deleteTaskByCategory(name)
     }
 }

@@ -49,6 +49,10 @@ class DefaultAddLecturerComponent @AssistedInject constructor (
         store.accept(AddLecturerStore.Intent.ChangeLecturer(lecturer))
     }
 
+    override fun onClearLecturerClicked() {
+        store.accept(AddLecturerStore.Intent.ChangeLecturer(""))
+    }
+
     @AssistedFactory
     interface Factory {
         fun create (

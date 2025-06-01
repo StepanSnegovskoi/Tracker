@@ -1,5 +1,6 @@
 package com.example.trackernew.presentation.schedule
 
+import android.util.Log
 import com.arkivanov.mvikotlin.core.store.Reducer
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -8,6 +9,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Week
 import com.example.trackernew.domain.usecase.DeleteLessonByIdUseCase
 import com.example.trackernew.domain.usecase.GetWeeksUseCase
+import com.example.trackernew.presentation.add.task.AddTaskStore
 import com.example.trackernew.presentation.schedule.ScheduleStore.Intent
 import com.example.trackernew.presentation.schedule.ScheduleStore.Label
 import com.example.trackernew.presentation.schedule.ScheduleStore.State
@@ -23,15 +25,21 @@ interface ScheduleStore : Store<Intent, State, Label> {
 
         data object ClickAddWeek : Intent
 
+        data object ClickNavigateToCurrentDayAndDaysListIsEmpty : Intent
+
         data object ClickEditWeeks : Intent
 
         data class ClickDeleteLesson(val weekId: Int, val lessonId: Int) : Intent
+
+        data object ClickSettings : Intent
 
         data class ClickAddLesson(
             val weekId: Int,
             val dayName: String,
             val futureLessonId: Int
         ) : Intent
+
+        data object AddLessonClickedAndWeeksAreEmpty : Intent
     }
 
     data class State(
@@ -49,6 +57,12 @@ interface ScheduleStore : Store<Intent, State, Label> {
             val dayName: String,
             val futureLessonId: Int
         ) : Label
+
+        data object DaysListIsEmpty : Label
+
+        data object ClickSettings : Label
+
+        data object AddLessonClickedAndWeeksAreEmpty : Label
     }
 }
 
@@ -83,7 +97,7 @@ class ScheduleStoreFactory @Inject constructor(
         private val calendar = Calendar.getInstance()
         override fun invoke() {
             getWeeksUseCase().onEach { weeks ->
-                when(weeks.isNotEmpty() && weeks.any { it.selectedAsCurrent }){
+                when (weeks.isNotEmpty() && weeks.any { it.selectedAsCurrent }) {
                     true -> {
                         val activeWeeks = weeks.filter { it.isActive }.sortedBy { it.position }
                         val currentWeekOfYear = calendar.get(Calendar.WEEK_OF_YEAR)
@@ -120,6 +134,7 @@ class ScheduleStoreFactory @Inject constructor(
                         }
                         dispatch(Action.WeeksLoaded(schedule))
                     }
+
                     false -> {
                         dispatch(Action.WeeksLoaded(emptyList()))
                     }
@@ -153,6 +168,18 @@ class ScheduleStoreFactory @Inject constructor(
                     scope.launch {
                         deleteLessonByIdUseCase(intent.weekId, intent.lessonId)
                     }
+                }
+
+                Intent.ClickNavigateToCurrentDayAndDaysListIsEmpty -> {
+                    publish(Label.DaysListIsEmpty)
+                }
+
+                Intent.ClickSettings -> {
+                    publish(Label.ClickSettings)
+                }
+
+                Intent.AddLessonClickedAndWeeksAreEmpty -> {
+                    publish(Label.AddLessonClickedAndWeeksAreEmpty)
                 }
             }
         }

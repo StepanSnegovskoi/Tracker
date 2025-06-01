@@ -11,5 +11,8 @@ interface AddWeekComponent {
 
     fun onAddWeekClicked()
 
+    fun onClearWeekClicked()
+
+
     fun onWeekChanged(week: String)
 }

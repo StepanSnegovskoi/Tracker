@@ -20,6 +20,12 @@ interface EditTaskComponent {
 
     fun onChangeStatusClicked()
 
+    fun onChangeAlarmEnableClicked()
+
+    fun onChangeTimesCountClicked(timesCount: Int)
+
+    fun onChangeTimeForDeadlineClicked(timeForDeadline: String)
+
 
     fun onNameChanged(name: String)
 

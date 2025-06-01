@@ -11,5 +11,8 @@ interface AddLessonNameComponent {
 
     fun onAddLessonNameClicked()
 
+    fun onClearLessonNameClicked()
+
+
     fun onLessonNameChanged(lessonName: String)
 }

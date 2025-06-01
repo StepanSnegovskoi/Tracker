@@ -15,6 +15,16 @@ interface AddTaskComponent {
 
     fun onDeleteSubTaskClicked(id: Int)
 
+    fun onClearNameClicked()
+
+    fun onClearDescriptionClicked()
+
+    fun onClearCategoryClicked()
+
+    fun onClearDeadlineClicked()
+
+    fun onChangeAlarmEnableClicked()
+
 
     fun onCategoryClickedAndCategoriesListIsEmpty()
 

@@ -11,5 +11,8 @@ interface AddCategoryComponent {
 
     fun onAddCategoryClicked()
 
+    fun onClearCategoryClicked()
+
+
     fun onCategoryChanged(category: String)
 }

@@ -36,10 +36,20 @@ class DefaultEditTaskComponent @AssistedInject constructor(
                 EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
                     /** Nothing **/
                 }
+
                 EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
                     /** Nothing **/
                 }
+
                 EditTaskStore.Label.SubTaskSaved -> {
+                    /** Nothing **/
+                }
+
+                EditTaskStore.Label.EditDeadlineClickedAndDeadlineIsIncorrect -> {
+                    /** Nothing **/
+                }
+
+                EditTaskStore.Label.EditDeadlineClickedAndReminderIsIncorrect -> {
                     /** Nothing **/
                 }
 
@@ -88,6 +98,18 @@ class DefaultEditTaskComponent @AssistedInject constructor(
 
     override fun onSubTaskChangeStatusClicked(id: Int) {
         store.accept(EditTaskStore.Intent.ChangeSubTaskStatus(id))
+    }
+
+    override fun onChangeAlarmEnableClicked() {
+        store.accept(EditTaskStore.Intent.ChangeAlarmEnable)
+    }
+
+    override fun onChangeTimesCountClicked(timesCount: Int) {
+        store.accept(EditTaskStore.Intent.ChangeTimesCount(timesCount))
+    }
+
+    override fun onChangeTimeForDeadlineClicked(timeForDeadline: String) {
+        store.accept(EditTaskStore.Intent.ChangeTimeForDeadline(timeForDeadline))
     }
 
     @AssistedFactory

@@ -11,5 +11,8 @@ interface AddAudienceComponent {
 
     fun onAddAudienceClicked()
 
+    fun onClearAudienceClicked()
+
+
     fun onAudienceChanged(audience: String)
 }

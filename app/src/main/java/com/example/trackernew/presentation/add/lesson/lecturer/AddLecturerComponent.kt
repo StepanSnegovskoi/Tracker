@@ -11,5 +11,7 @@ interface AddLecturerComponent {
 
     fun onAddLecturerClicked()
 
+    fun onClearLecturerClicked()
+
     fun onLecturerChanged(lecturer: String)
 }

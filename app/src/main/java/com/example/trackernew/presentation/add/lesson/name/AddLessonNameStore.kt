@@ -73,11 +73,12 @@ class AddLessonNameStoreFactory @Inject constructor(
                     when(lessonName.isNotEmpty()){
                         true -> {
                             scope.launch {
-                                addLessonNameUseCase(
-                                    LessonName(
-                                        name = lessonName
+                                    addLessonNameUseCase(
+                                        LessonName(
+                                            name = lessonName
+                                        )
                                     )
-                                )
+
                                 publish(Label.LessonNameSaved)
                             }
                         }
