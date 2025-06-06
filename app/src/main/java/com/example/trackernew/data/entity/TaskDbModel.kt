@@ -1,6 +1,5 @@
 package com.example.trackernew.data.entity
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.trackernew.domain.entity.SubTask
@@ -16,5 +15,8 @@ data class TaskDbModel(
     val status: TaskStatus,
     val addingTime: Long,
     val deadline: Long,
-    val subTasks: List<SubTask>
+    val subTasks: List<SubTask>,
+    val alarmEnable: Boolean,
+    val timeUnit: String,
+    val timesCount: Int
 )

@@ -3,26 +3,36 @@ package com.example.trackernew.presentation.root
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
-import com.arkivanov.decompose.extensions.compose.stack.animation.plus
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
+import com.example.trackernew.domain.repository.AlarmManagerRepository
 import com.example.trackernew.presentation.add.category.AddCategoryContent
+import com.example.trackernew.presentation.add.lesson.audience.AddAudienceContent
+import com.example.trackernew.presentation.add.lesson.lecturer.AddLecturerContent
+import com.example.trackernew.presentation.add.lesson.lesson.AddLessonContent
+import com.example.trackernew.presentation.add.lesson.name.AddLessonNameContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
-import com.example.trackernew.presentation.edit.EditTaskContent
+import com.example.trackernew.presentation.add.week.AddWeekContent
+import com.example.trackernew.presentation.edit.task.EditTaskContent
+import com.example.trackernew.presentation.schedule.ScheduleContent
+import com.example.trackernew.presentation.settings.ScheduleSettingsContent
 import com.example.trackernew.presentation.tasks.TasksContent
+import com.example.trackernew.presentation.weeks.WeeksContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -33,7 +43,11 @@ private const val FAB_BOTTOM_PADDING_INT = 72
 private const val ENABLE_EDGE_TO_EDGE_BOTTOM_PADDING = 12
 
 @Composable
-fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
+fun RootContent(
+    component: RootComponent,
+    snackbarManager: SnackbarManager,
+    alarmManager: AlarmManagerRepository
+) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(snackbarManager) {
@@ -75,6 +89,38 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                     is RootComponent.Child.AddCategory -> {
                         AddCategoryContent(instance.component, snackbarManager)
                     }
+
+                    is RootComponent.Child.AddLesson -> {
+                        AddLessonContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddLessonName -> {
+                        AddLessonNameContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddLecturer -> {
+                        AddLecturerContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddAudience -> {
+                        AddAudienceContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.Schedule -> {
+                        ScheduleContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.AddWeek -> {
+                        AddWeekContent(instance.component, snackbarManager)
+                    }
+
+                    is RootComponent.Child.EditWeeks -> {
+                        WeeksContent(instance.component)
+                    }
+
+                    is RootComponent.Child.ScheduleSettings -> {
+                        ScheduleSettingsContent(instance.component)
+                    }
                 }
             }
             SnackbarHost(
@@ -84,7 +130,24 @@ fun RootContent(component: RootComponent, snackbarManager: SnackbarManager) {
                     .padding(
                         bottom = (
                                 FAB_BOTTOM_PADDING_INT + ENABLE_EDGE_TO_EDGE_BOTTOM_PADDING).dp
+                    ),
+                snackbar = { snackbarData ->
+                    Snackbar(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .imePadding(),
+                        containerColor = TrackerNewTheme.colors.onBackground,
+                        content = {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = snackbarData.visuals.message,
+                                textAlign = TextAlign.Center,
+                                color = TrackerNewTheme.colors.textColor
+                            )
+                        }
                     )
+                }
             )
         }
     }

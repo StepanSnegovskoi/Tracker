@@ -5,20 +5,36 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.trackernew.data.db.converter.DaysConverter
+import com.example.trackernew.data.db.converter.SubTasksConverter
+import com.example.trackernew.data.db.converter.TaskStatusConverter
+import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.LessonDao
+import com.example.trackernew.data.db.dao.TasksDao
+import com.example.trackernew.data.db.dao.WeekDao
+import com.example.trackernew.data.entity.AudienceDbModel
 import com.example.trackernew.data.entity.CategoryDbModel
+import com.example.trackernew.data.entity.LecturerDbModel
+import com.example.trackernew.data.entity.LessonNameDbModel
 import com.example.trackernew.data.entity.TaskDbModel
+import com.example.trackernew.data.entity.WeekDbModel
 
 @Database(
     entities = [
         TaskDbModel::class,
-        CategoryDbModel::class
+        CategoryDbModel::class,
+        AudienceDbModel::class,
+        LecturerDbModel::class,
+        LessonNameDbModel::class,
+        WeekDbModel::class
     ],
     version = 2,
     exportSchema = false
 )
 @TypeConverters(
     SubTasksConverter::class,
-    TaskStatusConverter::class
+    TaskStatusConverter::class,
+    DaysConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -49,4 +65,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tasksDao(): TasksDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun lessonDao(): LessonDao
+
+    abstract fun weekDao(): WeekDao
 }

@@ -1,21 +1,34 @@
 package com.example.trackernew.presentation.extensions
 
 import com.example.trackernew.domain.entity.Category
+import com.example.trackernew.domain.entity.Lesson
 import com.example.trackernew.domain.entity.Task
-import com.example.trackernew.presentation.utils.INITIAL_CATEGORY_NAME
-import com.example.trackernew.presentation.utils.Sort
+import com.example.trackernew.presentation.tasks.Sort
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Locale
 
+const val ALL_TOGETHER = "Всё вместе"
 fun Long.toDateString(): String {
-    if (this == 0L) return ""
+    if (this == 0L) return "00:00"
 
     return SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
         .format(this)
         .toString()
+}
+
+fun Long.toTimeString(): String {
+    if (this == 0L) return "00:00"
+
+    return SimpleDateFormat("HH:mm", Locale.getDefault())
+        .format(this)
+        .toString()
+}
+
+fun String.toTimeString(): String {
+    return if (this == "") "00:00" else toLong().toTimeString()
 }
 
 fun Long.toLocalDateTime(): LocalDateTime {
@@ -26,9 +39,14 @@ fun Long.toLocalDateTime(): LocalDateTime {
 
 fun List<Task>.filterBySortTypeAndCategory(sort: Sort, category: Category): List<Task> {
     val sortedTasks = sortedWith(sort.comparator())
-    if (category.name == INITIAL_CATEGORY_NAME) {
+    if (category.name == ALL_TOGETHER) {
         return sortedTasks
     }
     return sortedTasks
         .filter { it.category == category.name }
+}
+
+fun List<Lesson>.getMinAndMaxTimeString(): String {
+
+    return "${minOf { it.start }.toTimeString()} - ${maxOf { it.end }.toTimeString()}"
 }

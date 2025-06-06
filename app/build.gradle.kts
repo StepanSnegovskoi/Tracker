@@ -64,6 +64,9 @@ dependencies {
     // Gson
     implementation(libs.gson)
 
+    // Splash Screen
+    implementation(libs.splash.screen)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

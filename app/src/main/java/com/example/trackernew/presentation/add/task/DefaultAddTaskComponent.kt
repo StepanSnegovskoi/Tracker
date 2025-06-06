@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.onEach
 class DefaultAddTaskComponent @AssistedInject constructor(
     private val storeFactory: AddTaskStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+    @Assisted("onCategoriesListIsEmpty") onCategoriesListIsEmpty: () -> Unit,
     @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
 ): AddTaskComponent, ComponentContext by componentContext {
 
@@ -28,17 +28,31 @@ class DefaultAddTaskComponent @AssistedInject constructor(
 
     init {
         store.labels.onEach {
-            when(val label = it){
-                AddTaskStore.Label.CategoriesClickedAndTheyAreEmpty -> {
-                    ifCategoriesAreEmpty()
+            when(it){
+                AddTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
+                    /** Nothing **/
                 }
+                AddTaskStore.Label.AddTaskClickedAndNameIsEmpty -> {
+                    /** Nothing **/
+                }
+                AddTaskStore.Label.SubTaskSaved -> {
+                    /** Nothing **/
+                }
+
+                AddTaskStore.Label.AddDeadlineClickedAndDeadlineIsIncorrect -> {
+                    /** Nothing **/
+                }
+
+                AddTaskStore.Label.AddTaskClickedAndDeadlineIsIncorrect -> {
+                    /** Nothing **/
+                }
+
+                AddTaskStore.Label.CategoriesListIsEmpty -> {
+                    onCategoriesListIsEmpty()
+                }
+
                 AddTaskStore.Label.TaskSaved -> {
                     onTaskSaved()
-                }
-                /**
-                 * Другие случаи обрабатываются не здесь
-                 */
-                else -> {
                 }
             }
         }.launchIn(componentScope())
@@ -47,8 +61,16 @@ class DefaultAddTaskComponent @AssistedInject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     override val model: StateFlow<AddTaskStore.State> = store.stateFlow
 
-    override fun onSaveTaskClicked() {
-        store.accept(AddTaskStore.Intent.SaveTaskClicked)
+    override fun onAddTaskClicked() {
+        store.accept(AddTaskStore.Intent.AddTask)
+    }
+
+    override fun onAddSubTaskClicked() {
+        store.accept(AddTaskStore.Intent.AddSubTask)
+    }
+
+    override fun onDeleteSubTaskClicked(id: Int) {
+        store.accept(AddTaskStore.Intent.DeleteSubTask(id))
     }
 
     override fun onNameChanged(name: String) {
@@ -67,28 +89,39 @@ class DefaultAddTaskComponent @AssistedInject constructor(
         store.accept(AddTaskStore.Intent.ChangeDeadline(deadline))
     }
 
-    override fun ifCategoriesAreEmpty() {
-        store.accept(AddTaskStore.Intent.CategoriesClickedAndTheyAreEmpty)
-    }
-
     override fun onSubTaskNameChanged(subTask: String) {
         store.accept(AddTaskStore.Intent.ChangeSubTask(subTask))
     }
 
-    override fun onAddSubTaskClicked() {
-        store.accept(AddTaskStore.Intent.AddSubTask)
+    override fun onCategoryClickedAndCategoriesListIsEmpty() {
+        store.accept(AddTaskStore.Intent.CategoriesClickedAndTheyAreEmpty)
     }
 
-    override fun onDeleteSubTaskClicked(id: Int) {
-        store.accept(AddTaskStore.Intent.DeleteSubTask(id))
+    override fun onClearNameClicked() {
+        store.accept(AddTaskStore.Intent.ChangeName(""))
+    }
+
+    override fun onClearDescriptionClicked() {
+        store.accept(AddTaskStore.Intent.ChangeDescription(""))
+    }
+
+    override fun onClearCategoryClicked() {
+        store.accept(AddTaskStore.Intent.ChangeCategory(""))
+    }
+
+    override fun onClearDeadlineClicked() {
+        store.accept(AddTaskStore.Intent.ChangeDeadline(0L))
+    }
+
+    override fun onChangeAlarmEnableClicked() {
+        store.accept(AddTaskStore.Intent.ChangeAlarmEnable)
     }
 
     @AssistedFactory
     interface Factory {
-
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
-            @Assisted("ifCategoriesAreEmpty") ifCategoriesAreEmpty: () -> Unit,
+            @Assisted("onCategoriesListIsEmpty") onCategoriesListIsEmpty: () -> Unit,
             @Assisted("onTaskSaved") onTaskSaved: () -> Unit,
         ): DefaultAddTaskComponent
     }

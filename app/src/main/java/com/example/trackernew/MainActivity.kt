@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.WindowCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.arkivanov.decompose.defaultComponentContext
+import com.example.trackernew.domain.repository.AlarmManagerRepository
 import com.example.trackernew.presentation.root.DefaultRootComponent
 import com.example.trackernew.presentation.root.RootContent
 import com.example.trackernew.presentation.root.SnackbarManager
@@ -19,20 +20,22 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var snackbarManager: SnackbarManager
 
+    @Inject
+    lateinit var alarmManager: AlarmManagerRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (application as App).component.inject(this)
         val defaultComponentContext = defaultComponentContext()
 
-        /**
-         * Исправление постоянного белого фона клавиатуры в момент её появления
-         */
+        installSplashScreen()
         enableEdgeToEdge()
 
         setContent {
             RootContent(
                 component = rootComponent.create(defaultComponentContext),
-                snackbarManager = snackbarManager
+                snackbarManager = snackbarManager,
+                alarmManager = alarmManager
             )
         }
     }

@@ -7,7 +7,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.presentation.extensions.componentScope
-import com.example.trackernew.presentation.utils.Sort
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -19,9 +18,10 @@ import kotlinx.coroutines.flow.onEach
 class DefaultTasksComponent @AssistedInject constructor(
     private val tasksStoreFactory: TasksStoreFactory,
     @Assisted("componentContext") componentContext: ComponentContext,
-    @Assisted("onAddTaskClick") private val onAddTaskClick: () -> Unit,
-    @Assisted("onAddCategoryClick") private val onAddCategoryClick: () -> Unit,
-    @Assisted("onTaskLongClick") private val onTaskLongClick: (Task) -> Unit
+    @Assisted("onAddTaskClicked") onAddTaskClicked: () -> Unit,
+    @Assisted("onAddCategoryClicked") onAddCategoryClicked: () -> Unit,
+    @Assisted("onTaskLongClicked") onTaskLongClicked: (Task) -> Unit,
+    @Assisted("onScheduleClicked") onScheduleClicked: () -> Unit,
 ) : TasksComponent, ComponentContext by componentContext {
 
     val store = instanceKeeper.getStore { tasksStoreFactory.create() }
@@ -30,14 +30,18 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.labels.onEach {
             when(val label = it){
                 TasksStore.Label.ClickAddTask -> {
-                    onAddTaskClick()
+                    onAddTaskClicked()
                 }
                 is TasksStore.Label.LongClickTask -> {
-                    onTaskLongClick(label.task)
+                    onTaskLongClicked(label.task)
                 }
 
                 TasksStore.Label.ClickAddCategory -> {
-                    onAddCategoryClick()
+                    onAddCategoryClicked()
+                }
+
+                TasksStore.Label.ClickSchedule -> {
+                    onScheduleClicked()
                 }
             }
         }.launchIn(componentScope())
@@ -70,14 +74,22 @@ class DefaultTasksComponent @AssistedInject constructor(
         store.accept(TasksStore.Intent.ClickAddCategory)
     }
 
+    override fun onScheduleClicked() {
+        store.accept(TasksStore.Intent.ClickSchedule)
+    }
+
+    override fun onDeleteCategoryClicked(category: Category) {
+        store.accept(TasksStore.Intent.ClickDeleteCategory(category))
+    }
+
     @AssistedFactory
     interface Factory {
-
         fun create(
             @Assisted("componentContext") componentContext: ComponentContext,
-            @Assisted("onAddTaskClick") onAddTaskClick: () -> Unit,
-            @Assisted("onTaskLongClick") onTaskLongClick: (Task) -> Unit,
-            @Assisted("onAddCategoryClick") onAddCategoryClick: () -> Unit,
+            @Assisted("onAddTaskClicked") onAddTaskClicked: () -> Unit,
+            @Assisted("onAddCategoryClicked") onAddCategoryClicked: () -> Unit,
+            @Assisted("onTaskLongClicked") onTaskLongClicked: (Task) -> Unit,
+            @Assisted("onScheduleClicked") onScheduleClicked: () -> Unit,
         ): DefaultTasksComponent
     }
 }

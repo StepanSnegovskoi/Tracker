@@ -1,7 +1,7 @@
 package com.example.trackernew.data.repository
 
-import com.example.trackernew.data.db.CategoryDao
-import com.example.trackernew.data.db.TasksDao
+import com.example.trackernew.data.db.dao.CategoryDao
+import com.example.trackernew.data.db.dao.TasksDao
 import com.example.trackernew.data.mapper.toDbModel
 import com.example.trackernew.data.mapper.toEntities
 import com.example.trackernew.domain.entity.Category
@@ -16,8 +16,8 @@ class AddTaskRepositoryImpl @Inject constructor(
     private val categoryDao: CategoryDao
 ) : AddTaskRepository {
 
-    override suspend fun saveTask(task: Task) {
-        tasksDao.saveTask(task.toDbModel())
+    override suspend fun addTask(task: Task): Long {
+        return tasksDao.saveTask(task.toDbModel())
     }
 
     override val categories: Flow<List<Category>> = categoryDao.getCategories()

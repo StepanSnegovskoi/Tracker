@@ -1,19 +1,18 @@
 package com.example.trackernew.presentation.add.category
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,62 +24,81 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.presentation.root.SnackbarManager
-import com.example.trackernew.ui.theme.Green
+import com.example.trackernew.ui.theme.Green200
+import com.example.trackernew.ui.theme.Red300
 import com.example.trackernew.ui.theme.TrackerNewTheme
 import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: SnackbarManager) {
+fun AddCategoryContent(component: AddCategoryComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
         component.labels.onEach {
-            when(it){
-                AddCategoryStore.Label.AddCategoryClickedAndNameIsEmpty -> {
-                    snackbarManager.showMessage("Название не должно быть пустым")
+            when (it) {
+                AddCategoryStore.Label.AddCategoryClickedAndCategoryIsEmpty -> {
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
+
                 AddCategoryStore.Label.CategorySaved -> {
-                    snackbarManager.showMessage("Категория сохранена")
+                    snackBarManager.showMessage(context.getString(R.string.category_saved))
                 }
             }
         }.launchIn(rememberCoroutineScope)
     }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier
             .fillMaxSize(),
         containerColor = TrackerNewTheme.colors.background,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
-        OutlinedTextFieldCategory(
-            state = state,
+        Box(
             modifier = Modifier
-                .padding(paddingValues),
-            onValueChange = {
-                component.onCategoryChanged(it)
-            },
+                .fillMaxSize()
+                .background(brush = TrackerNewTheme.colors.linearGradientBackground)
+        ) {
+            OutlinedTextFieldCategory(
+                state = state,
+                modifier = Modifier
+                    .padding(paddingValues),
+                onValueChange = {
+                    component.onCategoryChanged(it)
+                },
+                onClearIconClick = {
+                    component.onClearCategoryClicked()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun FAB(component: AddCategoryComponent) {
+    FloatingActionButton(
+        modifier = Modifier.imePadding(),
+        onClick = {
+            component.onAddCategoryClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
         )
     }
 }
@@ -89,6 +107,7 @@ fun AddCategoryContent(component: AddCategoryComponent, snackbarManager: Snackba
 fun OutlinedTextFieldCategory(
     state: AddCategoryStore.State,
     modifier: Modifier = Modifier,
+    onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
     val focusRequester = remember {
@@ -96,6 +115,7 @@ fun OutlinedTextFieldCategory(
     }
 
     LaunchedEffect(Unit) {
+        delay(550)
         focusRequester.requestFocus()
     }
 
@@ -104,23 +124,34 @@ fun OutlinedTextFieldCategory(
             .fillMaxWidth()
             .focusRequester(focusRequester)
             .then(modifier),
+        value = state.category,
+        onValueChange = {
+            onValueChange(it)
+        },
         label = {
             Text(
                 text = "Категория",
                 color = TrackerNewTheme.colors.textColor
             )
         },
-        colors = getOutlinedTextFieldColors(),
-        value = state.category,
-        onValueChange = {
-            onValueChange(it)
+        trailingIcon = {
+            Icon(
+                modifier = Modifier
+                    .clickable {
+                        onClearIconClick()
+                    },
+                imageVector = Icons.Default.Clear,
+                contentDescription = null,
+                tint = TrackerNewTheme.colors.tintColor
+            )
         },
         supportingText = {
             Text(
                 text = "*Обязательно",
-                color = if(state.category.isNotEmpty()) Green else Color.Red,
+                color = if (state.category.isNotEmpty()) Green200 else Red300,
                 fontSize = 12.sp
             )
-        }
+        },
+        colors = getOutlinedTextFieldColors()
     )
 }
