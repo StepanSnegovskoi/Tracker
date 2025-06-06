@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,7 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,7 +69,7 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.time.LocalDate
+import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -74,38 +77,38 @@ import java.time.ZoneId
 fun AddTaskContent(component: AddTaskComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
         component.labels.onEach {
             when (it) {
                 AddTaskStore.Label.TaskSaved -> {
-                    snackBarManager.showMessage("Задача сохранена")
+                    snackBarManager.showMessage(context.getString(R.string.task_saved))
                 }
 
                 AddTaskStore.Label.SubTaskSaved -> {
-                    snackBarManager.showMessage("Подзадача добавлена")
+                    snackBarManager.showMessage(context.getString(R.string.subtask_saved))
                 }
 
                 AddTaskStore.Label.CategoriesListIsEmpty -> {
-                    snackBarManager.showMessage("Список категорий пуст")
+                    snackBarManager.showMessage(context.getString(R.string.list_of_categories_is_empty))
                 }
 
                 AddTaskStore.Label.AddTaskClickedAndNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 AddTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 AddTaskStore.Label.AddDeadlineClickedAndDeadlineIsIncorrect -> {
-                    snackBarManager.showMessage("Дедлайн не может быть раньше, чем текущее время")
+                    snackBarManager.showMessage(context.getString(R.string.deadline_cant_be_earlier_than_current_time))
                 }
 
                 AddTaskStore.Label.AddTaskClickedAndDeadlineIsIncorrect -> {
-                    snackBarManager.showMessage("Дедлайн не может быть раньше, чем текущее время")
+                    snackBarManager.showMessage(context.getString(R.string.deadline_cant_be_earlier_than_current_time))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -116,19 +119,7 @@ fun AddTaskContent(component: AddTaskComponent, snackBarManager: SnackbarManager
         modifier = Modifier
             .fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddTaskClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = TrackerNewTheme.colors.tintColor
-                )
-            }
+            FAB(component)
         },
         containerColor = TrackerNewTheme.colors.background
     ) { paddingValues ->
@@ -258,21 +249,46 @@ fun AddTaskContent(component: AddTaskComponent, snackBarManager: SnackbarManager
 }
 
 @Composable
+private fun FAB(
+    component: AddTaskComponent,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        modifier = Modifier
+            .imePadding()
+            .then(modifier),
+        onClick = {
+            component.onAddTaskClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
+        )
+    }
+}
+
+@Composable
 fun OutlinedTextFieldName(
+    modifier: Modifier = Modifier,
     state: AddTaskStore.State,
     onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
 ) {
     OutlinedTextField(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .then(modifier),
         value = state.name,
         onValueChange = {
             onValueChange(it)
         },
         label = {
             Text(
-                text = "Название",
+                text = stringResource(R.string.title),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -289,7 +305,7 @@ fun OutlinedTextFieldName(
         },
         supportingText = {
             Text(
-                text = "*Обязательно",
+                text = stringResource(R.string.required),
                 color = if (state.name.isNotEmpty()) Green300 else Red300,
                 fontSize = 12.sp
             )
@@ -300,13 +316,15 @@ fun OutlinedTextFieldName(
 
 @Composable
 fun OutlinedTextFieldDescription(
+    modifier: Modifier = Modifier,
     state: AddTaskStore.State,
     onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit
 ) {
     OutlinedTextField(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .then(modifier),
         value = state.description,
         onValueChange = {
             onValueChange(it)
@@ -470,6 +488,7 @@ fun Menu(
 
 @Composable
 fun OutlinedTextFieldDeadline(
+    modifier: Modifier = Modifier,
     state: AddTaskStore.State,
     onValueChange: (String) -> Unit,
     onClearIconClick: () -> Unit,
@@ -485,7 +504,8 @@ fun OutlinedTextFieldDeadline(
                 indication = null
             ) {
                 onClick()
-            },
+            }
+            .then(modifier),
         value = state.deadline.toDateString(),
         onValueChange = {
             onValueChange(it)
@@ -559,7 +579,7 @@ fun DateAndTimePickerDialog(
                     }
                 ) {
                     Text(
-                        text = "Далее",
+                        text = stringResource(R.string.next),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -567,7 +587,7 @@ fun DateAndTimePickerDialog(
             dismissButton = {
                 TextButton(onClick = onDismiss) {
                     Text(
-                        text = "Отмена",
+                        text = stringResource(R.string.cancel),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -593,7 +613,11 @@ fun DateAndTimePickerDialog(
                 TextButton(
                     onClick = {
 
-                        val selectedDateTime = LocalDate.now()
+                        val selectedLocalDate = Instant.ofEpochMilli(selectedDate)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
+                        val selectedDateTime = selectedLocalDate
                             .atTime(timePickerState.hour, timePickerState.minute)
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
@@ -604,7 +628,7 @@ fun DateAndTimePickerDialog(
                     }
                 ) {
                     Text(
-                        text = "Выбрать",
+                        text = stringResource(R.string.select),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -617,7 +641,7 @@ fun DateAndTimePickerDialog(
                     }
                 ) {
                     Text(
-                        text = "Назад",
+                        text = stringResource(R.string.backward),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -653,7 +677,7 @@ fun AlarmEnable(
         Text(
             modifier = Modifier
                 .weight(1f),
-            text = "Напоминание",
+            text = stringResource(R.string.reminder),
             color = TrackerNewTheme.colors.textColor,
             fontSize = 16.sp
         )
@@ -688,7 +712,7 @@ fun SubTasks(
                         end = Offset(size.width, size.height)
                     )
                 },
-            text = "Подзадачи",
+            text = stringResource(R.string.subtasks),
             color = TrackerNewTheme.colors.textColor
         )
         LazyColumn(
@@ -730,7 +754,7 @@ fun SubTasks(
                 }
         ) {
             Text(
-                text = "Добавить",
+                text = stringResource(R.string.add),
                 fontFamily = FontFamily.Serif,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -770,7 +794,7 @@ fun AddSubTaskDialog(
                 }
             ) {
                 Text(
-                    text = "Добавить",
+                    text = stringResource(R.string.add),
                     color = TrackerNewTheme.colors.textColor
                 )
             }
@@ -782,7 +806,7 @@ fun AddSubTaskDialog(
                 }
             ) {
                 Text(
-                    text = "Отменить",
+                    text = stringResource(R.string.cancel),
                     color = TrackerNewTheme.colors.textColor
                 )
             }
@@ -799,7 +823,7 @@ fun AddSubTaskDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Подзадача",
+                    text = stringResource(R.string.subtask),
                     color = TrackerNewTheme.colors.textColor
                 )
                 OutlinedTextField(
@@ -810,11 +834,11 @@ fun AddSubTaskDialog(
                         onValueChange(it)
                     },
                     label = {
-                        Text(text = "Название")
+                        Text(text = stringResource(R.string.title))
                     },
                     supportingText = {
                         Text(
-                            text = "*Обязательно",
+                            text = stringResource(R.string.required),
                             color = if (state.subTask.isNotEmpty()) Green300 else Red300,
                             fontSize = 12.sp
                         )

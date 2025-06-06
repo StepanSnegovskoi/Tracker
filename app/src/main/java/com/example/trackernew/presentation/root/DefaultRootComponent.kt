@@ -14,9 +14,9 @@ import com.example.trackernew.presentation.add.lesson.lesson.DefaultAddLessonCom
 import com.example.trackernew.presentation.add.lesson.name.DefaultAddLessonNameComponent
 import com.example.trackernew.presentation.add.task.DefaultAddTaskComponent
 import com.example.trackernew.presentation.add.week.DefaultAddWeekComponent
-import com.example.trackernew.presentation.settings.DefaultScheduleSettingsComponent
 import com.example.trackernew.presentation.edit.task.DefaultEditTaskComponent
 import com.example.trackernew.presentation.schedule.DefaultScheduleComponent
+import com.example.trackernew.presentation.settings.DefaultScheduleSettingsComponent
 import com.example.trackernew.presentation.tasks.DefaultTasksComponent
 import com.example.trackernew.presentation.weeks.DefaultWeeksComponent
 import dagger.assisted.Assisted
@@ -56,7 +56,7 @@ class DefaultRootComponent @AssistedInject constructor(
         config: Config,
         componentContext: ComponentContext
     ): RootComponent.Child {
-        return when (val config = config) {
+        return when (config) {
             Config.AddTask -> {
                 val component = addTaskStoreFactory.create(
                     componentContext = componentContext,

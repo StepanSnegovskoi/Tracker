@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -24,7 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.presentation.root.SnackbarManager
 import com.example.trackernew.ui.theme.Green200
 import com.example.trackernew.ui.theme.TrackerNewTheme
@@ -37,18 +41,18 @@ import kotlinx.coroutines.flow.onEach
 fun AddLessonNameContent(component: AddLessonNameComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
         component.labels.onEach {
             when (it) {
                 AddLessonNameStore.Label.LessonNameSaved -> {
-                    snackBarManager.showMessage("Занятие сохранено")
+                    snackBarManager.showMessage(context.getString(R.string.name_of_lesson_saved))
                 }
 
                 AddLessonNameStore.Label.AddLessonNameClickedAndNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -59,19 +63,7 @@ fun AddLessonNameContent(component: AddLessonNameComponent, snackBarManager: Sna
             .fillMaxSize(),
         containerColor = TrackerNewTheme.colors.background,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddLessonNameClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null,
-                    tint = TrackerNewTheme.colors.tintColor
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
         Box(
@@ -91,6 +83,29 @@ fun AddLessonNameContent(component: AddLessonNameComponent, snackBarManager: Sna
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun FAB(
+    component: AddLessonNameComponent,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        modifier = Modifier
+            .imePadding()
+            .then(modifier),
+        onClick = {
+            component.onAddLessonNameClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
+        )
     }
 }
 
@@ -121,7 +136,7 @@ fun OutlinedTextFieldCategory(
         },
         label = {
             Text(
-                text = "Название занятия",
+                text = stringResource(R.string.name_of_lesson),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -138,7 +153,7 @@ fun OutlinedTextFieldCategory(
         },
         supportingText = {
             Text(
-                text = "*Обязательно",
+                text = stringResource(R.string.required),
                 color = if (state.lessonName.isNotEmpty()) Green200 else Color.Red,
                 fontSize = 12.sp
             )

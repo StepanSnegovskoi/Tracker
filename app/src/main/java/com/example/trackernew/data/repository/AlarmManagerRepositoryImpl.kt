@@ -1,15 +1,9 @@
 package com.example.trackernew.data.repository
 
-import android.Manifest
-import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.trackernew.data.receiver.AlarmReceiver
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.repository.AlarmManagerRepository

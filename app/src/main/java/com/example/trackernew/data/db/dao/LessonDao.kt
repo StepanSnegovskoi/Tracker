@@ -6,15 +6,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.trackernew.data.entity.AudienceDbModel
 import com.example.trackernew.data.entity.LecturerDbModel
-import com.example.trackernew.data.entity.LessonDbModel
 import com.example.trackernew.data.entity.LessonNameDbModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LessonDao {
-
-    @Insert
-    suspend fun addLesson(lessonDbModel: LessonDbModel)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addLessonName(lessonNameDbModel: LessonNameDbModel)

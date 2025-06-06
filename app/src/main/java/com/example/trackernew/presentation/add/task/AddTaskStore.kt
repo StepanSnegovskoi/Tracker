@@ -9,19 +9,20 @@ import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.SubTask
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
-import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.AddTaskUseCase
+import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.SetAlarmUseCase
 import com.example.trackernew.presentation.add.task.AddTaskStore.Intent
 import com.example.trackernew.presentation.add.task.AddTaskStore.Label
 import com.example.trackernew.presentation.add.task.AddTaskStore.State
-import com.example.trackernew.presentation.edit.task.listOneToOneHundred
+import com.example.trackernew.presentation.edit.task.listFromOneToOneHundred
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+private const val SECOND_STRING = "Секунда"
 interface AddTaskStore : Store<Intent, State, Label> {
 
     sealed interface Intent {
@@ -188,8 +189,8 @@ class AddTaskStoreFactory @Inject constructor(
                             deadline = state.deadline,
                             subTasks = state.subTasks,
                             alarmEnable = state.alarmEnable,
-                            timeUnit = "Секунда",
-                            timeUnitCount = listOneToOneHundred[0].toInt(),
+                            timeUnit = SECOND_STRING,
+                            timeUnitCount = listFromOneToOneHundred[0].toInt(),
                         )
 
                         addTaskUseCase(

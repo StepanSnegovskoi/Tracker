@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,14 +30,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Week
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
@@ -56,41 +60,12 @@ fun WeeksContent(component: WeeksComponent) {
                     containerColor = TrackerNewTheme.colors.background
                 ),
                 title = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Недели",
-                            color = TrackerNewTheme.colors.textColor
-                        )
-                        Text(
-                            modifier = Modifier
-                                .padding(end = 24.dp),
-                            text = "Текущая неделя года ${calendar.get(Calendar.WEEK_OF_YEAR)}",
-                            fontSize = 14.sp,
-                            color = TrackerNewTheme.colors.textColor
-                        )
-                    }
+                    TopAppBarContent(calendar = calendar)
                 }
             )
         },
         floatingActionButton = {
-            Button(
-                onClick = {
-                    component.onConfirmEditClicked()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = TrackerNewTheme.colors.onBackground
-                )
-            ) {
-                Text(
-                    text = "Подтвердить",
-                    color = TrackerNewTheme.colors.textColor
-                )
-            }
+            FAB(component)
         },
         containerColor = TrackerNewTheme.colors.background
     ) { paddingValues ->
@@ -99,43 +74,126 @@ fun WeeksContent(component: WeeksComponent) {
                 .fillMaxSize()
                 .background(brush = TrackerNewTheme.colors.linearGradientBackground)
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-            ) {
-                itemsIndexed(
-                    items = state.value.weeks,
-                    key = { _, item -> item.id }
-                ) { index, week ->
-                    Week(
-                        week = week,
-                        weekIndex = index,
-                        weeksSize = state.value.weeks.size,
-                        onLongClick = {
-                            component.onWeekStatusChanged(week)
-                        },
-                        onDeleteIconClick = {
-                            component.onDeleteWeekClicked(week.id)
-                        },
-                        onMoveUpIconClick = {
-                            component.onMoveUpWeekClicked(week)
-                        },
-                        onMoveDownIconClick = {
-                            component.onMoveDownWeekClicked(week)
-                        },
-                        onClick = {
-                            component.onSelectWeekAsCurrentClicked(week)
-                        }
-                    )
-                }
-            }
+            Weeks(
+                paddingValues,
+                state,
+                onLongClick = {
+                    component.onWeekStatusChanged(it)
+                },
+                onDeleteWeekClick = {
+                    component.onDeleteWeekClicked(it)
+                },
+                onMoveUpWeekClick = {
+                    component.onMoveUpWeekClicked(it)
+                },
+                onMoveDownWeekClick = {
+                    component.onMoveDownWeekClicked(it)
+                },
+                onSelectWeekAsCurrentClick = {
+                    component.onSelectWeekAsCurrentClicked(it)
+                },
+            )
         }
+    }
+}
+
+@Composable
+private fun Weeks(
+    paddingValues: PaddingValues,
+    state: State<WeeksStore.State>,
+    onLongClick: (Week) -> Unit,
+    onDeleteWeekClick: (Int) -> Unit,
+    onMoveUpWeekClick: (Week) -> Unit,
+    onMoveDownWeekClick: (Week) -> Unit,
+    onSelectWeekAsCurrentClick: (Week) -> Unit
+
+) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(paddingValues)
+    ) {
+        itemsIndexed(
+            items = state.value.weeks,
+            key = { _, item -> item.id }
+        ) { index, week ->
+            Week(
+                week = week,
+                weekIndex = index,
+                weeksSize = state.value.weeks.size,
+                onLongClick = {
+                    onLongClick(week)
+                },
+                onDeleteIconClick = {
+                    onDeleteWeekClick(week.id)
+                },
+                onMoveUpIconClick = {
+                    onMoveUpWeekClick(week)
+                },
+                onMoveDownIconClick = {
+                    onMoveDownWeekClick(week)
+                },
+                onClick = {
+                    onSelectWeekAsCurrentClick(week)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun FAB(
+    component: WeeksComponent,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        modifier = modifier,
+        onClick = {
+            component.onConfirmEditClicked()
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = TrackerNewTheme.colors.onBackground
+        )
+    ) {
+        Text(
+            text = stringResource(R.string.confirm),
+            color = TrackerNewTheme.colors.textColor
+        )
+    }
+}
+
+@Composable
+private fun TopAppBarContent(
+    modifier: Modifier = Modifier,
+    calendar: Calendar
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(modifier),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.weeks),
+            color = TrackerNewTheme.colors.textColor
+        )
+        Text(
+            modifier = Modifier
+                .padding(end = 24.dp),
+            text = stringResource(
+                R.string.current_week_of_year,
+                calendar.get(Calendar.WEEK_OF_YEAR)
+            ),
+            fontSize = 14.sp,
+            color = TrackerNewTheme.colors.textColor
+        )
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Week(
+    modifier: Modifier = Modifier,
     week: Week,
     weekIndex: Int,
     weeksSize: Int,
@@ -167,7 +225,8 @@ fun Week(
                 onLongClick = {
                     onLongClick()
                 }
-            ),
+            )
+            .then(modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         colors = CardDefaults.cardColors(
             containerColor = color
@@ -191,7 +250,7 @@ fun Week(
 
             if (week.selectedAsCurrent) {
                 Text(
-                    text = "${week.weekOfYear} неделя года",
+                    text = stringResource(R.string.week_of_year, week.weekOfYear),
                     fontSize = 12.sp,
                     color = TrackerNewTheme.colors.textColor
                 )

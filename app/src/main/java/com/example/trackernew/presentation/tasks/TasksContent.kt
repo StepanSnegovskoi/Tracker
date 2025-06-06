@@ -1,7 +1,9 @@
 package com.example.trackernew.presentation.tasks
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.RepeatMode
@@ -47,11 +49,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,21 +64,31 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.trackernew.R
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
 import com.example.trackernew.domain.entity.TaskStatus
-import com.example.trackernew.domain.repository.AlarmManagerRepository
 import com.example.trackernew.presentation.extensions.toDateString
 import com.example.trackernew.ui.theme.Green300
 import com.example.trackernew.ui.theme.Orange100
 import com.example.trackernew.ui.theme.Red300
 import com.example.trackernew.ui.theme.TrackerNewTheme
+import com.example.trackernew.ui.theme.Yellow100
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+private const val TIME_ADDING = 0.0f
+private const val THIRD = 0.33f
+private const val TWO_THIRDS = 0.66f
+private const val ONE_FLOAT = 1f
 
 @Composable
 fun TasksContent(component: TasksComponent) {
@@ -115,7 +129,7 @@ fun TasksContent(component: TasksComponent) {
                     )
                 },
                 floatingActionButton = {
-                    ScaffoldFloatingActionButton(
+                    FAB(
                         onClick = {
                             component.onAddTaskClicked()
                         }
@@ -182,7 +196,7 @@ private fun TasksLazyColumn(
                     items = taskState.tasks.filteredTasks,
                     key = { it.id }
                 ) {
-                    TaskItem(
+                    Task(
                         modifier = Modifier.animateItem(),
                         task = it,
                         onTaskLongClick = {
@@ -204,7 +218,7 @@ private fun TasksLazyColumn(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TaskItem(
+private fun Task(
     modifier: Modifier = Modifier,
     task: Task,
     onTaskLongClick: () -> Unit,
@@ -212,6 +226,32 @@ private fun TaskItem(
 ) {
     val stateDescription = rememberSaveable {
         mutableStateOf(value = false)
+    }
+
+    val tintColor = TrackerNewTheme.colors.tintColor
+
+    val iconColorState = remember { mutableStateOf(tintColor) }
+
+    val iconColor by animateColorAsState(
+        targetValue = iconColorState.value,
+        animationSpec = tween(durationMillis = 1000),
+        label = "iconColorAnimation"
+    )
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(Unit) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+
+            while (System.currentTimeMillis() < task.deadline) {
+                iconColorState.value = calculateProgressColor(
+                    task = task,
+                    tintColor = tintColor
+                )
+                delay(1000)
+            }
+            iconColorState.value = Red300
+        }
     }
 
     Card(
@@ -261,12 +301,7 @@ private fun TaskItem(
                         }
                     ),
                     contentDescription = null,
-                    tint = when (task.status) {
-                        TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
-                        TaskStatus.Executed -> Green300
-                        TaskStatus.Failed -> Red300
-                        TaskStatus.InTheProcess -> Orange100
-                    }
+                    tint = iconColor
                 )
 
                 Icon(
@@ -277,18 +312,7 @@ private fun TaskItem(
                         R.drawable.hourglass
                     ),
                     contentDescription = null,
-                    tint = if (task.deadline == 0L) TrackerNewTheme.colors.tintColor else {
-                        val totalTime = task.deadline - task.addingTime
-                        val progress = (System.currentTimeMillis() - task.addingTime).toFloat() / totalTime
-
-                        when {
-                            progress < 0.0f -> TrackerNewTheme.colors.tintColor  // Ещё не началось
-                            progress < 0.33f -> Green300    // Первая треть времени
-                            progress < 0.66f -> Color.Yellow// Вторая треть времени
-                            progress < 1.0f  -> Orange100   // Последняя треть времени
-                            else             -> Red300      // Дедлайн просрочен
-                        }
-                    }
+                    tint = iconColor
                 )
             }
             AnimatedDescriptionAndDeadline(
@@ -297,6 +321,22 @@ private fun TaskItem(
                 onDeleteIconClick = onDeleteIconClick
             )
         }
+    }
+}
+
+private fun calculateProgressColor(
+    task: Task,
+    tintColor: Color
+): Color {
+    val totalTime = task.deadline - task.addingTime
+    val progress = (System.currentTimeMillis() - task.addingTime).toFloat() / totalTime
+
+    return when {
+        progress < TIME_ADDING -> tintColor
+        progress < THIRD -> Green300
+        progress < TWO_THIRDS -> Yellow100
+        progress < ONE_FLOAT -> Orange100
+        else -> error("Incorrect progress $progress")
     }
 }
 
@@ -513,6 +553,7 @@ private fun CategoriesLazyColumn(
     onDeleteIconClick: (Category) -> Unit,
     onAddClick: () -> Unit,
 ) {
+    val context = LocalContext.current
     LazyColumn(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(space = 6.dp),
@@ -562,9 +603,9 @@ private fun CategoriesLazyColumn(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-                        onCategoryClick(Category("Всё вместе"))
+                        onCategoryClick(Category(context.getString(R.string.all_together)))
                     },
-                text = "Всё вместе",
+                text = context.getString(R.string.all_together),
                 fontSize = 18.sp,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -576,7 +617,7 @@ private fun CategoriesLazyColumn(
                     .clickable {
                         onAddClick()
                     },
-                text = "Добавить",
+                text = context.getString(R.string.add),
                 fontSize = 18.sp,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -687,7 +728,7 @@ fun ModalDrawer(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
-                            text = "Задачи",
+                            text = stringResource(R.string.tasks),
                             color = TrackerNewTheme.colors.textColor,
                             fontSize = 28.sp,
                             textAlign = TextAlign.Center,
@@ -703,7 +744,7 @@ fun ModalDrawer(
                                 ) {
                                     onCategoriesClick()
                                 },
-                            text = "Категории",
+                            text = stringResource(R.string.categories),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = TrackerNewTheme.colors.textColor
@@ -733,7 +774,7 @@ fun ModalDrawer(
                                 ) {
                                     onScheduleClick()
                                 },
-                            text = "Расписание",
+                            text = stringResource(R.string.schedule),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = TrackerNewTheme.colors.textColor
@@ -815,7 +856,7 @@ fun TopAppBarTitle(
 }
 
 @Composable
-fun ScaffoldFloatingActionButton(
+fun FAB(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -835,16 +876,22 @@ fun ScaffoldFloatingActionButton(
 sealed class Sort(val value: String) {
     abstract fun comparator(): Comparator<Task>
 
-    data object ByDateAdded : Sort("По дате добавления") {
+    data object ByDateAdded : Sort(BY_DATE) {
         override fun comparator() = compareBy<Task> { it.addingTime }
     }
 
-    data object ByDeadline : Sort("По дедлайну") {
+    data object ByDeadline : Sort(BY_DEADLINE) {
         override fun comparator() = compareBy<Task> { it.deadline }
     }
 
-    data object ByName : Sort("По названию") {
+    data object ByName : Sort(BY_NAME) {
         override fun comparator() = compareBy<Task> { it.name }
+    }
+
+    private companion object {
+        const val BY_DATE = "По дате добавления"
+        const val BY_DEADLINE = "По дедлайну"
+        const val BY_NAME = "По названию"
     }
 }
 

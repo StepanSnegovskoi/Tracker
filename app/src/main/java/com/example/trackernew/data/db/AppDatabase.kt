@@ -15,7 +15,6 @@ import com.example.trackernew.data.db.dao.WeekDao
 import com.example.trackernew.data.entity.AudienceDbModel
 import com.example.trackernew.data.entity.CategoryDbModel
 import com.example.trackernew.data.entity.LecturerDbModel
-import com.example.trackernew.data.entity.LessonDbModel
 import com.example.trackernew.data.entity.LessonNameDbModel
 import com.example.trackernew.data.entity.TaskDbModel
 import com.example.trackernew.data.entity.WeekDbModel
@@ -24,13 +23,12 @@ import com.example.trackernew.data.entity.WeekDbModel
     entities = [
         TaskDbModel::class,
         CategoryDbModel::class,
-        LessonDbModel::class,
         AudienceDbModel::class,
         LecturerDbModel::class,
         LessonNameDbModel::class,
         WeekDbModel::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(

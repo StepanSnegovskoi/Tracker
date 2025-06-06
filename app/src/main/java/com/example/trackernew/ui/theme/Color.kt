@@ -60,6 +60,8 @@ val Gray100 = Color(0xFF726F6F)
 
 val Orange100 = Color(0xFFfc9003)
 
+val Yellow100 = Color.Yellow
+
 val Black500 = Color(0xFF020202)
 val Black400 = Color(0xFF090909)
 val Black300 = Color(0xFF0d0d0d)

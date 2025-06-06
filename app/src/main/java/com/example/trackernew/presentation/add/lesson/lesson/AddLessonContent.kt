@@ -1,6 +1,5 @@
 package com.example.trackernew.presentation.add.lesson.lesson
 
-import android.widget.Space
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -38,8 +38,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.domain.entity.lessons
 import com.example.trackernew.presentation.add.task.Menu
 import com.example.trackernew.presentation.extensions.toLocalDateTime
@@ -61,7 +64,7 @@ import java.time.ZoneId
 fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
@@ -80,15 +83,15 @@ fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarMan
                 }
 
                 AddLessonStore.Label.LessonSaved -> {
-                    snackBarManager.showMessage("Занятие сохранено")
+                    snackBarManager.showMessage(context.getString(R.string.lesson_saved))
                 }
 
                 AddLessonStore.Label.AddLessonClickedAndLessonNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 AddLessonStore.Label.AddLessonClickedAndTimeIsIncorrect -> {
-                    snackBarManager.showMessage("Старт не может быть позже конца")
+                    snackBarManager.showMessage(context.getString(R.string.start_cant_be_later_than_end))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -98,19 +101,7 @@ fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarMan
         modifier = Modifier
             .fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddLessonClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = TrackerNewTheme.colors.tintColor
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
         Box(
@@ -130,7 +121,6 @@ fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarMan
                     mutableStateOf(false)
                 }
                 LazyColumn {
-
                     item {
                         OutlinedTextFieldLessonNameWithMenu(
                             state = state,
@@ -253,6 +243,24 @@ fun AddLessonContent(component: AddLessonComponent, snackBarManager: SnackbarMan
 }
 
 @Composable
+private fun FAB(component: AddLessonComponent) {
+    FloatingActionButton(
+        modifier = Modifier.imePadding(),
+        onClick = {
+            component.onAddLessonClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
+        )
+    }
+}
+
+@Composable
 fun OutlinedTextFieldLessonNameWithMenu(
     component: AddLessonComponent,
     state: AddLessonStore.State,
@@ -331,7 +339,7 @@ fun OutlinedTextFieldLessonName(
         readOnly = true,
         label = {
             Text(
-                text = "Название занятия",
+                text = stringResource(R.string.name_of_lesson),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -362,7 +370,7 @@ fun OutlinedTextFieldLessonName(
         },
         supportingText = {
             Text(
-                text = "*Обязательно",
+                text = stringResource(R.string.required),
                 color = if (state.lessonName.isNotEmpty()) Green200 else Red300,
                 fontSize = 12.sp
             )
@@ -433,7 +441,7 @@ fun OutlinedTextFieldTypeOfLesson(
         readOnly = true,
         label = {
             Text(
-                text = "Тип занятия",
+                text = stringResource(R.string.type_of_lesson),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -523,7 +531,7 @@ fun OutlinedTextFieldLecturer(
         readOnly = true,
         label = {
             Text(
-                text = "Преподаватель",
+                text = stringResource(R.string.lecturer),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -637,7 +645,7 @@ fun OutlinedTextFieldAudience(
         readOnly = true,
         label = {
             Text(
-                text = "Аудитория",
+                text = stringResource(R.string.audience),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -672,6 +680,7 @@ fun OutlinedTextFieldAudience(
 
 @Composable
 fun OutlinedTextFieldStart(
+    modifier: Modifier = Modifier,
     state: AddLessonStore.State,
     onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
@@ -687,7 +696,8 @@ fun OutlinedTextFieldStart(
                 indication = null
             ) {
                 onClick()
-            },
+            }
+            .then(modifier),
         value = state.start.toTimeString(),
         onValueChange = {
             onValueChange(it)
@@ -696,7 +706,7 @@ fun OutlinedTextFieldStart(
         readOnly = true,
         label = {
             Text(
-                text = "Начало",
+                text = stringResource(R.string.start),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -718,6 +728,7 @@ fun OutlinedTextFieldStart(
 
 @Composable
 fun OutlinedTextFieldEnd(
+    modifier: Modifier = Modifier,
     state: AddLessonStore.State,
     onClearIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
@@ -733,7 +744,8 @@ fun OutlinedTextFieldEnd(
                 indication = null
             ) {
                 onClick()
-            },
+            }
+            .then(modifier),
         value = state.end.toTimeString(),
         onValueChange = {
             onValueChange(it)
@@ -742,7 +754,7 @@ fun OutlinedTextFieldEnd(
         readOnly = true,
         label = {
             Text(
-                text = "Конец",
+                text = stringResource(R.string.end),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -805,7 +817,7 @@ fun TimePickerDialog(
                     }
                 ) {
                     Text(
-                        text = "Выбрать",
+                        text = stringResource(R.string.select),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -818,7 +830,7 @@ fun TimePickerDialog(
                     }
                 ) {
                     Text(
-                        text = "Отмена",
+                        text = stringResource(R.string.cancel),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }

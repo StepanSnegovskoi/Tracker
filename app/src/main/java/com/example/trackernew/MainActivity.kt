@@ -1,9 +1,9 @@
 package com.example.trackernew
 
-import android.app.AlarmManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.arkivanov.decompose.defaultComponentContext
 import com.example.trackernew.domain.repository.AlarmManagerRepository
@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
         val defaultComponentContext = defaultComponentContext()
 
         installSplashScreen()
+        enableEdgeToEdge()
 
         setContent {
             RootContent(

@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,7 +24,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.presentation.root.SnackbarManager
 import com.example.trackernew.ui.theme.Green200
 import com.example.trackernew.ui.theme.Red300
@@ -37,6 +41,7 @@ import kotlinx.coroutines.flow.onEach
 fun AddWeekContent(component: AddWeekComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(
         key1 = component
@@ -44,11 +49,11 @@ fun AddWeekContent(component: AddWeekComponent, snackBarManager: SnackbarManager
         component.labels.onEach {
             when (it) {
                 AddWeekStore.Label.AddWeekClickedAndWeekIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 AddWeekStore.Label.WeekSaved -> {
-                    snackBarManager.showMessage("Неделя сохранена")
+                    snackBarManager.showMessage(context.getString(R.string.week_saved))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -58,19 +63,7 @@ fun AddWeekContent(component: AddWeekComponent, snackBarManager: SnackbarManager
         modifier = Modifier
             .fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddWeekClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null,
-                    tint = TrackerNewTheme.colors.tintColor
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
         Box(
@@ -90,6 +83,29 @@ fun AddWeekContent(component: AddWeekComponent, snackBarManager: SnackbarManager
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun FAB(
+    component: AddWeekComponent,
+    modifier: Modifier = Modifier
+) {
+    FloatingActionButton(
+        modifier = Modifier
+            .imePadding()
+            .then(modifier),
+        onClick = {
+            component.onAddWeekClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
+        )
     }
 }
 
@@ -120,7 +136,7 @@ fun OutlinedTextFieldCategory(
         },
         label = {
             Text(
-                text = "Название недели",
+                text = stringResource(R.string.name_of_week),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -137,7 +153,7 @@ fun OutlinedTextFieldCategory(
         },
         supportingText = {
             Text(
-                text = "*Обязательно",
+                text = stringResource(R.string.required),
                 color = if (state.week.isNotEmpty()) Green200 else Red300,
                 fontSize = 12.sp
             )

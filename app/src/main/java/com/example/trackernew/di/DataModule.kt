@@ -1,6 +1,5 @@
 package com.example.trackernew.di
 
-import android.app.AlarmManager
 import android.content.Context
 import com.example.trackernew.data.db.AppDatabase
 import com.example.trackernew.data.db.dao.CategoryDao

@@ -1,6 +1,5 @@
 package com.example.trackernew.presentation.schedule
 
-import com.example.trackernew.domain.entity.Category
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 

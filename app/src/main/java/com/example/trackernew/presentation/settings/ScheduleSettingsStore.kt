@@ -15,8 +15,8 @@ import com.example.trackernew.domain.usecase.GetAudiencesUseCase
 import com.example.trackernew.domain.usecase.GetLecturersUseCase
 import com.example.trackernew.domain.usecase.GetLessonNamesUseCase
 import com.example.trackernew.presentation.settings.ScheduleSettingsStore.Intent
-import com.example.trackernew.presentation.settings.ScheduleSettingsStore.State
 import com.example.trackernew.presentation.settings.ScheduleSettingsStore.Label
+import com.example.trackernew.presentation.settings.ScheduleSettingsStore.State
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch

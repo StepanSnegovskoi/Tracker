@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,7 +51,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,6 +72,7 @@ import com.example.trackernew.ui.theme.getOutlinedTextFieldColors
 import com.example.trackernew.ui.theme.getTimePickerColors
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -76,34 +80,34 @@ import java.time.ZoneId
 fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
         component.labels.onEach {
             when (it) {
                 EditTaskStore.Label.TaskEdited -> {
-                    snackBarManager.showMessage("Задача изменена")
+                    snackBarManager.showMessage(context.getString(R.string.task_edited))
                 }
 
                 EditTaskStore.Label.SubTaskSaved -> {
-                    snackBarManager.showMessage("Подзадача сохранена")
+                    snackBarManager.showMessage(context.getString(R.string.subtask_saved))
                 }
 
                 EditTaskStore.Label.EditTaskClickedAndNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 EditTaskStore.Label.AddSubTaskClickedAndNameIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 EditTaskStore.Label.EditDeadlineClickedAndDeadlineIsIncorrect -> {
-                    snackBarManager.showMessage("Дедлайн не может быть раньше, чем текущее время")
+                    snackBarManager.showMessage(context.getString(R.string.deadline_cant_be_earlier_than_current_time))
                 }
 
                 EditTaskStore.Label.EditDeadlineClickedAndReminderIsIncorrect -> {
-                    snackBarManager.showMessage("Время напоминания некорректно")
+                    snackBarManager.showMessage(context.getString(R.string.time_of_reminder_is_incorrect))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -113,16 +117,7 @@ fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManag
         modifier = Modifier
             .fillMaxSize(),
         floatingActionButton = {
-            OutlinedButton(
-                onClick = {
-                    component.onEditTaskClicked()
-                }
-            ) {
-                Text(
-                    text = "Подтвердить",
-                    color = TrackerNewTheme.colors.textColor
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
         Box(
@@ -188,6 +183,8 @@ fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManag
                     mutableStateOf(false)
                 }
                 SubTasks(
+                    modifier = Modifier
+                        .padding(8.dp),
                     state = state,
                     onAddSubTaskClick = {
                         stateSubTaskDialog.value = true
@@ -218,6 +215,8 @@ fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManag
                 )
 
                 TaskCompletedStatus(
+                    modifier = Modifier
+                        .padding(8.dp),
                     state = state,
                     onClick = {
                         component.onChangeStatusClicked()
@@ -241,7 +240,23 @@ fun EditTaskContent(component: EditTaskComponent, snackBarManager: SnackbarManag
 }
 
 @Composable
+private fun FAB(component: EditTaskComponent) {
+    OutlinedButton(
+        modifier = Modifier.imePadding(),
+        onClick = {
+            component.onEditTaskClicked()
+        }
+    ) {
+        Text(
+            text = stringResource(R.string.confirm),
+            color = TrackerNewTheme.colors.textColor
+        )
+    }
+}
+
+@Composable
 fun OutlinedTextFieldName(
+    modifier: Modifier = Modifier,
     state: EditTaskStore.State,
     onValueChange: (String) -> Unit
 ) {
@@ -254,13 +269,13 @@ fun OutlinedTextFieldName(
         },
         label = {
             Text(
-                text = "Название",
+                text = stringResource(R.string.title),
                 color = TrackerNewTheme.colors.textColor
             )
         },
         supportingText = {
             Text(
-                text = "*Обязательно",
+                text = stringResource(R.string.required),
                 color = if (state.name.isNotEmpty()) Green200 else Color.Red,
                 fontSize = 12.sp
             )
@@ -296,7 +311,7 @@ fun OutlinedTextFieldCategory(
         readOnly = true,
         label = {
             Text(
-                text = "Категория",
+                text = stringResource(R.string.category),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -386,6 +401,7 @@ fun Menu(
 
 @Composable
 fun OutlinedTextFieldDescription(
+    modifier: Modifier = Modifier,
     state: EditTaskStore.State,
     onValueChange: (String) -> Unit
 ) {
@@ -398,7 +414,7 @@ fun OutlinedTextFieldDescription(
         },
         label = {
             Text(
-                text = "Описание",
+                text = stringResource(R.string.description),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -408,6 +424,7 @@ fun OutlinedTextFieldDescription(
 
 @Composable
 fun OutlinedTextFieldDeadline(
+    modifier: Modifier = Modifier,
     state: EditTaskStore.State,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit
@@ -431,7 +448,7 @@ fun OutlinedTextFieldDeadline(
         readOnly = true,
         label = {
             Text(
-                text = "Дедлайн",
+                text = stringResource(R.string.deadline),
                 color = TrackerNewTheme.colors.textColor
             )
         },
@@ -485,7 +502,7 @@ fun DateAndTimePickerDialogEditScreen(
                     }
                 ) {
                     Text(
-                        "Далее",
+                        text = stringResource(R.string.next),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -493,7 +510,7 @@ fun DateAndTimePickerDialogEditScreen(
             dismissButton = {
                 TextButton(onClick = onDismiss) {
                     Text(
-                        "Отмена",
+                        text = stringResource(R.string.cancel),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -518,7 +535,11 @@ fun DateAndTimePickerDialogEditScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val selectedDateTime = LocalDate.now()
+                        val selectedLocalDate = Instant.ofEpochMilli(selectedDate)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+
+                        val selectedDateTime = selectedLocalDate
                             .atTime(timePickerState.hour, timePickerState.minute)
                             .atZone(ZoneId.systemDefault())
                             .toInstant()
@@ -529,7 +550,7 @@ fun DateAndTimePickerDialogEditScreen(
                     }
                 ) {
                     Text(
-                        "Выбрать",
+                        text = stringResource(R.string.select),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -542,7 +563,7 @@ fun DateAndTimePickerDialogEditScreen(
                     }
                 ) {
                     Text(
-                        "Назад",
+                        text = stringResource(R.string.backward),
                         color = TrackerNewTheme.colors.textColor
                     )
                 }
@@ -589,7 +610,7 @@ fun AlarmEnable(
             Text(
                 modifier = Modifier
                     .weight(1f),
-                text = "Напоминание",
+                text = stringResource(R.string.reminder),
                 color = TrackerNewTheme.colors.textColor,
                 fontSize = 16.sp
             )
@@ -612,13 +633,13 @@ fun AlarmEnable(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Напомнить за",
+                    text = stringResource(R.string.remind_for),
                     color = TrackerNewTheme.colors.textColor,
                     fontSize = 16.sp
                 )
                 Menu(
                     expanded = expandedTimesCount,
-                    items = listOneToOneHundred,
+                    items = listFromOneToOneHundred,
                     onDismissRequest = {
                         expandedTimesCount.value = false
                     },
@@ -641,7 +662,7 @@ fun AlarmEnable(
                 )
                 Menu(
                     expanded = expandedTime,
-                    items = listOfTimes,
+                    items = listOfTimeUnits,
                     onDismissRequest = {
                         expandedTime.value = false
                     },
@@ -669,6 +690,7 @@ fun AlarmEnable(
 
 @Composable
 fun SubTasks(
+    modifier: Modifier = Modifier,
     state: EditTaskStore.State,
     onAddSubTaskClick: () -> Unit,
     onDeleteSubTaskClick: (Int) -> Unit,
@@ -676,7 +698,7 @@ fun SubTasks(
 ) {
     Column(
         modifier = Modifier
-            .padding(8.dp)
+            .then(modifier)
     ) {
         Text(
             modifier = Modifier
@@ -688,7 +710,7 @@ fun SubTasks(
                         end = Offset(size.width, size.height)
                     )
                 },
-            text = "Подзадачи",
+            text = stringResource(R.string.subtasks),
             color = TrackerNewTheme.colors.textColor
         )
         LazyColumn(
@@ -733,7 +755,7 @@ fun SubTasks(
                 }
         ) {
             Text(
-                text = "Добавить",
+                text = stringResource(R.string.add),
                 fontFamily = FontFamily.Serif,
                 color = TrackerNewTheme.colors.textColor
             )
@@ -773,7 +795,7 @@ fun AddSubTaskDialog(
                 }
             ) {
                 Text(
-                    text = "Добавить",
+                    text = stringResource(R.string.add),
                     color = TrackerNewTheme.colors.textColor
                 )
             }
@@ -785,7 +807,7 @@ fun AddSubTaskDialog(
                 }
             ) {
                 Text(
-                    text = "Отменить",
+                    text = stringResource(R.string.cancel),
                     color = TrackerNewTheme.colors.textColor
                 )
             }
@@ -803,7 +825,7 @@ fun AddSubTaskDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Подзадача",
+                    text = stringResource(R.string.subtask),
                     color = TrackerNewTheme.colors.textColor
                 )
                 OutlinedTextField(
@@ -814,11 +836,11 @@ fun AddSubTaskDialog(
                         onValueChange(it)
                     },
                     label = {
-                        Text(text = "Название")
+                        Text(text = stringResource(R.string.title))
                     },
                     supportingText = {
                         Text(
-                            text = "*Обязательно",
+                            text = stringResource(R.string.required),
                             color = if (state.subTask.isNotEmpty()) Green200 else Color.Red,
                             fontSize = 12.sp
                         )
@@ -832,14 +854,15 @@ fun AddSubTaskDialog(
 
 @Composable
 fun TaskCompletedStatus(
+    modifier: Modifier = Modifier,
     state: EditTaskStore.State,
     onClick: () -> Unit
 ) {
     val text = when (state.status) {
-        TaskStatus.Completed -> "Завершён"
-        TaskStatus.Executed -> "Выполнен"
-        TaskStatus.Failed -> "Провален"
-        TaskStatus.InTheProcess -> "В процессе"
+        TaskStatus.Completed -> stringResource(R.string.completed)
+        TaskStatus.Executed -> stringResource(R.string.executed)
+        TaskStatus.Failed -> stringResource(R.string.failed)
+        TaskStatus.InTheProcess -> stringResource(R.string.in_the_process)
     }
     val color = when (state.status) {
         TaskStatus.Completed -> TrackerNewTheme.colors.oppositeColor
@@ -867,10 +890,10 @@ fun TaskCompletedStatus(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .clickable {
                 onClick()
             }
+            .then(modifier)
     ) {
         Text(
             text = text,

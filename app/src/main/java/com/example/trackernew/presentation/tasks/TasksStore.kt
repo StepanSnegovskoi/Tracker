@@ -7,16 +7,15 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineBootstrapper
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import com.example.trackernew.domain.entity.Category
 import com.example.trackernew.domain.entity.Task
-import com.example.trackernew.domain.entity.TaskStatus
 import com.example.trackernew.domain.usecase.DeleteCategoryUseCase
 import com.example.trackernew.domain.usecase.DeleteTaskByIdUseCase
 import com.example.trackernew.domain.usecase.GetCategoriesUseCase
 import com.example.trackernew.domain.usecase.GetTasksUseCase
+import com.example.trackernew.presentation.extensions.ALL_TOGETHER
 import com.example.trackernew.presentation.extensions.filterBySortTypeAndCategory
 import com.example.trackernew.presentation.tasks.TasksStore.Intent
 import com.example.trackernew.presentation.tasks.TasksStore.Label
 import com.example.trackernew.presentation.tasks.TasksStore.State
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -45,7 +44,7 @@ interface TasksStore : Store<Intent, State, Label> {
     }
 
     data class State(
-        val tasksState: TasksState, // Заменяем tasks на tasksState
+        val tasksState: TasksState,
         val categories: List<Category>,
         val sort: Sort,
         val category: Category
@@ -88,7 +87,7 @@ class TasksStoreFactory @Inject constructor(
             initialState = State(
                 tasksState = TasksStore.TasksState.Loading,
                 sort = Sort.ByName,
-                category = Category("Всё вместе"),
+                category = Category(ALL_TOGETHER),
                 categories = emptyList()
             ),
             bootstrapper = BootstrapperImpl(),
@@ -168,7 +167,7 @@ class TasksStoreFactory @Inject constructor(
                     }
 
                     if (state.category == intent.category) {
-                        dispatch(Msg.ChangeCategory(Category("Всё вместе")))
+                        dispatch(Msg.ChangeCategory(Category(ALL_TOGETHER)))
                     }
                 }
             }
@@ -192,7 +191,7 @@ class TasksStoreFactory @Inject constructor(
             when (msg) {
                 is Msg.TasksLoaded -> {
                     copy(
-                        tasksState = TasksStore.TasksState.Loaded( // Устанавливаем Loaded состояние
+                        tasksState = TasksStore.TasksState.Loaded(
                             TasksStore.Tasks(
                                 currentTasks = msg.tasks,
                                 filteredTasks = msg.tasks

@@ -28,7 +28,7 @@ interface WeekDao {
     suspend fun getWeekById(weekId: Int): WeekDbModel?
 
     suspend fun addLessonByWeekIdAndDayName(weekId: Int, dayName: String, lessonDbModel: LessonDbModel) {
-        val week = getWeekById(weekId) ?: throw Exception("Week not found")
+        val week = getWeekById(weekId) ?: throw Exception("Неделя не найдена")
         val updatedDays = week.days.map { day ->
             if (day.name.equals(dayName, ignoreCase = true)) {
                 day.copy(lessons = day.lessons + lessonDbModel.toEntity())
@@ -41,7 +41,7 @@ interface WeekDao {
     }
 
     suspend fun deleteLessonByLessonId(weekId: Int, lessonId: Int) {
-        val week = getWeekById(weekId) ?: throw Exception("Week not found")
+        val week = getWeekById(weekId) ?: throw Exception("Неделя не найдена")
 
         val updatedDays = week.days.map { day ->
 

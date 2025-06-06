@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,7 +24,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.presentation.root.SnackbarManager
 import com.example.trackernew.ui.theme.Green200
 import com.example.trackernew.ui.theme.Red300
@@ -37,18 +40,18 @@ import kotlinx.coroutines.flow.onEach
 fun AddCategoryContent(component: AddCategoryComponent, snackBarManager: SnackbarManager) {
     val state by component.model.collectAsState()
     val rememberCoroutineScope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     LaunchedEffect(
         key1 = component
     ) {
         component.labels.onEach {
             when (it) {
                 AddCategoryStore.Label.AddCategoryClickedAndCategoryIsEmpty -> {
-                    snackBarManager.showMessage("Название не должно быть пустым")
+                    snackBarManager.showMessage(context.getString(R.string.title_should_not_be_blank))
                 }
 
                 AddCategoryStore.Label.CategorySaved -> {
-                    snackBarManager.showMessage("Категория сохранена")
+                    snackBarManager.showMessage(context.getString(R.string.category_saved))
                 }
             }
         }.launchIn(rememberCoroutineScope)
@@ -59,19 +62,7 @@ fun AddCategoryContent(component: AddCategoryComponent, snackBarManager: Snackba
             .fillMaxSize(),
         containerColor = TrackerNewTheme.colors.background,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    component.onAddCategoryClicked()
-                },
-                containerColor = TrackerNewTheme.colors.onBackground,
-                contentColor = TrackerNewTheme.colors.oppositeColor
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null,
-                    tint = TrackerNewTheme.colors.tintColor
-                )
-            }
+            FAB(component)
         }
     ) { paddingValues ->
         Box(
@@ -91,6 +82,24 @@ fun AddCategoryContent(component: AddCategoryComponent, snackBarManager: Snackba
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun FAB(component: AddCategoryComponent) {
+    FloatingActionButton(
+        modifier = Modifier.imePadding(),
+        onClick = {
+            component.onAddCategoryClicked()
+        },
+        containerColor = TrackerNewTheme.colors.onBackground,
+        contentColor = TrackerNewTheme.colors.oppositeColor
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            tint = TrackerNewTheme.colors.tintColor
+        )
     }
 }
 

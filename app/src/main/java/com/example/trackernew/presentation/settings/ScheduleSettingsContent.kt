@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.trackernew.R
 import com.example.trackernew.ui.theme.TrackerNewTheme
 
 @Composable
@@ -55,7 +57,7 @@ fun ScheduleSettingsContent(component: ScheduleSettingsComponent) {
                 mutableStateOf(false)
             }
             Section(
-                name = "Преподаватели",
+                name = stringResource(R.string.lecturers),
                 visibleItems = visibleLecturers,
                 items = state.value.lecturers.map { it.name },
                 onIconDeleteClick = {
@@ -71,7 +73,7 @@ fun ScheduleSettingsContent(component: ScheduleSettingsComponent) {
                 mutableStateOf(false)
             }
             Section(
-                name = "Занятия",
+                name = stringResource(R.string.lessons),
                 visibleItems = visibleLessons,
                 items = state.value.lessonNames.map { it.name },
                 onIconDeleteClick = {
@@ -87,7 +89,7 @@ fun ScheduleSettingsContent(component: ScheduleSettingsComponent) {
                 mutableStateOf(false)
             }
             Section(
-                name = "Аудитории",
+                name = stringResource(R.string.audiences),
                 visibleItems = visibleAudiences,
                 items = state.value.audiences.map { it.name },
                 onIconDeleteClick = {

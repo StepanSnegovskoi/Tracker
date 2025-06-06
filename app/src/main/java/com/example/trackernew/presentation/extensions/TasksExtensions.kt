@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Locale
 
+const val ALL_TOGETHER = "Всё вместе"
 fun Long.toDateString(): String {
     if (this == 0L) return "00:00"
 
@@ -38,7 +39,7 @@ fun Long.toLocalDateTime(): LocalDateTime {
 
 fun List<Task>.filterBySortTypeAndCategory(sort: Sort, category: Category): List<Task> {
     val sortedTasks = sortedWith(sort.comparator())
-    if (category.name == "Всё вместе") {
+    if (category.name == ALL_TOGETHER) {
         return sortedTasks
     }
     return sortedTasks

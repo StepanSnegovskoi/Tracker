@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -27,9 +28,9 @@ import com.example.trackernew.presentation.add.lesson.lesson.AddLessonContent
 import com.example.trackernew.presentation.add.lesson.name.AddLessonNameContent
 import com.example.trackernew.presentation.add.task.AddTaskContent
 import com.example.trackernew.presentation.add.week.AddWeekContent
-import com.example.trackernew.presentation.settings.ScheduleSettingsContent
 import com.example.trackernew.presentation.edit.task.EditTaskContent
 import com.example.trackernew.presentation.schedule.ScheduleContent
+import com.example.trackernew.presentation.settings.ScheduleSettingsContent
 import com.example.trackernew.presentation.tasks.TasksContent
 import com.example.trackernew.presentation.weeks.WeeksContent
 import com.example.trackernew.ui.theme.TrackerNewTheme
@@ -133,7 +134,8 @@ fun RootContent(
                 snackbar = { snackbarData ->
                     Snackbar(
                         modifier = Modifier
-                            .padding(8.dp),
+                            .padding(8.dp)
+                            .imePadding(),
                         containerColor = TrackerNewTheme.colors.onBackground,
                         content = {
                             Text(

@@ -22,9 +22,17 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
-val listOfTimes = listOf("Секунда", "Минута", "Час", "День")
+private const val ONE = 1
+private const val ONE_HUNDRED = 100
+private const val SECOND_STRING = "Секунда"
+private const val MINUTE_STRING = "Минута"
+private const val HOUR_STRING = "Час"
+private const val DAY_STRING = "День"
+private const val UNKNOWN_TIME = "Неизвестное время"
 
-val listOneToOneHundred = (1..100).toList().map { it.toString() }
+val listOfTimeUnits = listOf(SECOND_STRING, MINUTE_STRING, HOUR_STRING, DAY_STRING)
+
+val listFromOneToOneHundred = (ONE..ONE_HUNDRED).toList().map { it.toString() }
 
 private const val MILLIS_IN_SECOND = 1_000
 private const val MILLIS_IN_MINUTE = MILLIS_IN_SECOND * 60
@@ -220,24 +228,24 @@ class EditTaskStoreFactory @Inject constructor(
                                 )
 
                                 val timeUnit = when (state.timeUnit) {
-                                    "Секунда" -> {
+                                    SECOND_STRING -> {
                                         MILLIS_IN_SECOND
                                     }
 
-                                    "Минута" -> {
+                                    MINUTE_STRING -> {
                                         MILLIS_IN_MINUTE
                                     }
 
-                                    "Час" -> {
+                                    HOUR_STRING -> {
                                         MILLIS_IN_HOUR
                                     }
 
-                                    "День" -> {
+                                    DAY_STRING -> {
                                         MILLIS_IN_DAY
                                     }
 
                                     else -> {
-                                        error("Undefine time")
+                                        error(UNKNOWN_TIME)
                                     }
                                 }
 
